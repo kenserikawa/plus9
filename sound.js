@@ -2,7 +2,8 @@
 // Everything is in C major (effects on its pentatonic scale) so effects and music fit together.
 
 const sfx = (() => {
-    const MUTE_KEY = 'plus9.muted'
+    const MUTE_KEY = 'plus9.muted' // old save: one switch for everything
+    const EFFECTS_KEY = 'plus9.effects'
     const MUSIC_KEY = 'plus9.music'
     const MUSIC_VOLUME = 0.55 // music bus level relative to the effects
     const SCALE = [0, 2, 4, 7, 9] // pentatonic steps in semitones
@@ -11,12 +12,24 @@ const sfx = (() => {
     let ctx = null
     let master = null
     let noise = null
-    let muted = false
+    // effects and music switch on and off separately; "muted" is both off
+    let effectsOn = true
     let musicOn = true
     try {
-        muted = localStorage.getItem(MUTE_KEY) === '1'
-        musicOn = localStorage.getItem(MUSIC_KEY) !== '0'
+        const oldMute = localStorage.getItem(MUTE_KEY) === '1'
+        const effects = localStorage.getItem(EFFECTS_KEY)
+        effectsOn = effects === null ? !oldMute : effects !== '0'
+        musicOn = localStorage.getItem(MUSIC_KEY) !== '0' && !(effects === null && oldMute)
     } catch { /* storage unavailable */ }
+    const silent = () => !effectsOn && !musicOn
+
+    function saveSwitches() {
+        try {
+            localStorage.setItem(EFFECTS_KEY, effectsOn ? '1' : '0')
+            localStorage.setItem(MUSIC_KEY, musicOn ? '1' : '0')
+            localStorage.removeItem(MUTE_KEY)
+        } catch { /* storage unavailable */ }
+    }
 
     // browsers only allow audio after a user gesture, so the context is created lazily
     function audio() {
@@ -337,7 +350,7 @@ const sfx = (() => {
     }
 
     function startMusic() {
-        if (musicTimer || muted || !musicOn || !audio()) return
+        if (musicTimer || !musicOn || !audio()) return
         const t = ctx.currentTime
         step = 0
         nextStep = t + 0.1
@@ -378,16 +391,20 @@ const sfx = (() => {
         try { if (navigator.vibrate) navigator.vibrate(pattern) } catch { /* not allowed here */ }
     }
 
-    // wrap each effect so it is a no-op while muted or without Web Audio
-    const effect = fn => (...args) => { if (!muted && audio()) fn(...args) }
+    // wrap each effect so it is a no-op with effects off or without Web Audio
+    const effect = fn => (...args) => { if (effectsOn && audio()) fn(...args) }
 
     return {
-        get muted() { return muted },
+        // the speaker button: everything off, or everything back on
+        get muted() { return silent() },
         setMuted(value) {
-            muted = value
-            try { localStorage.setItem(MUTE_KEY, value ? '1' : '0') } catch { /* storage unavailable */ }
-            if (muted) stopMusic()
-            else startMusic()
+            this.setEffects(!value)
+            this.setMusic(!value)
+        },
+        get effectsOn() { return effectsOn },
+        setEffects(value) {
+            effectsOn = value
+            saveSwitches()
         },
         get musicOn() { return musicOn },
         // each theme has its own loop; switching restarts the music with the new one
@@ -401,19 +418,19 @@ const sfx = (() => {
         },
         setMusic(value) {
             musicOn = value
-            try { localStorage.setItem(MUSIC_KEY, value ? '1' : '0') } catch { /* storage unavailable */ }
+            saveSwitches()
             if (musicOn) startMusic()
             else stopMusic()
         },
         // first user gesture: audio may start now, music included
         unlock() {
-            if (muted) return
+            if (silent()) return
             audio()
             startMusic()
         },
         // silence everything while the page is hidden (tab switch, app in background)
         suspend() { if (ctx && ctx.state === 'running') ctx.suspend() },
-        resume() { if (ctx && !muted && ctx.state === 'suspended') ctx.resume() },
+        resume() { if (ctx && !silent() && ctx.state === 'suspended') ctx.resume() },
 
         // tile lifted for dragging
         lift: effect(() => tone(note(7), { type: 'sine', dur: 0.08, vol: 0.15, slide: note(9) })),

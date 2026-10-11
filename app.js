@@ -1630,27 +1630,31 @@ function renderSheetLabels() {
     $('help-close').textContent = tr(helpFromSettings ? 'help.back' : 'help.gotIt')
 }
 
+// the speaker button (and M): everything off, or everything back on
 function toggleSound() {
     sfx.setMuted(!sfx.muted)
     renderSound()
     sfx.ui()
 }
 
-function toggleMusic() {
-    sfx.setMusic(!sfx.musicOn)
-    renderMusic()
+function toggleEffects() {
+    sfx.setEffects(!sfx.effectsOn)
+    renderSound()
     sfx.ui()
 }
 
-function renderMusic() {
-    const btn = $('music-btn')
-    btn.setAttribute('aria-pressed', sfx.musicOn)
-    $('music-state').textContent = tr(sfx.musicOn ? 'music.on' : 'music.off')
+function toggleMusic() {
+    sfx.setMusic(!sfx.musicOn)
+    renderSound()
+    sfx.ui()
 }
 
+// the effects and music switches in settings, and the speaker icons (crossed when both are off)
 function renderSound() {
-    $('sound-toggle').setAttribute('aria-pressed', !sfx.muted)
-    $('sound-state').textContent = tr(sfx.muted ? 'help.soundOff' : 'help.soundOn')
+    $('effects-btn').setAttribute('aria-pressed', sfx.effectsOn)
+    $('effects-state').textContent = tr(sfx.effectsOn ? 'help.effectsOn' : 'help.effectsOff')
+    $('music-btn').setAttribute('aria-pressed', sfx.musicOn)
+    $('music-state').textContent = tr(sfx.musicOn ? 'music.on' : 'music.off')
     document.querySelectorAll('.sound-btn').forEach(b => {
         b.setAttribute('aria-pressed', !sfx.muted)
         b.setAttribute('aria-label', tr(sfx.muted ? 'sound.off' : 'sound.on'))
@@ -1699,7 +1703,7 @@ document.querySelectorAll('.home-btn').forEach(b => b.addEventListener('click', 
 document.querySelectorAll('.help-btn').forEach(b => b.addEventListener('click', openHelp))
 document.querySelectorAll('.pause-btn, .settings-btn').forEach(b => b.addEventListener('click', openSettings))
 document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click', toggleSound))
-$('sound-toggle').addEventListener('click', toggleSound)
+$('effects-btn').addEventListener('click', toggleEffects)
 $('music-btn').addEventListener('click', toggleMusic)
 
 $('help-close').addEventListener('click', () => help.close())
@@ -1819,7 +1823,6 @@ addEventListener('blur', () => mascot.look(null))
 function relocalize() {
     i18n.apply()
     renderSound()
-    renderMusic()
     if (screen === 'home') renderHome()
     if (screen === 'map') renderMap()
     if (styleSheet.open) renderStyle()
@@ -1849,7 +1852,6 @@ mascot.dress(meta.outfit())
 knownItems = unlockedItems()
 buildTiles()
 renderSound()
-renderMusic()
 // first visit: straight into the tutorial level instead of a menu
 if (onboarded()) showScreen('home')
 else {

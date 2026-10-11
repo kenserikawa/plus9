@@ -124,9 +124,9 @@ const i18n = (() => {
             'nav.settings': "Settings",
             'help.done': "Done",
             'help.back': "Back",
-            'help.sound': "Sound",
-            'help.soundOn': "On",
-            'help.soundOff': "Off",
+            'help.effects': "Effects",
+            'help.effectsOn': "On",
+            'help.effectsOff': "Off",
         },
 
         es: {
@@ -243,9 +243,9 @@ const i18n = (() => {
             'nav.settings': "Ajustes",
             'help.done': "Listo",
             'help.back': "Volver",
-            'help.sound': "Sonido",
-            'help.soundOn': "Sí",
-            'help.soundOff': "No",
+            'help.effects': "Efectos",
+            'help.effectsOn': "Sí",
+            'help.effectsOff': "No",
         },
 
         pt: {
@@ -362,9 +362,9 @@ const i18n = (() => {
             'nav.settings': "Configurações",
             'help.done': "Pronto",
             'help.back': "Voltar",
-            'help.sound': "Som",
-            'help.soundOn': "Ligado",
-            'help.soundOff': "Desligado",
+            'help.effects': "Efeitos",
+            'help.effectsOn': "Ligados",
+            'help.effectsOff': "Desligados",
         },
 
         fr: {
@@ -481,9 +481,9 @@ const i18n = (() => {
             'nav.settings': "Réglages",
             'help.done': "OK",
             'help.back': "Retour",
-            'help.sound': "Son",
-            'help.soundOn': "Oui",
-            'help.soundOff': "Non",
+            'help.effects': "Effets",
+            'help.effectsOn': "Oui",
+            'help.effectsOff': "Non",
         },
 
         de: {
@@ -600,9 +600,9 @@ const i18n = (() => {
             'nav.settings': "Einstellungen",
             'help.done': "Fertig",
             'help.back': "Zurück",
-            'help.sound': "Ton",
-            'help.soundOn': "An",
-            'help.soundOff': "Aus",
+            'help.effects': "Effekte",
+            'help.effectsOn': "An",
+            'help.effectsOff': "Aus",
         },
 
         tr: {
@@ -719,9 +719,9 @@ const i18n = (() => {
             'nav.settings': "Ayarlar",
             'help.done': "Tamam",
             'help.back': "Geri",
-            'help.sound': "Ses",
-            'help.soundOn': "Açık",
-            'help.soundOff': "Kapalı",
+            'help.effects': "Efektler",
+            'help.effectsOn': "Açık",
+            'help.effectsOff': "Kapalı",
         },
     }
 

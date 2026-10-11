@@ -24,11 +24,16 @@ Three **daily missions** give extra stars, and stars unlock color **themes**. Ni
 
 Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **B** bank, **M** sound, **Esc** pause.
 
+### Languages
+
+English, Spanish, Portuguese, French, German and Turkish. The game picks the player's language automatically; it can be changed in the help sheet.
+
 ## Running it
 
 Open `index.html` in a browser. No install, no build, no server: progress is saved in the browser.
 
 - `index.html?testads`: simulates ads locally, to check that the game pauses and mutes during them.
+- `index.html?lang=de`: opens the game in a given language (en, es, pt, fr, de, tr).
 - `node tools/balance.js`: simulates players to check the difficulty curve.
 - `node tools/journey.js`: re-picks the journey boards so each level has the intended difficulty.
 
@@ -41,6 +46,7 @@ rules.js        game rules shared by the game, the simulated player and the tool
 bot.js          simulated players (daily par, journey star goals)
 meta.js         journey stars, missions, themes
 platform.js     web-portal adapter (Poki, later CrazyGames)
+i18n.js         translations
 sound.js        synthesised sound effects and vibration
 mascot.js       Nine the mascot and confetti
 styles.css      look and layout (portrait and 16:9 landscape)

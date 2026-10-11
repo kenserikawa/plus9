@@ -30,7 +30,7 @@
     <!-- ===== Home ===== -->
     <section class="screen home" id="home" hidden>
         <header class="home-top">
-            <button class="icon-btn help-btn" type="button" aria-label="How to play" aria-keyshortcuts="H">?</button>
+            <button class="icon-btn help-btn" type="button" aria-label="How to play" data-i18n-aria="nav.help" aria-keyshortcuts="H">?</button>
             <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><span class="mascot mascot-title" aria-hidden="true"></span></h1>
             <button class="icon-btn sound-btn" type="button" aria-label="Sound" aria-pressed="true" aria-keyshortcuts="M">
                 <svg><use href="#i-sound-on" /></svg>
@@ -38,33 +38,33 @@
         </header>
 
         <button class="journey-card" id="go-journey" type="button">
-            <span class="card-title outline">Journey</span>
+            <span class="card-title outline" data-i18n="mode.journey">Journey</span>
             <span class="card-sub" id="journey-sub">Level 1</span>
             <span class="card-stars"><span aria-hidden="true">★</span> <span id="star-total">0</span></span>
         </button>
 
         <div class="mode-cards">
             <button class="mode-card" type="button" data-start="daily">
-                <span class="mode-name">Daily</span>
+                <span class="mode-name" data-i18n="mode.daily">Daily</span>
                 <span class="mode-info" id="info-daily"></span>
             </button>
             <button class="mode-card" type="button" data-start="classic">
-                <span class="mode-name">Classic</span>
+                <span class="mode-name" data-i18n="mode.classic">Classic</span>
                 <span class="mode-info" id="info-classic"></span>
             </button>
             <button class="mode-card" type="button" data-start="timed">
-                <span class="mode-name">60 seconds</span>
+                <span class="mode-name" data-i18n="mode.timed">60 seconds</span>
                 <span class="mode-info" id="info-timed"></span>
             </button>
         </div>
 
         <section class="panel missions" aria-labelledby="missions-title">
-            <h2 class="panel-title" id="missions-title">Today's missions</h2>
+            <h2 class="panel-title" id="missions-title" data-i18n="home.missions">Today's missions</h2>
             <ul class="mission-list" id="missions"></ul>
         </section>
 
         <section class="panel themes" aria-labelledby="themes-title">
-            <h2 class="panel-title" id="themes-title">Themes</h2>
+            <h2 class="panel-title" id="themes-title" data-i18n="home.themes">Themes</h2>
             <div class="theme-list" id="themes"></div>
         </section>
     </section>
@@ -72,10 +72,10 @@
     <!-- ===== Journey map ===== -->
     <section class="screen map" id="map" hidden>
         <header class="bar">
-            <button class="icon-btn home-btn" type="button" aria-label="Home">
+            <button class="icon-btn home-btn" type="button" aria-label="Home" data-i18n-aria="nav.home">
                 <svg><use href="#i-home" /></svg>
             </button>
-            <h2 class="bar-title outline">Journey</h2>
+            <h2 class="bar-title outline" data-i18n="mode.journey">Journey</h2>
             <p class="stars-pill"><span aria-hidden="true">★</span> <span id="map-stars">0</span></p>
         </header>
         <ol class="route scroll" id="route"></ol>
@@ -84,11 +84,11 @@
     <!-- ===== Game ===== -->
     <main class="screen game" id="game" hidden>
         <header class="bar game-bar">
-            <button class="icon-btn home-btn" type="button" aria-label="Home">
+            <button class="icon-btn home-btn" type="button" aria-label="Home" data-i18n-aria="nav.home">
                 <svg><use href="#i-home" /></svg>
             </button>
             <h2 class="bar-title outline" id="game-title">Classic</h2>
-            <button class="icon-btn pause-btn" type="button" aria-label="Pause" aria-keyshortcuts="Escape">
+            <button class="icon-btn pause-btn" type="button" aria-label="Pause" data-i18n-aria="nav.pause" aria-keyshortcuts="Escape">
                 <svg><use href="#i-pause" /></svg>
             </button>
             <button class="icon-btn sound-btn" type="button" aria-label="Sound" aria-pressed="true" aria-keyshortcuts="M">
@@ -97,7 +97,7 @@
         </header>
 
         <div class="hud">
-            <p class="hud-item"><span class="hud-label">Score</span> <span id="score" class="hud-value">0</span></p>
+            <p class="hud-item"><span class="hud-label" data-i18n="hud.score">Score</span> <span id="score" class="hud-value">0</span></p>
             <p class="hud-item"><span class="hud-label" id="hud2-label">Level</span> <span id="hud2" class="hud-value">1</span></p>
             <p class="hud-item"><span class="hud-label" id="hud3-label">Best</span> <span id="hud3" class="hud-value">0</span></p>
         </div>
@@ -113,7 +113,7 @@
             </div>
 
             <div class="levelup" id="levelup" role="status" hidden>
-                <p class="levelup-title outline">Level <span id="lu-level">2</span></p>
+                <p class="levelup-title outline" id="lu-title">Level 2</p>
                 <p class="levelup-target">
                     <span class="lu-old" id="lu-old">9</span>
                     <span class="lu-arrow" aria-label="becomes">→</span>
@@ -125,16 +125,16 @@
 
         <div class="actions">
             <span class="mascot mascot-game" aria-hidden="true"></span>
-            <p class="next">Next <span class="next-tile" id="next" aria-live="polite"></span></p>
+            <p class="next"><span data-i18n="act.next">Next</span> <span class="next-tile" id="next" aria-live="polite"></span></p>
             <p class="clock" id="clock" hidden><span id="clock-time">1:00</span></p>
             <button class="shuffle" id="shuffle" type="button" aria-keyshortcuts="S">
-                Shuffle <span class="shuffle-badge" id="shuffle-badge">1</span>
+                <span data-i18n="act.shuffle">Shuffle</span> <span class="shuffle-badge" id="shuffle-badge">1</span>
             </button>
             <button class="bank" id="bank" type="button" aria-keyshortcuts="B" hidden>
-                Bank <span class="bank-badge" id="bank-badge">0</span>
+                <span id="bank-label">Bank</span> <span class="bank-badge" id="bank-badge">0</span>
             </button>
-            <button class="reward" id="reward" type="button" hidden aria-label="Watch an ad for a free shuffle">
-                <span aria-hidden="true">🎬</span> Free shuffle
+            <button class="reward" id="reward" type="button" hidden aria-label="Watch an ad for a free shuffle" data-i18n-aria="aria.reward">
+                <span aria-hidden="true">🎬</span> <span data-i18n="act.freeShuffle">Free shuffle</span>
             </button>
         </div>
     </main>
@@ -146,7 +146,7 @@
         <h2 class="sheet-title over-title outline" id="over-title">Game over</h2>
         <p class="result-stars" id="over-stars" hidden></p>
         <p class="over-reason" id="over-reason"></p>
-        <p class="over-score">Score <strong id="over-score">0</strong></p>
+        <p class="over-score"><span data-i18n="hud.score">Score</span> <strong id="over-score">0</strong></p>
         <p class="over-stats" id="over-stats"></p>
         <div class="compare" id="over-compare" hidden>
             <span class="compare-bar"><span class="compare-fill" id="compare-fill"></span></span>
@@ -157,70 +157,69 @@
             <p class="daily-par" id="daily-par"></p>
             <p class="daily-streak" id="daily-streak"></p>
             <p class="daily-next" id="daily-next"></p>
-            <button class="btn btn-share" id="share" type="button">Share result</button>
+            <button class="btn btn-share" id="share" type="button" data-i18n="share.btn">Share result</button>
         </div>
         <div class="sheet-actions">
             <button class="btn" id="again" type="button" autofocus>Play again</button>
             <button class="btn btn-quiet" id="over-secondary" type="button">Home</button>
+            <button class="reward" id="over-reward" type="button" hidden>
+                <span aria-hidden="true">🎬</span> <span id="over-reward-label">Take it back</span>
+            </button>
         </div>
     </dialog>
 
-    <dialog class="sheet intro" id="intro" aria-labelledby="intro-title">
-        <h2 class="sheet-title outline" id="intro-title">Level 1</h2>
-        <p class="intro-goal" id="intro-goal"></p>
-        <ul class="star-goals" id="intro-stars"></ul>
-        <div class="sheet-actions">
-            <button class="btn" id="intro-play" type="button" autofocus>Play</button>
-            <button class="btn btn-quiet" id="intro-back" type="button">Back</button>
-        </div>
-    </dialog>
 
     <dialog class="sheet help" id="help" aria-labelledby="help-title">
-        <h2 class="sheet-title outline" id="help-title">How to play</h2>
+        <h2 class="sheet-title outline" id="help-title" data-i18n="help.title">How to play</h2>
         <ul class="rules">
             <li>
                 <span class="rule-icon" aria-hidden="true"><span class="mini-tile">4</span></span>
-                <p><strong>Hit the number exactly.</strong> Drag or tap tiles into the middle until they add up to the target.</p>
+                <p><strong data-i18n="help.r1.t">Hit the number exactly.</strong> <span data-i18n="help.r1.b">Drag or tap tiles into the middle until they add up to the target.</span></p>
             </li>
             <li>
                 <span class="rule-icon" aria-hidden="true">+</span>
-                <p><strong>Long chains, one color.</strong> A sum is worth the tiles you used times your level. All one color? Double points.</p>
+                <p><strong data-i18n="help.r2.t">Long chains, one color.</strong> <span data-i18n="help.r2.b">A sum is worth the tiles you used times your level. All one color? Double points.</span></p>
             </li>
             <li>
                 <span class="rule-icon is-gold" aria-hidden="true">★</span>
-                <p><strong>Special tiles.</strong> A ★ wild tile finishes any sum. A ×2 tile doubles the points of its sum. Frozen tiles thaw after 2 sums.</p>
+                <p><strong data-i18n="help.r3.t">Special tiles.</strong> <span data-i18n="help.r3.b">A ★ wild tile finishes any sum. A ×2 tile doubles the points of its sum. Frozen tiles thaw after 2 sums.</span></p>
             </li>
             <li>
                 <span class="rule-icon" aria-hidden="true"><span class="mini-tile is-next">6</span></span>
-                <p><strong>Plan with Next.</strong> It's the number that replaces the tile you play.</p>
+                <p><strong data-i18n="help.r4.t">Plan with Next.</strong> <span data-i18n="help.r4.b">It's the number that replaces the tile you play.</span></p>
             </li>
             <li>
                 <span class="rule-icon is-danger" aria-hidden="true">!</span>
-                <p><strong>Don't go over.</strong> If no tile fits, shuffle: free ones first, then you pay points. You can also bank your points and stop, or watch an ad 🎬 where offered.</p>
+                <p><strong data-i18n="help.r5.t">Don't go over.</strong> <span data-i18n="help.r5.b">If no tile fits, shuffle: free ones first, then you pay points. You can also bank your points and stop, or watch an ad 🎬 where offered.</span></p>
             </li>
             <li>
                 <span class="rule-icon is-gold" aria-hidden="true">⚑</span>
-                <p><strong>Journey.</strong> Beat levels for up to 3 stars. Stars and daily missions unlock themes.</p>
+                <p><strong data-i18n="help.r6.t">Journey.</strong> <span data-i18n="help.r6.b">Beat levels for up to 3 stars. Stars and daily missions unlock themes.</span></p>
             </li>
             <li>
                 <span class="rule-icon" aria-hidden="true">1</span>
-                <p><strong>Daily, Classic, 60 seconds.</strong> The same board for everyone each day; an endless game where the target keeps growing; a race against the clock.</p>
+                <p><strong data-i18n="help.r7.t">Daily, Classic, 60 seconds.</strong> <span data-i18n="help.r7.b">The same board for everyone each day; an endless game where the target keeps growing; a race against the clock.</span></p>
             </li>
         </ul>
         <ul class="keys" aria-label="Keyboard">
-            <li><kbd>Tab</kbd> + <kbd>Enter</kbd> play a tile</li>
-            <li><kbd>S</kbd> shuffle</li>
-            <li><kbd>B</kbd> bank</li>
-            <li><kbd>M</kbd> sound</li>
-            <li><kbd>Esc</kbd> pause</li>
+            <li><kbd>Tab</kbd> + <kbd>Enter</kbd> <span data-i18n="key.play">play a tile</span></li>
+            <li><kbd>S</kbd> <span data-i18n="key.shuffle">shuffle</span></li>
+            <li><kbd>B</kbd> <span data-i18n="key.bank">bank</span></li>
+            <li><kbd>M</kbd> <span data-i18n="key.sound">sound</span></li>
+            <li><kbd>Esc</kbd> <span data-i18n="key.pause">pause</span></li>
         </ul>
+        <label class="lang-pick">
+            <span data-i18n="help.language">Language</span>
+            <select id="lang"></select>
+        </label>
         <div class="sheet-actions">
             <button class="btn" id="help-close" type="button">Resume</button>
-            <button class="btn btn-quiet" id="help-home" type="button" hidden>Home</button>
+            <button class="btn btn-quiet" id="help-home" type="button" hidden data-i18n="nav.home">Home</button>
         </div>
     </dialog>
 
     <script src="platform.js"></script>
+    <script src="i18n.js"></script>
     <script src="rules.js"></script>
     <script src="bot.js"></script>
     <script src="meta.js"></script>

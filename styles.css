@@ -822,7 +822,7 @@ body {
 .reward:disabled { cursor: wait; opacity: 0.6; }
 
 /* these pills set display, which would otherwise override the hidden attribute */
-.next[hidden], .bank[hidden], .reward[hidden] { display: none; }
+.next[hidden], .bank[hidden], .reward[hidden], .bank-badge[hidden] { display: none; }
 
 /* while a portal ad plays, the game takes no input */
 body.is-ad .game { pointer-events: none; }
@@ -994,6 +994,29 @@ body.is-ad .game { pointer-events: none; }
 .mini-tile { --o: 2px; color: var(--sky); }
 .mini-tile.is-next { color: var(--magenta); }
 
+/* language picker in the help sheet */
+.lang-pick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-weight: 700;
+    color: var(--muted);
+}
+.lang-pick select {
+    font: inherit;
+    font-weight: 700;
+    padding: 4px 30px 4px 12px;
+    color: var(--ink);
+    background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231d0f38' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 10px center / 12px;
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    appearance: none;
+    cursor: pointer;
+}
+.lang-pick select:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+
 /* keyboard hints: each key stays with its action; hidden where there is no keyboard */
 .keys {
     display: flex;
@@ -1048,11 +1071,6 @@ kbd {
 .btn.btn-quiet { color: var(--ink); background: var(--paper); }
 .btn[hidden] { display: none; }
 
-.intro-goal { margin: 0 0 12px; font-size: 1.15rem; font-weight: 700; }
-.star-goals { margin: 0 0 18px; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; }
-.star-goals li { display: grid; grid-template-columns: 3.4em 1fr; align-items: center; gap: 8px; padding: 6px 12px; background: var(--track); border-radius: 12px; font-weight: 700; }
-.star-goals li.is-earned { background: #fff1c2; }
-.goal-stars { color: var(--gold); text-shadow: 0 1px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink), 0 -1px 0 var(--ink); }
 
 .float.is-combo { color: var(--gold); font-size: 2.4rem; }
 
@@ -1076,6 +1094,8 @@ kbd {
     .hud { gap: 6px; }
     .hud-item { gap: 5px; padding: 2px 9px; font-size: 1.1rem; }
     .hud-value { font-size: 1.4rem; min-width: 0; }
+    /* the three stars explain themselves; dropping the word keeps the HUD on one row in every language */
+    .hud-item:has(.hud-star) .hud-label { display: none; }
 
     /* the actions row can hold clock + shuffle + bank with big numbers */
     .actions { gap: 6px; flex-wrap: wrap; justify-content: center; }

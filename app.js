@@ -5,7 +5,6 @@ const DAILY_EPOCH = '2026-10-11' // daily #1 — set to the launch date before p
 const TIMED_SECONDS = 60
 const TIME_BONUS = 2      // seconds added per completed sum in timed mode
 const LEVEL_UP_MS = 1700  // how long the level-up card stays on screen
-const MODE_NAMES = { classic: 'Classic', timed: '60 seconds', daily: 'Daily', journey: 'Journey' }
 
 const $ = id => document.getElementById(id)
 const screens = { home: $('home'), map: $('map'), game: $('game') }
@@ -32,8 +31,8 @@ const dialog = $('over')
 const againBtn = $('again')
 const secondaryBtn = $('over-secondary')
 const shareBtn = $('share')
+const reviveBtn = $('over-reward')
 const help = $('help')
-const intro = $('intro')
 
 // ---------- state ----------
 
@@ -47,6 +46,7 @@ let level = 0       // 0-based difficulty; shown to the player as level + 1
 let freeShuffles = 1
 let paidShuffles = 0
 let stuck = false
+let revived = false  // the one 🎬 take-back per game has been used
 let playing = false
 let resolving = false // a completed sum (or the level-up card) is still on show
 let mode = 'classic'  // classic | timed | daily | journey
@@ -74,6 +74,8 @@ const randomTile = () => drawTile(level, rng, specialsOn())
 const WILD_COLOR = '#ffd23f' // ring color for the part a wild tile fills
 const shuffleCost = () => shuffleCostFor(level, paidShuffles)
 const canShuffle = () => freeShuffles > 0 || score >= shuffleCost()
+// the daily is one attempt for everyone, so it never offers a take-back
+const canRevive = () => platform.hasRewarded && !revived && mode !== 'daily'
 
 // ---------- board setup ----------
 
@@ -136,10 +138,10 @@ function renderTile(tile) {
     if (tile.special === 'double') el.insertAdjacentHTML('beforeend', '<span class="tile-badge" aria-hidden="true">×2</span>')
     if (tile.ice > 0) el.insertAdjacentHTML('beforeend', `<span class="tile-ice" aria-hidden="true">${tile.ice}</span>`)
     el.setAttribute('aria-label',
-        tile.ice > 0 ? `${tile.value}, frozen for ${tile.ice} more ${tile.ice === 1 ? 'sum' : 'sums'}`
-        : wild ? 'Wild tile: finishes the sum'
-        : tile.special === 'double' ? `Add ${tile.value}, doubles the points`
-        : `Add ${tile.value}`)
+        tile.ice > 0 ? tr('tile.frozen', { n: tile.value, k: tile.ice })
+        : wild ? tr('tile.wild')
+        : tile.special === 'double' ? tr('tile.double', { n: tile.value })
+        : tr('tile.add', { n: tile.value }))
 }
 
 function takeNext() {
@@ -170,12 +172,13 @@ function play(tile) {
         render()
         bump(well, 'shake')
         sfx.overshoot()
-        return gameOver(`${total - value} + ${value} = ${total}. That's over ${goal}.`)
+        const reason = { k: 'reason.over', v: { a: total - value, b: value, total, goal } }
+        return canRevive() ? offerRevive(value, reason) : gameOver(reason)
     }
 
     sum = total
     parts.push({ value, color: tile.special === 'wild' ? WILD_COLOR : tile.color, special: tile.special })
-    if (tile.special === 'wild') floatText(well, 'Wild!', 'is-combo')
+    if (tile.special === 'wild') floatText(well, tr('float.wild'), 'is-combo')
     setTile(tile, takeNext())
 
     if (sum === goal) return completeSum()
@@ -203,7 +206,7 @@ function completeSum() {
     render()
     bump(well, 'match')
     bump(scoreEl, 'bump')
-    const bonus = [combo && 'combo', doubles && `×${2 ** doubles}`].filter(Boolean).join(' ')
+    const bonus = [combo && tr('float.combo'), doubles && `×${2 ** doubles}`].filter(Boolean).join(' ')
     floatText(well, bonus ? `+${points} ${bonus}!` : `+${points}`, bonus ? 'is-combo' : '')
     thawIce()
     sfx.complete(parts.length)
@@ -225,7 +228,7 @@ function completeSum() {
         sum = 0
         parts = []
         if (mode === 'journey' && sums === journeyDef.sums) return finishJourney(true)
-        if (mode === 'daily' && sums === DAILY_SUMS) return gameOver(`You finished all ${DAILY_SUMS} sums.`, false, true)
+        if (mode === 'daily' && sums === DAILY_SUMS) return gameOver({ k: 'reason.dailyDone', v: { n: DAILY_SUMS } }, false, true)
         if (mode !== 'journey' && sums % SUMS_PER_LEVEL === 0) return levelUp()
         resolving = false
         render()
@@ -241,10 +244,10 @@ function levelUp() {
     next = randomTile()
 
     // the new target gets its own moment: a card over the board, then the well shows it big
-    $('lu-level').textContent = level + 1
+    $('lu-title').textContent = tr('lu.title', { n: level + 1 })
     $('lu-old').textContent = from
     $('lu-new').textContent = target()
-    $('lu-note').textContent = gainsShuffle ? 'New target. +1 free shuffle' : 'New target'
+    $('lu-note').textContent = tr(gainsShuffle ? 'lu.noteShuffle' : 'lu.note')
     levelUpEl.hidden = false
     bump(levelUpEl, 'is-showing')
     platform.gameplayStop()
@@ -282,7 +285,7 @@ function checkStuck() {
     tutorial('stuck')
     // with rewarded ads the player can still watch one for a free shuffle, or give up / bank
     if (canShuffle() || platform.hasRewarded) return render()
-    gameOver(`You needed ${need} or less, every tile is bigger, and a shuffle costs ${shuffleCost()} points.`)
+    gameOver({ k: 'reason.stuck', v: { need, cost: shuffleCost() } })
 }
 
 // 🎬 watch an ad for a free shuffle; offered only when stuck with no free shuffle
@@ -293,17 +296,59 @@ async function rewardShuffle() {
     rewardBtn.disabled = false
     if (!watched || !playing || !stuck) return render()
     freeShuffles++
-    floatText(shuffleBtn, 'Free!')
+    floatText(shuffleBtn, tr('float.free'))
     shuffle()
+}
+
+// going over the target: before the game ends, offer one 🎬 ad to take the tile back.
+// The tile never left the board, so taking it back only lowers the sum again.
+function offerRevive(value, reason) {
+    resolving = true // blocks the board while the offer is up
+    platform.gameplayStop()
+    pauseClock()
+    mascot.mood('worried', { hold: true })
+    const end = () => {
+        resolving = false
+        gameOver(reason)
+    }
+    showResult({
+        title: tr('rev.title'),
+        happy: false,
+        reason: say(reason),
+        stats: tr('rev.offer'),
+        primary: { label: tr('rev.end'), action: end },
+        reward: {
+            label: tr('rev.btn'),
+            action: async () => {
+                revived = true
+                const id = gameId
+                // the ad goes up after the sheet closes: a modal dialog would sit above it
+                const watched = await platform.rewardedBreak()
+                if (id !== gameId) return
+                if (!watched) return end()
+                resolving = false
+                sum -= value
+                render()
+                bump(well, 'pop-in')
+                floatText(well, tr('float.revive'), 'is-combo')
+                mascot.mood('happy')
+                if (!help.open) resumeClock()
+                checkStuck()
+            },
+        },
+    })
+    setTimeout(() => {
+        if (playing && resolving && !dialog.open) dialog.showModal()
+    }, 500)
 }
 
 // stuck with no free shuffle: stop now instead of paying (in the journey this gives up the level)
 function bank() {
     if (!playing || !stuck || freeShuffles > 0 || platform.adShowing) return
-    if (mode === 'journey') return finishJourney(false, 'You gave up this attempt.')
+    if (mode === 'journey') return finishJourney(false, { k: 'reason.gaveUp' })
     gameOver(canShuffle()
-        ? `You banked your points instead of paying ${shuffleCost()} for a shuffle.`
-        : 'You were stuck and banked your points.', true)
+        ? { k: 'reason.bankPaid', v: { cost: shuffleCost() } }
+        : { k: 'reason.bankStuck' }, true)
 }
 
 function shuffle() {
@@ -375,22 +420,23 @@ function gameOver(reason, banked = false, completed = false) {
     }
     render()
     showResult({
-        title: banked ? 'Banked!' : 'Game over',
+        title: tr(banked ? 'res.banked' : 'res.over'),
         happy: banked,
-        reason,
+        reason: say(reason),
         stats: gameStats(),
         compare: { score, best: previous },
-        primary: { label: 'Play again', action: () => startGame(mode) },
-        secondary: { label: 'Home', action: goHome },
+        primary: { label: tr('res.again'), action: () => startGame(mode) },
+        secondary: { label: tr('nav.home'), action: goHome },
     })
     setTimeout(() => dialog.showModal(), 500)
 }
 
+// a reason is a translation key with values, or (older saved dailies) a ready string
+const say = reason => (typeof reason === 'string' ? reason : tr(reason.k, reason.v))
+
 function gameStats() {
-    const chain = bestChain ? ` Best chain ${bestChain} tiles` : ''
-    const combo = combos ? `, ${combos} color ${combos === 1 ? 'combo' : 'combos'}` : ''
-    const lv = mode === 'journey' ? '' : `, level ${level + 1}` // a journey level has one fixed target
-    return `${sums} ${sums === 1 ? 'sum' : 'sums'}${lv}.${chain}${combo}${chain ? '.' : ''}`
+    // a journey level has one fixed target, so its level number adds nothing
+    return tr('stats', { sums, lv: mode === 'journey' ? 0 : level + 1, chain: bestChain, combos })
 }
 
 // ---------- journey ----------
@@ -415,79 +461,63 @@ function finishJourney(won, reason) {
     }
     render()
     showResult({
-        title: won ? (stars === 3 ? 'Perfect!' : 'Level complete!') : 'Try again',
+        title: tr(won ? (stars === 3 ? 'res.perfect' : 'res.complete') : 'res.tryAgain'),
         happy: won,
         stars: won ? stars : null,
-        reason: won ? starReason(stars) : reason,
+        reason: won ? starReason(stars) : say(reason),
         stats: gameStats(),
+        // straight into the next level: its goal shows as a coach tip, no extra screen
         primary: won
-            ? { label: 'Next level', action: () => openIntro(n + 1) }
-            : { label: 'Retry', action: () => startGame('journey', n) },
+            ? { label: tr('res.next'), action: () => startGame('journey', n + 1) }
+            : { label: tr('res.retry'), action: () => startGame('journey', n) },
         secondary: won
-            ? { label: stars < 3 ? 'Retry' : 'Map', action: stars < 3 ? () => startGame('journey', n) : openMap }
-            : { label: 'Map', action: openMap },
+            ? { label: tr(stars < 3 ? 'res.retry' : 'res.map'), action: stars < 3 ? () => startGame('journey', n) : openMap }
+            : { label: tr('res.map'), action: openMap },
     })
     setTimeout(() => dialog.showModal(), 500)
 }
 
 function starReason(stars) {
-    if (stars === 3) return 'All three stars.'
-    return `Score ${journeyGoals[stars]} for ${'★'.repeat(stars + 1)}.`
+    if (stars === 3) return tr('res.allStars')
+    return tr('res.scoreFor', { n: journeyGoals[stars], stars: '★'.repeat(stars + 1) })
 }
 
 function openMap() {
     showScreen('map')
 }
 
-function openIntro(n) {
-    const def = journeyLevel(n)
-    const goals = journeyStars(def)
-    const have = meta.journeyStarsOf(n)
-    $('intro-title').textContent = `Level ${n}`
-    $('intro-goal').textContent = `Make ${def.target}, ${def.sums} times.`
-    const rows = [
-        ['★', `Finish all ${def.sums} sums`],
-        ['★★', `Score ${goals[1]}`],
-        ['★★★', `Score ${goals[2]}`],
-    ]
-    $('intro-stars').replaceChildren(...rows.map(([stars, text], i) => {
-        const li = document.createElement('li')
-        li.classList.toggle('is-earned', have > i)
-        li.innerHTML = `<span class="goal-stars" aria-hidden="true">${stars}</span> <span>${text}</span>`
-        return li
-    }))
-    intro.dataset.level = n
-    sfx.ui()
-    if (!intro.open) intro.showModal()
-}
 
 // coach tips: level 1 walks through a first sum, levels 2–4 introduce one idea each
 function tutorial(event) {
     if (mode !== 'journey') return
     const n = journeyDef.n
-    const later = { 6: '★ is a wild tile: it finishes any sum!', 7: '×2 tiles double the points of their sum.', 11: 'Frozen tiles thaw after 2 sums.' }
+    const later = { 6: 'tut.wild', 7: 'tut.double', 11: 'tut.ice' }
     if (later[n]) {
         if (event === 'start') {
-            coachSay(later[n], 6000)
+            coachSay(tr(later[n]), 6000)
             const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 11: t => t.ice > 0 }[n]
             tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
         }
         return
     }
-    if (n > 4) return
+    if (n > 4) {
+        // no lesson on this level: say what it asks for, since there is no intro screen
+        if (event === 'start') coachSay(tr('coach.goal', { target: journeyDef.target, sums: journeyDef.sums, two: journeyGoals[1], three: journeyGoals[2] }), 5000)
+        return
+    }
     if (n === 1) {
         if (event === 'start') {
             tutorialStep = 1
-            coachSay('Drag the 4 into the middle. Or just tap it.')
+            coachSay(tr('tut.drag'))
             hintTile(4)
         } else if (event === 'added' && tutorialStep === 1) {
             tutorialStep = 2
             const need = target() - sum
-            coachSay(`Now add ${need} to make ${target()} exactly.`)
+            coachSay(tr('tut.add', { need, target: target() }))
             hintTile(need)
         } else if (event === 'completed' && tutorialStep === 2) {
             tutorialStep = 3
-            coachSay('Yes! More tiles in one sum = more points. Try 3 tiles!', 5000)
+            coachSay(tr('tut.yes'), 5000)
             hintTile(null)
             mascot.mood('cheer', { ms: 2000 })
             confettiFrom(well, 48)
@@ -495,12 +525,8 @@ function tutorial(event) {
         return
     }
     if (event !== 'start' && !(n === 4 && event === 'stuck')) return
-    const tips = {
-        2: 'Next is the number that replaces the tile you play.',
-        3: 'All one color in a sum? Double points!',
-        4: 'Stuck? Shuffle rerolls the board. The first one is free.',
-    }
-    coachSay(tips[n], 6000)
+    const tips = { 2: 'tut.next', 3: 'tut.combo', 4: 'tut.shuffle' }
+    coachSay(tr(tips[n]), 6000)
 }
 
 function hintTile(value) {
@@ -527,7 +553,6 @@ function hideCoach() {
 
 async function startGame(m, n = 1) {
     if (dialog.open) dialog.close()
-    if (intro.open) intro.close()
     mode = m
     if (m === 'journey') {
         journeyDef = journeyLevel(n)
@@ -547,7 +572,7 @@ function goHome() {
     gameId++
     playing = false
     hideCoach()
-    for (const d of [dialog, help, intro]) if (d.open) d.close()
+    for (const d of [dialog, help]) if (d.open) d.close()
     showScreen('home')
 }
 
@@ -564,6 +589,7 @@ function newGame() {
     freeShuffles = 1
     paidShuffles = 0
     stuck = false
+    revived = false
     resolving = false
     playing = true
     deadline = 0
@@ -578,7 +604,9 @@ function newGame() {
     gen = null
     rng = Math.random
     clockEl.hidden = mode !== 'timed'
-    $('game-title').textContent = mode === 'journey' ? `Level ${journeyDef.n}` : mode === 'daily' ? `Daily #${dailyNumber()}` : MODE_NAMES[mode]
+    $('game-title').textContent = mode === 'journey' ? tr('home.level', { n: journeyDef.n })
+        : mode === 'daily' ? tr('daily.title', { n: dailyNumber() })
+        : tr(`mode.${mode}`)
 
     if (mode === 'daily') {
         const saved = readDaily()
@@ -594,7 +622,7 @@ function newGame() {
             return
         }
         if (saved && saved.state) return restoreDaily(saved.state)
-        coachSay(`Today's par is ${todaysPar()}. Can you beat it?`, 4500)
+        coachSay(tr('coach.par', { par: todaysPar() }), 4500)
     }
 
     if (mode === 'journey') {
@@ -636,7 +664,7 @@ function startClock(ms) {
         const second = Math.ceil(left / 1000)
         if (second !== lastSecond && second <= 10 && second > 0) sfx.tick(second <= 3)
         lastSecond = second
-        if (left <= 0) gameOver("Time's up.")
+        if (left <= 0) gameOver({ k: 'reason.time' })
     }, 100)
 }
 
@@ -673,15 +701,15 @@ function render() {
     // an empty well shows the target itself, big, so it is always in view
     sumEl.textContent = empty ? goal : sum
     needEl.textContent =
-        sum > goal ? 'Too much'
-        : sum === goal ? 'Got it!'
-        : stuck ? 'No moves'
-        : empty ? 'Make'
-        : `needs ${need}`
+        sum > goal ? tr('well.over')
+        : sum === goal ? tr('well.done')
+        : stuck ? tr('well.stuck')
+        : empty ? tr('well.make')
+        : tr('well.needs', { n: need })
     well.classList.toggle('is-over', sum > goal)
     well.classList.toggle('is-stuck', stuck)
     well.classList.toggle('is-empty', empty)
-    well.setAttribute('aria-label', empty ? `Make ${goal}` : `${sum} of ${goal}`)
+    well.setAttribute('aria-label', tr(empty ? 'aria.wellEmpty' : 'aria.wellSum', { goal, sum }))
 
     // fill one ring segment per point, coloured by the tile that supplied it
     const colors = parts.flatMap(p => Array(p.value).fill(p.color))
@@ -699,8 +727,8 @@ function render() {
     shuffleBtn.disabled = !playing || !canShuffle()
     shuffleBtn.classList.toggle('nudge', stuck && canShuffle())
     shuffleBtn.setAttribute('aria-label', freeShuffles > 0
-        ? `Shuffle all tiles, ${freeShuffles} free left`
-        : `Shuffle all tiles for ${cost} points`)
+        ? tr('aria.shuffleFree', { n: freeShuffles })
+        : tr('aria.shufflePaid', { n: cost }))
 
     // stuck with no free shuffle: the choices replace the Next pill
     const choosing = playing && stuck && freeShuffles === 0
@@ -708,10 +736,10 @@ function render() {
     bankBtn.hidden = !choosing
     rewardBtn.hidden = !(choosing && platform.hasRewarded)
     const giveUp = mode === 'journey'
-    bankBtn.firstChild.textContent = giveUp ? 'Give up ' : 'Bank '
+    $('bank-label').textContent = tr(giveUp ? 'act.giveUp' : 'act.bank')
     bankBadge.hidden = giveUp
     bankBadge.textContent = score
-    bankBtn.setAttribute('aria-label', giveUp ? 'Give up this attempt' : `End the game and keep ${score} points`)
+    bankBtn.setAttribute('aria-label', giveUp ? tr('aria.giveUp') : tr('aria.bank', { n: score }))
 
     scoreEl.textContent = score
     renderHud()
@@ -726,7 +754,7 @@ function renderHud() {
     }
     if (mode === 'journey') {
         const earned = starsFor(sums >= journeyDef.sums, score)
-        set('hud2-label', 'hud2', 'Stars', '')
+        set('hud2-label', 'hud2', tr('hud.stars'), '')
         // solid stars like the result sheet: gold when earned, pale when not
         hud2El.replaceChildren(...[0, 1, 2].map(i => {
             const star = document.createElement('span')
@@ -734,15 +762,16 @@ function renderHud() {
             star.textContent = '★'
             return star
         }))
-        hud2El.setAttribute('aria-label', `${earned} of 3 stars`)
-        set('hud3-label', 'hud3', 'Sums', `${sums}/${journeyDef.sums}`)
+        hud2El.setAttribute('aria-label', tr('aria.stars', { n: earned }))
+        set('hud3-label', 'hud3', tr('hud.sums'), `${sums}/${journeyDef.sums}`)
     } else if (mode === 'daily') {
-        set('hud2-label', 'hud2', 'Sums', `${sums}/${DAILY_SUMS}`)
-        set('hud3-label', 'hud3', 'Par', todaysPar())
-    } else {
-        set('hud2-label', 'hud2', 'Level', level + 1)
         hud2El.removeAttribute('aria-label')
-        set('hud3-label', 'hud3', 'Best', Math.max(best, score))
+        set('hud2-label', 'hud2', tr('hud.sums'), `${sums}/${DAILY_SUMS}`)
+        set('hud3-label', 'hud3', tr('hud.par'), todaysPar())
+    } else {
+        set('hud2-label', 'hud2', tr('hud.level'), level + 1)
+        hud2El.removeAttribute('aria-label')
+        set('hud3-label', 'hud3', tr('hud.best'), Math.max(best, score))
     }
 }
 
@@ -776,7 +805,7 @@ function toast(text) {
 // completed missions earn a star
 function celebrate(completed) {
     for (const m of completed) {
-        toast(`Mission done: ${m.text}. +1 ★`)
+        toast(tr('toast.mission', { text: tr(`mission.${m.id}`) }))
         sfx.bank()
     }
 }
@@ -785,7 +814,7 @@ function celebrate(completed) {
 
 let resultActions = {}
 
-function showResult({ title, happy, reason, stats, stars = null, compare = null, primary, secondary = null }) {
+function showResult({ title, happy, reason, stats, stars = null, compare = null, primary, secondary = null, reward = null }) {
     const titleEl = $('over-title')
     titleEl.textContent = title
     titleEl.classList.toggle('is-banked', happy)
@@ -803,7 +832,7 @@ function showResult({ title, happy, reason, stats, stars = null, compare = null,
             s.style.animationDelay = `${300 + i * 220}ms`
             return s
         }))
-        starsEl.setAttribute('aria-label', `${stars} of 3 stars`)
+        starsEl.setAttribute('aria-label', tr('aria.stars', { n: stars }))
     }
 
     // how this game compares with the record
@@ -811,7 +840,7 @@ function showResult({ title, happy, reason, stats, stars = null, compare = null,
     compareEl.hidden = !compare || compare.best === 0
     if (compare && compare.best > 0) {
         $('compare-fill').style.width = `${Math.min(100, (100 * compare.score) / compare.best)}%`
-        $('compare-text').textContent = compare.score > compare.best ? `New best! (was ${compare.best})` : `Your best: ${compare.best}`
+        $('compare-text').textContent = tr(compare.score > compare.best ? 'res.newBest' : 'res.yourBest', { n: compare.best })
         compareEl.classList.toggle('is-record', compare.score > compare.best)
     }
 
@@ -819,7 +848,9 @@ function showResult({ title, happy, reason, stats, stars = null, compare = null,
     againBtn.textContent = primary.label
     secondaryBtn.hidden = !secondary
     if (secondary) secondaryBtn.textContent = secondary.label
-    resultActions = { primary: primary.action, secondary: secondary && secondary.action }
+    reviveBtn.hidden = !reward
+    if (reward) $('over-reward-label').textContent = reward.label
+    resultActions = { primary: primary.action, secondary: secondary && secondary.action, reward: reward && reward.action }
 }
 
 // ---------- input: tap, keyboard and pointer drag ----------
@@ -986,8 +1017,8 @@ function dailyGrid(result) {
 }
 
 function shareText(result, url) {
-    const par = result.par ? ` (par ${result.par})` : ''
-    return `Plus 9 Daily #${result.number}: ${result.score} points${par}\n${dailyGrid(result)}${url ? `\n${url}` : ''}`
+    const head = tr('share.text', { num: result.number, score: result.score, par: result.par })
+    return `${head}\n${dailyGrid(result)}${url ? `\n${url}` : ''}`
 }
 
 let countdownTimer = null
@@ -996,24 +1027,24 @@ function showDailyResult(result) {
     score = result.score
     const par = result.par || todaysPar()
     showResult({
-        title: result.outcome === 'complete' ? 'Daily done!' : result.outcome === 'banked' ? 'Banked!' : 'Game over',
+        title: tr(result.outcome === 'complete' ? 'res.dailyDone' : result.outcome === 'banked' ? 'res.banked' : 'res.over'),
         happy: result.outcome !== 'bust',
-        reason: result.reason,
-        stats: `Daily #${result.number}, ${result.sums} of ${DAILY_SUMS} sums.`,
-        primary: { label: 'Home', action: goHome },
+        reason: say(result.reason),
+        stats: tr('daily.stats', { num: result.number, sums: result.sums, total: DAILY_SUMS }),
+        primary: { label: tr('nav.home'), action: goHome },
     })
     $('daily-grid').textContent = dailyGrid(result)
     $('daily-par').textContent = result.score >= par
-        ? `You beat today's par of ${par}!`
-        : `Today's par: ${par}. ${par - result.score} to go.`
+        ? tr('daily.beat', { par })
+        : tr('daily.toGo', { par, left: par - result.score })
     $('daily-par').classList.toggle('is-beaten', result.score >= par)
     const streak = readStreak()
-    $('daily-streak').textContent = `Streak: ${streak.count} ${streak.count === 1 ? 'day' : 'days'} (best ${streak.best})`
+    $('daily-streak').textContent = tr('daily.streak', { n: streak.count, best: streak.best })
     const tick = () => {
         const midnight = new Date()
         midnight.setHours(24, 0, 0, 0)
         const mins = Math.max(0, Math.ceil((midnight - Date.now()) / 60000))
-        $('daily-next').textContent = `Next daily in ${Math.floor(mins / 60)}h ${mins % 60}m`
+        $('daily-next').textContent = tr('daily.next', { h: Math.floor(mins / 60), m: mins % 60 })
     }
     tick()
     clearInterval(countdownTimer)
@@ -1022,7 +1053,7 @@ function showDailyResult(result) {
     shareBtn.dataset.text = shareText(withPar)
     // the portal knows the public URL of the game (the page itself may be an iframe)
     platform.shareURL().then(url => { if (url) shareBtn.dataset.text = shareText(withPar, url) })
-    shareBtn.textContent = 'Share result'
+    shareBtn.textContent = tr('share.btn')
     if (!dialog.open) dialog.showModal()
 }
 
@@ -1032,10 +1063,10 @@ async function shareDaily() {
     try {
         if (navigator.share) return await navigator.share({ text })
         await navigator.clipboard.writeText(text)
-        shareBtn.textContent = 'Copied!'
+        shareBtn.textContent = tr('share.copied')
     } catch (err) {
         if (err && err.name === 'AbortError') return // the player closed the share sheet
-        shareBtn.textContent = 'Copy failed'
+        shareBtn.textContent = tr('share.failed')
     }
 }
 
@@ -1053,7 +1084,7 @@ function showScreen(name) {
 
 function renderHome() {
     const frontier = meta.journeyFrontier()
-    $('journey-sub').textContent = frontier === 1 ? 'Start here' : `Level ${frontier}`
+    $('journey-sub').textContent = frontier === 1 ? tr('home.start') : tr('home.level', { n: frontier })
     $('star-total').textContent = meta.totalStars()
 
     const daily = readDaily()
@@ -1061,9 +1092,9 @@ function renderHome() {
     const dailyCard = document.querySelector('[data-start="daily"]')
     dailyCard.classList.toggle('is-new', !done)
     const streak = readStreak().count
-    $('info-daily').textContent = done ? `Done${streak ? `, streak ${streak}` : ''}` : `New! Par ${todaysPar()}`
-    $('info-classic').textContent = `Best ${readBest('classic')}`
-    $('info-timed').textContent = `Best ${readBest('timed')}`
+    $('info-daily').textContent = done ? tr('home.done', { streak }) : tr('home.new', { par: todaysPar() })
+    $('info-classic').textContent = tr('home.best', { n: readBest('classic') })
+    $('info-timed').textContent = tr('home.best', { n: readBest('timed') })
 
     $('missions').replaceChildren(...meta.missionList().map(m => {
         const li = document.createElement('li')
@@ -1073,8 +1104,9 @@ function renderHome() {
         li.innerHTML = `<span class="mission-text"></span>
             <span class="mission-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
             <span class="mission-count">${m.done ? '★' : `${m.progress}/${m.goal}`}</span>`
-        li.querySelector('.mission-text').textContent = m.text
-        li.setAttribute('aria-label', `${m.text}: ${m.done ? 'done, +1 star' : `${m.progress} of ${m.goal}`}`)
+        const text = tr(`mission.${m.id}`)
+        li.querySelector('.mission-text').textContent = text
+        li.setAttribute('aria-label', `${text}: ${m.done ? tr('mission.doneAria') : tr('mission.progress', { a: m.progress, b: m.goal })}`)
         return li
     }))
 
@@ -1088,8 +1120,9 @@ function renderHome() {
         b.disabled = locked
         b.setAttribute('aria-pressed', t.id === current)
         b.innerHTML = `<span class="theme-swatch" aria-hidden="true"></span><span class="theme-name"></span>`
-        b.querySelector('.theme-name').textContent = locked ? `★ ${t.stars}` : t.name
-        b.setAttribute('aria-label', locked ? `${t.name}, unlocks at ${t.stars} stars` : `${t.name} theme`)
+        const name = tr(`theme.${t.id}`)
+        b.querySelector('.theme-name').textContent = locked ? `★ ${t.stars}` : name
+        b.setAttribute('aria-label', locked ? tr('theme.locked', { name, n: t.stars }) : tr('theme.aria', { name }))
         b.addEventListener('click', () => {
             meta.setTheme(t.id)
             applyTheme()
@@ -1119,8 +1152,8 @@ function renderMap() {
         b.classList.toggle('is-current', n === frontier)
         b.disabled = locked
         b.innerHTML = locked ? '<svg aria-hidden="true"><use href="#i-lock" /></svg>' : `<span class="outline">${n}</span>`
-        b.setAttribute('aria-label', locked ? `Level ${n}, locked` : `Level ${n}, ${stars} of 3 stars`)
-        b.addEventListener('click', () => openIntro(n))
+        b.setAttribute('aria-label', locked ? tr('map.locked', { n }) : tr('map.level', { n, s: stars }))
+        b.addEventListener('click', () => startGame('journey', n))
         const s = document.createElement('span')
         s.className = 'node-stars'
         s.setAttribute('aria-hidden', 'true')
@@ -1213,13 +1246,13 @@ function markOnboarded() {
 // ---------- help (doubles as the pause menu) and sound ----------
 
 function openHelp() {
-    if (help.open || dialog.open || intro.open || platform.adShowing) return
+    if (help.open || dialog.open || platform.adShowing) return
     const inGame = screen === 'game' && playing
     if (inGame) {
         platform.gameplayStop()
         pauseClock()
     }
-    $('help-close').textContent = inGame ? 'Resume' : 'Got it'
+    $('help-close').textContent = tr(inGame ? 'help.resume' : 'help.gotIt')
     $('help-home').hidden = !inGame
     sfx.ui()
     help.showModal()
@@ -1234,7 +1267,7 @@ function toggleSound() {
 function renderSound() {
     document.querySelectorAll('.sound-btn').forEach(b => {
         b.setAttribute('aria-pressed', !sfx.muted)
-        b.setAttribute('aria-label', sfx.muted ? 'Sound off' : 'Sound on')
+        b.setAttribute('aria-label', tr(sfx.muted ? 'sound.off' : 'sound.on'))
         b.querySelector('use').setAttribute('href', sfx.muted ? '#i-sound-off' : '#i-sound-on')
     })
 }
@@ -1248,6 +1281,11 @@ againBtn.addEventListener('click', () => {
 })
 secondaryBtn.addEventListener('click', () => {
     const action = resultActions.secondary
+    dialog.close()
+    if (action) action()
+})
+reviveBtn.addEventListener('click', () => {
+    const action = resultActions.reward
     dialog.close()
     if (action) action()
 })
@@ -1270,12 +1308,6 @@ document.querySelectorAll('.home-btn').forEach(b => b.addEventListener('click', 
 document.querySelectorAll('.help-btn, .pause-btn').forEach(b => b.addEventListener('click', openHelp))
 document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click', toggleSound))
 
-$('intro-play').addEventListener('click', () => startGame('journey', +intro.dataset.level))
-$('intro-back').addEventListener('click', () => {
-    intro.close()
-    if (screen !== 'map') openMap()
-})
-
 $('help-close').addEventListener('click', () => help.close())
 $('help-home').addEventListener('click', goHome)
 help.addEventListener('close', async () => {
@@ -1288,7 +1320,7 @@ document.addEventListener('keydown', ev => {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return
     // keep the host page from scrolling when the game runs inside a portal iframe;
     // an open sheet and the journey map still scroll with the arrow keys
-    const scrollable = help.open || dialog.open || intro.open || screen !== 'game'
+    const scrollable = help.open || dialog.open || screen !== 'game'
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
     if (platform.adShowing) return
     const key = ev.key.toLowerCase()
@@ -1310,7 +1342,7 @@ document.addEventListener('visibilitychange', () => {
     if (platform.adShowing) return // the ad's end restores audio and the flow that started it resumes play
     sfx.resume()
     // the help sheet and the level-up card resume the clock themselves when they close
-    if (!help.open && levelUpEl.hidden) resumeClock()
+    if (!help.open && !dialog.open && levelUpEl.hidden) resumeClock()
 })
 
 // keep the record if the tab is closed mid-game
@@ -1326,8 +1358,36 @@ const unlock = () => sfx.unlock()
 document.addEventListener('pointerdown', unlock, { once: true })
 document.addEventListener('keydown', unlock, { once: true })
 
+// ---------- language ----------
+
+// re-render everything that holds translated text after a language change
+function relocalize() {
+    i18n.apply()
+    renderSound()
+    if (screen === 'home') renderHome()
+    if (screen === 'map') renderMap()
+    if (screen === 'game' && next) {
+        $('game-title').textContent = mode === 'journey' ? tr('home.level', { n: journeyDef.n })
+            : mode === 'daily' ? tr('daily.title', { n: dailyNumber() })
+            : tr(`mode.${mode}`)
+        tiles.forEach(renderTile)
+        render()
+    }
+    if (help.open) $('help-close').textContent = tr(screen === 'game' && playing ? 'help.resume' : 'help.gotIt')
+}
+
+const langSelect = $('lang')
+langSelect.replaceChildren(...Object.entries(i18n.LANGS).map(([code, name]) => new Option(name, code)))
+langSelect.addEventListener('change', () => {
+    i18n.set(langSelect.value, { save: true })
+    relocalize()
+    sfx.ui()
+})
+
 // ---------- boot ----------
 
+i18n.set(i18n.detect(platform.language()))
+langSelect.value = i18n.lang
 applyTheme()
 mascot.mount()
 buildTiles()
@@ -1353,4 +1413,13 @@ platform.init({
         document.body.classList.remove('is-ad')
         if (!document.hidden) sfx.resume()
     },
-}).then(() => document.fonts.ready).then(() => platform.loadingFinished())
+}).then(() => {
+    // the portal may only know the player's language once its SDK is ready
+    const lang = i18n.detect(platform.language())
+    if (lang !== i18n.lang) {
+        i18n.set(lang)
+        langSelect.value = lang
+        relocalize()
+    }
+    return document.fonts.ready
+}).then(() => platform.loadingFinished())

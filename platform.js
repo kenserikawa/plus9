@@ -25,6 +25,7 @@ const platform = (() => {
             // without a portal there are no rewarded ads, except the simulated ones in test mode
             rewardedBreak: onStart => (testAds ? fakeAd(onStart).then(() => true) : Promise.resolve(false)),
             shareURL: () => Promise.resolve(/^https?:/.test(location.protocol) ? location.origin + location.pathname : null),
+            language: () => new URLSearchParams(location.search).get('lang'), // ?lang=es to test a language
         },
         poki: {
             init: () => window.PokiSDK.init(),
@@ -34,6 +35,7 @@ const platform = (() => {
             commercialBreak: onStart => window.PokiSDK.commercialBreak(onStart),
             rewardedBreak: onStart => window.PokiSDK.rewardedBreak(onStart),
             shareURL: () => window.PokiSDK.shareableURL({}),
+            language: () => window.PokiSDK.getLanguage(),
         },
     }
 
@@ -108,6 +110,10 @@ const platform = (() => {
         rewardedBreak() {
             this.gameplayStop()
             return runAd('rewardedBreak')
+        },
+        // the player's language as the portal knows it (two-letter code), or null
+        language() {
+            try { return sdk.language() || null } catch { return null }
         },
         async shareURL() {
             try { return await sdk.shareURL() } catch { return null }

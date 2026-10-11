@@ -39,15 +39,16 @@ const meta = (() => {
 
     // ---------- daily missions ----------
 
-    // `count` missions add up over the day; `max` missions take the best single game
+    // `count` missions add up over the day; `max` missions take the best single game.
+    // Their text is in i18n.js as mission.<id>.
     const MISSIONS = [
-        { id: 'chains4', text: 'Make 3 sums with 4 or more tiles', goal: 3, count: true },
-        { id: 'combos', text: 'Get 2 color combos', goal: 2, count: true },
-        { id: 'score80', text: 'Score 80 points in one game', goal: 80 },
-        { id: 'sums15', text: 'Complete 15 sums', goal: 15, count: true },
-        { id: 'daily', text: "Play today's daily", goal: 1, count: true },
-        { id: 'journey2', text: 'Win 2 Journey levels', goal: 2, count: true },
-        { id: 'level4', text: 'Reach level 4 in Classic', goal: 4 },
+        { id: 'chains4', goal: 3, count: true },
+        { id: 'combos', goal: 2, count: true },
+        { id: 'score80', goal: 80 },
+        { id: 'sums15', goal: 15, count: true },
+        { id: 'daily', goal: 1, count: true },
+        { id: 'journey2', goal: 2, count: true },
+        { id: 'level4', goal: 4 },
     ]
 
     // three missions a day, the same for everyone (seeded by the date)
@@ -91,12 +92,12 @@ const meta = (() => {
 
     const totalStars = () => journeyStarTotal() + load('plus9.wallet', { missionStars: 0 }).missionStars
 
-    // cosmetic only: each theme recolors the background and the well
+    // cosmetic only: each theme recolors the background (names are in i18n.js as theme.<id>)
     const THEMES = [
-        { id: 'grape', name: 'Grape', stars: 0 },
-        { id: 'sunset', name: 'Sunset', stars: 10 },
-        { id: 'ocean', name: 'Ocean', stars: 25 },
-        { id: 'night', name: 'Night', stars: 45 },
+        { id: 'grape', stars: 0 },
+        { id: 'sunset', stars: 10 },
+        { id: 'ocean', stars: 25 },
+        { id: 'night', stars: 45 },
     ]
 
     function theme() {

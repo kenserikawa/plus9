@@ -1,8 +1,10 @@
-// Builds a portal package of the game. Run with: node tools/build.js poki
+// Builds the game for a target. Run with: node tools/build.js <poki|web>
 //
-// Copies only the files the page needs into dist/<portal>/, adds the portal's SDK and
-// sets window.PLUS9_PLATFORM so platform.js uses it, then zips the folder into
-// dist/plus9-<portal>.zip for upload. No dependencies: the zip is written by hand.
+// Copies only the files the page needs into dist/<target>/.
+//   poki  adds the Poki SDK and sets window.PLUS9_PLATFORM, drops the noindex, and zips the
+//         folder into dist/plus9-poki.zip for upload (no dependencies: the zip is hand-written)
+//   web   the plain game for the GitHub Pages review copy (no SDK, keeps the noindex);
+//         .github/workflows/pages.yml runs it on every push to master
 
 const fs = require('fs')
 const path = require('path')
@@ -12,13 +14,14 @@ const ROOT = path.join(__dirname, '..')
 const PORTALS = {
     // Poki asks for its SDK in <head>; it updates that file in place, so no integrity hash
     poki: '<script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>',
+    web: null,
 }
 // everything the page loads (index.html adds the SDK on top)
 const FILES = ['index.html', 'styles.css', 'icon.svg', 'platform.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'app.js']
 const DIRS = ['fonts']
 
 const portal = process.argv[2]
-if (!PORTALS[portal]) {
+if (!(portal in PORTALS)) {
     console.error(`usage: node tools/build.js <${Object.keys(PORTALS).join('|')}>`)
     process.exit(1)
 }
@@ -30,9 +33,15 @@ fs.mkdirSync(out, { recursive: true })
 for (const file of FILES) fs.copyFileSync(path.join(ROOT, file), path.join(out, file))
 for (const dir of DIRS) fs.cpSync(path.join(ROOT, dir), path.join(out, dir), { recursive: true })
 
+if (portal === 'web') {
+    console.log(`dist/web/: ${FILES.length} files + ${DIRS.join(', ')}`)
+    process.exit(0)
+}
+
 // inject the SDK and the platform flag before any game script
 const indexPath = path.join(out, 'index.html')
-const html = fs.readFileSync(indexPath, 'utf8')
+// the portal page should be indexable; the noindex only protects the self-hosted review copy
+const html = fs.readFileSync(indexPath, 'utf8').replace(/\s*<!-- the self-hosted copy[^\n]*\n\s*<meta name="robots" content="noindex">/, '')
 const marker = '<link rel="stylesheet" href="styles.css">'
 if (!html.includes(marker)) throw new Error('index.html: stylesheet link not found, update tools/build.js')
 fs.writeFileSync(indexPath, html.replace(marker,

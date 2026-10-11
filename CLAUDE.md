@@ -18,7 +18,8 @@ Scripts load in this order (plain globals, no modules):
 | `styles.css` | `@font-face`, tokens and themes, screens, board, dialogs, then the landscape layout and reduced-motion overrides at the end. |
 | `fonts/`, `icon.svg` | Bundled Ranchers + Baloo 2 (OFL licences included) and the favicon. |
 | `tools/balance.js` | `node tools/balance.js`: dead-end rates per level and whole-game lengths. |
-| `tools/build.js` | `node tools/build.js poki`: copies the game into `dist/poki/`, injects the Poki SDK and `PLUS9_PLATFORM`, and writes `dist/plus9-poki.zip` (no dependencies). `dist/` is git-ignored. |
+| `tools/build.js` | `node tools/build.js poki`: copies the game into `dist/poki/`, injects the Poki SDK and `PLUS9_PLATFORM`, drops the `noindex` and writes `dist/plus9-poki.zip` (no dependencies). `node tools/build.js web`: the plain game in `dist/web/` (keeps `noindex`). `dist/` is git-ignored. |
+| `.github/workflows/pages.yml` | On every push to `master`, builds `web` and deploys only that to GitHub Pages: the review copy at https://kenserikawa.github.io/plus9/ (repo Settings → Pages → Source: GitHub Actions). |
 | `promo/` | Store assets: `thumbnail.html` (scene, screenshot at 628×628 ×2) and `thumbnail.png` (1256×1256, no text, full-bleed, as Poki asks). |
 | `tools/journey.js` | `node tools/journey.js`: picks a seed per journey level so difficulty follows a curve; paste its output over `JOURNEY_SEEDS` in `rules.js`. |
 

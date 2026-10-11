@@ -5,7 +5,7 @@
   <path d="M79 46 L79 80 Q79 110 42 110" fill="none" stroke="#1d0f38" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="50" cy="44" r="37" fill="#ffd23f"/>
   <path d="M79 46 L79 80 Q79 110 42 110" fill="none" stroke="#ffd23f" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
-  <ellipse cx="36" cy="38" rx="7" ry="9.5" fill="#1d0f38"/>
-  <ellipse cx="64" cy="38" rx="7" ry="9.5" fill="#1d0f38"/>
+  <ellipse cx="36" cy="38" rx="6" ry="8" fill="#1d0f38"/>
+  <ellipse cx="64" cy="38" rx="6" ry="8" fill="#1d0f38"/>
   <path d="M37 55 Q50 67 63 55" fill="none" stroke="#1d0f38" stroke-width="7" stroke-linecap="round"/>
 </svg>

@@ -9,6 +9,25 @@
     <!-- the self-hosted copy is only a review build; portals ask for web exclusivity (tools/build.js drops this) -->
     <meta name="robots" content="noindex">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- link previews (WhatsApp, Telegram, Facebook, Discord, X…); they need absolute URLs.
+         tools/build.js drops this block from portal builds, which have their own game page. -->
+    <!-- share-meta -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Plus 9">
+    <meta property="og:title" content="Plus 9: a number puzzle with a lot of charm">
+    <meta property="og:description" content="Drag tiles into the ring to make the number exactly. Chain tiles, combo colors and travel eight worlds with Nine. Free in your browser.">
+    <meta property="og:url" content="https://kenserikawa.github.io/plus9/">
+    <meta property="og:image" content="https://kenserikawa.github.io/plus9/og-image.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Plus 9: Nine the gold number mascot next to a board of colorful number tiles">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Plus 9: a number puzzle with a lot of charm">
+    <meta name="twitter:description" content="Make the number exactly. Chain tiles, combo colors, travel eight worlds with Nine.">
+    <meta name="twitter:image" content="https://kenserikawa.github.io/plus9/og-image.jpeg">
+    <!-- /share-meta -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body data-theme="grape">
@@ -31,7 +50,7 @@
     <section class="screen home" id="home" hidden>
         <header class="home-top">
             <button class="icon-btn help-btn" type="button" aria-label="How to play" data-i18n-aria="nav.help" aria-keyshortcuts="H">?</button>
-            <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><span class="mascot mascot-title" aria-hidden="true"></span></h1>
+            <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><button class="nine-poke" type="button" aria-label="Poke Nine" data-i18n-aria="nine.poke"><span class="mascot mascot-title" aria-hidden="true"></span></button></h1>
             <button class="icon-btn sound-btn" type="button" aria-label="Sound" aria-pressed="true" aria-keyshortcuts="M">
                 <svg><use href="#i-sound-on" /></svg>
             </button>
@@ -179,7 +198,7 @@
 
     <dialog class="sheet style" id="style" aria-labelledby="style-title">
         <h2 class="sheet-title outline" id="style-title" data-i18n="style.title">Customize</h2>
-        <span class="mascot mascot-style" aria-hidden="true"></span>
+        <button class="nine-poke nine-poke-style" type="button" aria-label="Poke Nine" data-i18n-aria="nine.poke"><span class="mascot mascot-style" aria-hidden="true"></span></button>
         <h3 class="sheet-subtitle" data-i18n="style.wardrobe">Nine's wardrobe</h3>
         <div class="wardrobe" id="wardrobe"></div>
         <h3 class="sheet-subtitle" data-i18n="style.themes">Themes</h3>

@@ -101,6 +101,7 @@ const i18n = (() => {
             'res.reward': "New for Nine: {item}. Next stop: {world}!",
             'res.rewardLast': "New for Nine: {item}. You crossed every world!",
             'toast.item': "New for Nine: {item}!",
+            'nine.poke': 'Poke Nine',
             'key.play': 'play a tile', 'key.shuffle': 'shuffle', 'key.bank': 'bank', 'key.sound': 'sound', 'key.pause': 'pause',
         },
 
@@ -195,6 +196,7 @@ const i18n = (() => {
             'res.reward': "Nuevo para Nine: {item}. Próxima parada: ¡{world}!",
             'res.rewardLast': "Nuevo para Nine: {item}. ¡Has cruzado todos los mundos!",
             'toast.item': "Nuevo para Nine: ¡{item}!",
+            'nine.poke': 'Toca a Nine',
             'key.play': 'jugar ficha', 'key.shuffle': 'barajar', 'key.bank': 'cobrar', 'key.sound': 'sonido', 'key.pause': 'pausa',
         },
 
@@ -289,6 +291,7 @@ const i18n = (() => {
             'res.reward': "Novo para o Nine: {item}. Próxima parada: {world}!",
             'res.rewardLast': "Novo para o Nine: {item}. Você cruzou todos os mundos!",
             'toast.item': "Novo para o Nine: {item}!",
+            'nine.poke': 'Cutucar o Nine',
             'key.play': 'jogar peça', 'key.shuffle': 'misturar', 'key.bank': 'sacar', 'key.sound': 'som', 'key.pause': 'pausa',
         },
 
@@ -383,6 +386,7 @@ const i18n = (() => {
             'res.reward': "Nouveau pour Nine : {item}. Prochaine étape : {world} !",
             'res.rewardLast': "Nouveau pour Nine : {item}. Tu as traversé tous les mondes !",
             'toast.item': "Nouveau pour Nine : {item} !",
+            'nine.poke': 'Chatouiller Nine',
             'key.play': 'jouer une tuile', 'key.shuffle': 'mélanger', 'key.bank': 'encaisser', 'key.sound': 'son', 'key.pause': 'pause',
         },
 
@@ -477,6 +481,7 @@ const i18n = (() => {
             'res.reward': "Neu für Nine: {item}. Nächster Halt: {world}!",
             'res.rewardLast': "Neu für Nine: {item}. Du hast alle Welten durchquert!",
             'toast.item': "Neu für Nine: {item}!",
+            'nine.poke': 'Nine anstupsen',
             'key.play': 'Stein spielen', 'key.shuffle': 'mischen', 'key.bank': 'sichern', 'key.sound': 'Ton', 'key.pause': 'Pause',
         },
 
@@ -571,6 +576,7 @@ const i18n = (() => {
             'res.reward': "Nine için yeni: {item}. Sıradaki durak: {world}!",
             'res.rewardLast': "Nine için yeni: {item}. Tüm dünyaları geçtin!",
             'toast.item': "Nine için yeni: {item}!",
+            'nine.poke': 'Nine’ı dürt',
             'key.play': 'taş oyna', 'key.shuffle': 'karıştır', 'key.bank': 'bitir', 'key.sound': 'ses', 'key.pause': 'duraklat',
         },
     }

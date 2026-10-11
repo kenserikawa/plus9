@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Link preview image (Open Graph / X card). Open at 1200×630, device scale 1, and
+         screenshot the viewport as JPEG → og-image.jpg. Text is fine here (unlike the Poki
+         thumbnail): it is what people see when the link is shared. -->
+    <title>Plus 9 link preview</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        html, body { width: 1200px; height: 630px; margin: 0; padding: 0; overflow: hidden; }
+        body { display: block; background: var(--bg); }
+        :root { --cell: 150px; --gap: 16px; }
+
+        .copy { position: absolute; left: 110px; top: 110px; width: 520px; }
+        .og-title {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            margin: 0;
+            font-size: 150px;
+            font-weight: 400;
+            line-height: 1;
+            transform: rotate(-3deg);
+        }
+        .og-title .mascot { width: 150px; height: 186px; margin-bottom: -14px; filter: drop-shadow(-8px 12px 0 var(--ink)); }
+        .tagline {
+            margin: 44px 0 0;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--paper);
+            text-shadow: 0 3px 0 rgba(29, 15, 56, 0.45);
+        }
+        .pill {
+            display: inline-block;
+            margin-top: 26px;
+            padding: 6px 22px;
+            font-family: 'Ranchers', cursive;
+            font-size: 34px;
+            color: var(--ink);
+            background: var(--gold);
+            border: 4px solid var(--ink);
+            border-radius: 999px;
+            box-shadow: -4px 6px 0 var(--ink);
+        }
+
+        .board { position: absolute; right: 60px; top: 50%; transform: translateY(-50%) rotate(4deg); }
+        .tile { cursor: default; }
+        .tile, .tile:hover { transform: none; }
+        .well .well-sum { font-size: calc(var(--cell) * 0.46); margin-top: 0; }
+    </style>
+</head>
+<body data-theme="grape">
+    <div class="copy">
+        <h1 class="og-title outline">Plus <span class="mascot" data-mood="happy"></span></h1>
+        <p class="tagline">Make the number. Chain tiles, combo colors, travel eight worlds.</p>
+        <span class="pill">Play free in your browser</span>
+    </div>
+    <div class="board" id="board"></div>
+
+    <script src="../mascot.js"></script>
+    <script>
+        // a board mid-game: 6 of 9 in the ring, a rainbow and a wild tile on show
+        const board = document.getElementById('board')
+        const tiles = [[3, '#37afff'], ['★', '#ffd23f', 'is-wild'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#ff623a', 'is-rainbow'], [8, '#ff623a'], [2, '#ff31cc'], [5, '#37afff']]
+        for (const t of tiles) {
+            if (!t) {
+                const well = document.createElement('div')
+                well.className = 'well'
+                const n = 9, r = 44, c = 2 * Math.PI * r, gap = 2.2, seg = c / n - gap
+                const fill = ['#37afff', '#37afff', '#37afff', '#ff31cc', '#ff31cc', '#ff31cc']
+                let arcs = ''
+                for (let i = 0; i < n; i++) {
+                    arcs += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${fill[i] || '#3a2a5c'}" stroke-width="9" stroke-dasharray="${seg} ${c - seg}" stroke-dashoffset="${-(i * c / n) + c / 4 - gap / 2}" />`
+                }
+                well.innerHTML = `<svg class="ring" viewBox="0 0 100 100">${arcs}</svg><span class="well-sum outline">6</span>`
+                board.appendChild(well)
+                continue
+            }
+            const tile = document.createElement('button')
+            tile.className = 'tile'
+            tile.style.setProperty('--tile', t[1])
+            tile.textContent = t[0]
+            tile.dataset.n = t[0]
+            if (t[2]) tile.classList.add(t[2])
+            board.appendChild(tile)
+        }
+        mascot.mount()
+        mascot.dress({ head: 'party' })
+        document.querySelector('.og-title .mascot').dataset.mood = 'happy'
+    </script>
+</body>
+</html>

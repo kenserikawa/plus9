@@ -483,5 +483,25 @@ const sfx = (() => {
         }),
 
         ui: effect(() => tone(note(4), { type: 'sine', dur: 0.06, vol: 0.12 })),
+
+        // Nine poked on the home screen: a little voice per reaction
+        poke: effect(kind => {
+            if (kind === 'love') {
+                tone(note(7), { type: 'sine', dur: 0.14, vol: 0.18 })
+                tone(note(9), { type: 'sine', dur: 0.3, vol: 0.18, at: 0.13 })
+            } else if (kind === 'spin') {
+                hiss({ dur: 0.5, vol: 0.12, from: 500, to: 3000 })
+                tone(note(5), { type: 'triangle', dur: 0.5, vol: 0.14, slide: note(12) })
+            } else if (kind === 'wink') {
+                tone(note(10), { type: 'sine', dur: 0.06, vol: 0.12 })
+                tone(note(14), { type: 'sine', dur: 0.25, vol: 0.1, at: 0.07 })
+            } else if (kind === 'boing') {
+                tone(160, { type: 'sine', dur: 0.18, vol: 0.25, slide: 520 })
+                tone(520, { type: 'sine', dur: 0.35, vol: 0.18, at: 0.17, slide: 240 })
+            } else if (kind === 'dizzy') {
+                for (let i = 0; i < 6; i++) tone(note(8 - i), { type: 'triangle', dur: 0.12, vol: 0.12, at: i * 0.09 })
+                hiss({ dur: 0.6, vol: 0.06, at: 0.1, from: 2000, to: 600 })
+            }
+        }),
     }
 })()

@@ -1499,6 +1499,57 @@ const unlock = () => sfx.unlock()
 document.addEventListener('pointerdown', unlock, { once: true })
 document.addEventListener('keydown', unlock, { once: true })
 
+// ---------- Nine on the home screen: looks at the pointer, reacts when poked ----------
+
+const POKES = ['love', 'spin', 'wink', 'boing']
+let pokeTurn = 0
+let pokeTimes = [] // recent pokes, for the dizzy easter egg
+
+function pokeNine(button) {
+    const el = button.querySelector('.mascot')
+    const now = Date.now()
+    pokeTimes = pokeTimes.filter(t => now - t < 2000).concat(now)
+    // five pokes within two seconds make Nine dizzy
+    const kind = pokeTimes.length >= 5 ? 'dizzy' : POKES[pokeTurn++ % POKES.length]
+    if (kind === 'dizzy') pokeTimes = []
+    mascot.emote(el, kind)
+    sfx.poke(kind)
+    const bits = { love: ['♥', 5, '#ff4fa0'], spin: ['✦', 4, '#ffffff'], wink: ['★', 2, '#ffd23f'], boing: ['!', 1, '#ffffff'], dizzy: ['★', 6, '#ffd23f'] }[kind]
+    pokeBits(el, ...bits)
+}
+
+// small symbols that float up from Nine
+function pokeBits(el, char, count, color) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const r = el.getBoundingClientRect()
+    for (let i = 0; i < count; i++) {
+        const bit = document.createElement('span')
+        bit.className = 'poke-bit'
+        bit.textContent = char
+        bit.style.color = color
+        bit.style.left = `${r.left + r.width * (0.25 + Math.random() * 0.5)}px`
+        bit.style.top = `${r.top + r.height * 0.3}px`
+        bit.style.setProperty('--dx', `${(Math.random() - 0.5) * 70}px`)
+        bit.style.animationDelay = `${i * 70}ms`
+        document.body.appendChild(bit)
+        bit.addEventListener('animationend', () => bit.remove())
+    }
+}
+
+document.querySelectorAll('.nine-poke').forEach(b => b.addEventListener('click', () => pokeNine(b)))
+
+// eyes follow the pointer (or the last touch) on the home screen and in Customize
+let lookFrame = 0
+function followPointer(ev) {
+    if (screen !== 'home' && !styleSheet.open) return
+    cancelAnimationFrame(lookFrame)
+    lookFrame = requestAnimationFrame(() => mascot.look(ev.clientX, ev.clientY))
+}
+document.addEventListener('pointermove', followPointer)
+document.addEventListener('pointerdown', followPointer)
+document.addEventListener('pointerleave', () => mascot.look(null))
+addEventListener('blur', () => mascot.look(null))
+
 // ---------- language ----------
 
 // re-render everything that holds translated text after a language change

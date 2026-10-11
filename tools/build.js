@@ -18,7 +18,7 @@ const PORTALS = {
     web: null,
 }
 // everything the page loads (index.html adds the SDK on top)
-const FILES = ['index.html', 'styles.css', 'icon.svg', 'platform.js', 'i18n.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'mascot.js', 'app.js']
+const FILES = ['index.html', 'styles.css', 'icon.svg', 'apple-touch-icon.png', 'platform.js', 'i18n.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'mascot.js', 'app.js']
 const DIRS = ['fonts']
 
 const portal = process.argv[2]
@@ -49,6 +49,7 @@ function bustCache(indexPath) {
 }
 
 if (portal === 'web') {
+    fs.copyFileSync(path.join(ROOT, 'og-image.jpeg'), path.join(out, 'og-image.jpeg')) // the link-preview image
     bustCache(path.join(out, 'index.html'))
     console.log(`dist/web/: ${FILES.length} files + ${DIRS.join(', ')}, assets versioned`)
     process.exit(0)
@@ -57,7 +58,10 @@ if (portal === 'web') {
 // inject the SDK and the platform flag before any game script
 const indexPath = path.join(out, 'index.html')
 // the portal page should be indexable; the noindex only protects the self-hosted review copy
-const html = fs.readFileSync(indexPath, 'utf8').replace(/\s*<!-- the self-hosted copy[^\n]*\n\s*<meta name="robots" content="noindex">/, '')
+// portals have their own game page and share cards: drop ours (they point at the review copy)
+const html = fs.readFileSync(indexPath, 'utf8')
+    .replace(/\s*<!-- the self-hosted copy[^\n]*\n\s*<meta name="robots" content="noindex">/, '')
+    .replace(/\s*<!-- link previews[\s\S]*?<!-- \/share-meta -->/, '')
 const marker = '<link rel="stylesheet" href="styles.css">'
 if (!html.includes(marker)) throw new Error('index.html: stylesheet link not found, update tools/build.js')
 fs.writeFileSync(indexPath, html.replace(marker,

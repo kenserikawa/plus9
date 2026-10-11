@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- iOS home-screen icon. Open at 180×180, device scale 1, screenshot as PNG →
+         apple-touch-icon.png. iOS rounds the corners itself, so fill the square. -->
+    <title>Plus 9 touch icon</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        html, body { width: 180px; height: 180px; margin: 0; padding: 0; overflow: hidden; }
+        body { display: grid; place-items: center; background: var(--bg); }
+        .mascot { width: 116px; height: 144px; margin-top: 8px; filter: drop-shadow(-5px 7px 0 var(--ink)); }
+    </style>
+</head>
+<body data-theme="grape">
+    <span class="mascot" data-mood="idle"></span>
+    <script src="../mascot.js"></script>
+    <script>mascot.mount()</script>
+</body>
+</html>

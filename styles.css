@@ -1345,6 +1345,8 @@ kbd {
 .mascot[data-mood="cheer"] :is(.m-eyes-happy, .m-mouth-open, .m-cheeks),
 .mascot[data-mood="worried"] :is(.m-eyes-open, .m-brows, .m-mouth-wavy),
 .mascot[data-mood="sad"] :is(.m-eyes-sad, .m-mouth-frown) { display: inline; }
+.mascot[data-mood="wink"] :is(.m-eyes-wink, .m-mouth-big, .m-cheeks),
+.mascot[data-mood="dizzy"] :is(.m-eyes-dizzy, .m-mouth-wavy) { display: inline; }
 .mascot.m-blink .m-eyes-open { display: none; }
 .mascot.m-blink[data-mood="idle"] .m-eyes-blink,
 .mascot.m-blink[data-mood="worried"] .m-eyes-blink { display: inline; }
@@ -1356,6 +1358,57 @@ kbd {
 .mascot.m-droop .mascot-art { animation: m-droop 700ms ease forwards; }
 .mascot.m-shiver .mascot-art { animation: m-shiver 500ms ease; }
 @keyframes m-hop { 40% { transform: translateY(-14%) scale(1.04, 0.96); } }
+.mascot.m-spin .mascot-art { animation: m-spin 800ms cubic-bezier(.3, 1.3, .5, 1); }
+.mascot.m-tilt .mascot-art { animation: m-tilt 700ms ease; }
+.mascot.m-boing .mascot-art { animation: m-boing 900ms ease; }
+.mascot.m-wobble .mascot-art { animation: m-wobble 1600ms ease; }
+@keyframes m-spin { 40% { transform: translateY(-20%) rotate(200deg); } 100% { transform: rotate(360deg); } }
+@keyframes m-tilt { 30%, 70% { transform: rotate(-12deg); } }
+@keyframes m-boing {
+    15% { transform: scale(1.18, 0.78); }
+    40% { transform: translateY(-38%) scale(0.88, 1.15); }
+    65% { transform: scale(1.12, 0.86); }
+    80% { transform: translateY(-8%); }
+}
+@keyframes m-wobble {
+    15% { transform: rotate(-14deg); }
+    30% { transform: rotate(12deg); }
+    45% { transform: rotate(-9deg); }
+    60% { transform: rotate(7deg); }
+    75% { transform: rotate(-4deg); }
+}
+
+/* Nine on the home screen and in Customize is a button: poke it */
+.nine-poke {
+    display: inline-flex;
+    padding: 0;
+    font: inherit; /* buttons don't inherit font size; Nine's title size is in em */
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.nine-poke:focus-visible { outline: 3px solid var(--paper); outline-offset: 4px; }
+.nine-poke-style { display: flex; margin: 0 auto; }
+.nine-poke-style:focus-visible { outline-color: var(--violet); }
+
+/* little hearts and stars that float up from a poked Nine */
+.poke-bit {
+    position: fixed;
+    z-index: 40;
+    pointer-events: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    text-shadow: 0 1px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink), 0 -1px 0 var(--ink);
+    animation: poke-bit 1000ms ease-out forwards;
+}
+@keyframes poke-bit {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+    25% { transform: translate(calc(-50% + var(--dx) * 0.4), -110%) scale(1.15); }
+    to { opacity: 0; transform: translate(calc(-50% + var(--dx)), -260%) scale(0.9); }
+}
 @keyframes m-cheer {
     20% { transform: translateY(-22%) rotate(-10deg); }
     45% { transform: translateY(0) rotate(8deg) scale(1.06); }

@@ -45,6 +45,8 @@ const mascot = (() => {
             <circle cx="40" cy="37" r="1.8" fill="#fff" /><circle cx="64" cy="37" r="1.8" fill="#fff" />
         </g>
         <g class="m-eyes-blink" fill="none" stroke-width="4"><path d="M33 41 H43 M57 41 H67" /></g>
+        <g class="m-eyes-wink"><ellipse cx="38" cy="40" rx="5" ry="7" stroke="none" /><circle cx="40" cy="37" r="1.8" fill="#fff" stroke="none" /><path d="M56 42 Q62 34 68 42" fill="none" stroke-width="4.5" /></g>
+        <g class="m-eyes-dizzy" fill="none" stroke-width="3"><path d="M38 40 m-1 0 a1 1 0 1 1 2 0 a3 3 0 1 1 -5 -1 a5 5 0 1 1 9 2" /><path d="M62 40 m-1 0 a1 1 0 1 1 2 0 a3 3 0 1 1 -5 -1 a5 5 0 1 1 9 2" /></g>
         <g class="m-eyes-happy" fill="none" stroke-width="4.5"><path d="M32 43 Q38 33 44 43 M56 43 Q62 33 68 43" /></g>
         <g class="m-eyes-sad" fill="none" stroke-width="4.5"><path d="M32 38 Q38 46 44 38 M56 38 Q62 46 68 38" /></g>
         <g class="m-brows" fill="none" stroke-width="4"><path d="M31 29 L43 25 M57 25 L69 29" /></g>
@@ -60,6 +62,7 @@ const mascot = (() => {
 
     let els = []
     let worn = {}
+    const solo = new Map() // per-element revert timers for emotes
     let revertTimer = null
     let blinkTimer = null
 
@@ -86,6 +89,39 @@ const mascot = (() => {
             }
         }
         if (!hold && name !== 'idle') revertTimer = setTimeout(() => mood('idle'), ms)
+    }
+
+    // One mascot reacts on its own (a poke on the home screen): a face and a motion, then idle.
+    // Kinds: love, spin, wink, boing, dizzy.
+    function emote(el, kind) {
+        const face = { love: 'happy', spin: 'cheer', wink: 'wink', boing: 'cheer', dizzy: 'dizzy' }[kind]
+        const motion = { love: 'm-hop', spin: 'm-spin', wink: 'm-tilt', boing: 'm-boing', dizzy: 'm-wobble' }[kind]
+        clearTimeout(solo.get(el))
+        el.dataset.mood = face
+        el.classList.remove('m-hop', 'm-spin', 'm-tilt', 'm-boing', 'm-wobble')
+        void el.offsetWidth
+        el.classList.add(motion)
+        solo.set(el, setTimeout(() => { el.dataset.mood = 'idle' }, kind === 'dizzy' ? 1800 : 1200))
+    }
+
+    // Eyes follow a point on screen (the pointer): the open pupils shift a little towards it.
+    // Only for mascots on screen; `null` recentres them.
+    function look(x, y) {
+        for (const el of els) {
+            const eyes = el.querySelector('.m-eyes-open')
+            if (!eyes) continue
+            if (x === null || !el.offsetParent) {
+                eyes.removeAttribute('transform')
+                continue
+            }
+            const r = el.getBoundingClientRect()
+            // the eyes sit at (50, 40) of Nine's 100 × 124 box
+            const dx = x - (r.left + r.width * 0.5)
+            const dy = y - (r.top + r.height * (40 / 124))
+            const dist = Math.hypot(dx, dy) || 1
+            const reach = 3.5 * Math.min(1, dist / 160) // up to 3.5 units, less when the point is close
+            eyes.setAttribute('transform', `translate(${((dx / dist) * reach).toFixed(2)} ${((dy / dist) * reach).toFixed(2)})`)
+        }
     }
 
     // a small hop without changing the face (each tile played)
@@ -123,7 +159,7 @@ const mascot = (() => {
     // container's data-mood like any other mascot)
     const preview = id => svg().replace('<g class="m-acc"></g>', `<g class="m-acc">${ITEMS[id] || ''}</g>`)
 
-    return { mount, mood, hop, current, dress, preview }
+    return { mount, mood, hop, current, dress, preview, emote, look }
 })()
 
 // confetti from a point on screen; skipped when the player prefers reduced motion

@@ -237,7 +237,8 @@ const sfx = (() => {
                 // the answering melody, only in part B
                 if (Math.floor(bar / 4) % 2 === 1 && pos % 2 === 0) {
                     const m = this.melody[((bar % 4) * 4 + pos / 2) % this.melody.length]
-                    if (m) pad(midi(m), { type: 'triangle', dur: e * 3, vol: 0.03, attack: 0.08, release: 1.2, wobble: 3, at, dest: out })
+                    // an octave below the written notes, under the bells
+                    if (m) pad(midi(m - 12), { type: 'triangle', dur: e * 3, vol: 0.034, attack: 0.08, release: 1.2, wobble: 3, at, dest: out })
                 }
             },
         },

@@ -20,9 +20,11 @@ const SHUFFLE_COST = 10
 // a sum made entirely of one color scores double
 const COMBO_MULTIPLIER = 2
 // special tiles: a wild tile (★) is worth exactly what the sum still needs and matches any
-// color; a double tile (×2) doubles the points of the sum it joins (stacks with combos)
+// color; a double tile (×2) doubles the points of the sum it joins (stacks with combos);
+// a rainbow tile keeps its number but matches any color, so it never breaks a combo
 const WILD_CHANCE = 0.03
 const DOUBLE_CHANCE = 0.06
+const RAINBOW_CHANCE = 0.04
 // a frozen tile can't be played until ICE_SUMS more sums are completed (journey obstacle)
 const ICE_SUMS = 2
 const DAILY_SUMS = 12 // a daily challenge is levels 1–3: short and comparable
@@ -54,7 +56,11 @@ function drawTile(lv, rnd, specials = true) {
     const value = drawValue(lv, rnd)
     const color = drawColor(rnd)
     const roll = rnd()
-    const special = !specials ? null : roll < WILD_CHANCE ? 'wild' : roll < WILD_CHANCE + DOUBLE_CHANCE ? 'double' : null
+    const special = !specials ? null
+        : roll < WILD_CHANCE ? 'wild'
+        : roll < WILD_CHANCE + DOUBLE_CHANCE ? 'double'
+        : roll < WILD_CHANCE + DOUBLE_CHANCE + RAINBOW_CHANCE ? 'rainbow'
+        : null
     return special ? { value, color, special } : { value, color }
 }
 
@@ -63,10 +69,15 @@ const tileValue = (tile, need) => (tile.special === 'wild' ? need : tile.value)
 // whether a tile can be played now
 const canPlay = (tile, need) => !tile.ice && (tile.special === 'wild' || tile.value <= need)
 
+// wild and rainbow tiles take on any color
+const anyColor = tile => tile.special === 'wild' || tile.special === 'rainbow'
+// whether `tile` keeps the parts so far a one-color combo
+const keepsCombo = (parts, tile) => anyColor(tile) || parts.every(p => anyColor(p) || p.color === tile.color)
+
 // points for a completed sum: tiles used × level, doubled when every tile shares a color
-// (wild tiles match any color) and doubled again for each ×2 tile in it
+// (wild and rainbow tiles match any color) and doubled again for each ×2 tile in it
 function sumPoints(parts, lv) {
-    const colored = parts.filter(p => p.special !== 'wild')
+    const colored = parts.filter(p => !anyColor(p))
     const combo = parts.length >= 2 && colored.every(p => p.color === (colored[0] || p).color)
     const doubles = parts.filter(p => p.special === 'double').length
     const points = parts.length * (lv + 1) * (combo ? COMBO_MULTIPLIER : 1) * 2 ** doubles
@@ -115,7 +126,8 @@ const JOURNEY_SEEDS = [
 // Level n (1-based) is a fixed, seeded board: make the target `sums` times at a fixed
 // difficulty. Difficulty rises every 5 levels; within a tier the number of sums grows.
 // Levels 1–4 teach the basics (level 1 starts from a hand-picked board). Special tiles
-// appear from level 6, which hands out a wild tile; level 7 hands out a ×2 tile. From
+// appear from level 6, which hands out a wild tile; level 7 hands out a ×2 tile and level 8
+// a rainbow tile. From
 // level 11, some levels start with frozen tiles; level 11 introduces them.
 // `setup` changes tiles after the deal: { index, special } or { index, ice }.
 function journeyLevel(n) {
@@ -132,6 +144,7 @@ function journeyLevel(n) {
     }
     if (n === 6) level.setup = [{ index: 3, special: 'wild' }]
     if (n === 7) level.setup = [{ index: 1, special: 'double' }]
+    if (n === 8) level.setup = [{ index: 5, special: 'rainbow' }]
     // frozen tiles: two on the 1st, 3rd and 5th level of every tier from level 11
     if (n >= 11 && [0, 2, 4].includes((n - 1) % 5)) level.setup = [{ index: 0, ice: ICE_SUMS }, { index: 7, ice: ICE_SUMS }]
     if (n === 1) {
@@ -154,7 +167,7 @@ function applySetup(tiles, setup) {
 if (typeof module !== 'undefined') {
     module.exports = {
         JOURNEY_SEEDS, COLORS, TARGETS, SUMS_PER_LEVEL, TILE_LAMBDA, MAX_FREE_SHUFFLES, SHUFFLE_COST, COMBO_MULTIPLIER, DAILY_SUMS,
-        WILD_CHANCE, DOUBLE_CHANCE, ICE_SUMS,
+        WILD_CHANCE, DOUBLE_CHANCE, RAINBOW_CHANCE, ICE_SUMS, anyColor, keepsCombo,
         targetFor, lambdaFor, shuffleCostFor, drawValue, drawColor, drawTile, tileValue, canPlay, sumPoints, hashSeed, createRng,
         journeyLevel, applySetup,
     }

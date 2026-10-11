@@ -710,6 +710,7 @@ body {
 
 .next-tile {
     --tile: var(--violet);
+    position: relative;
     display: grid;
     place-items: center;
     width: 2.1rem;
@@ -1160,6 +1161,30 @@ kbd {
     transform: rotate(12deg);
 }
 .tile.is-double { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px #d9c6ff; }
+
+/* rainbow: the number itself is multicolored. The tile keeps its ink-outlined number and a
+   copy drawn on top (::after, from data-n) is filled with a rainbow clipped to the glyph,
+   which shimmers slowly. Reduced motion stops the shimmer. */
+.tile.is-rainbow, .next-tile.is-rainbow { position: relative; color: var(--gold); }
+.tile.is-rainbow::after, .next-tile.is-rainbow::after {
+    content: attr(data-n);
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    color: transparent;
+    text-shadow: none;
+    /* one rainbow per ~glyph width (0.9em), repeated, so every colour passes through the digit;
+       it starts and ends on the same colour, so sliding it by one tile width loops seamlessly */
+    background: linear-gradient(90deg, #ff623a, #ffd23f, #5fe08a, #37afff, #8746ff, #ff31cc, #ff623a) 0 0 / 0.9em 100% repeat-x;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+    pointer-events: none;
+}
+.tile.is-rainbow { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px #fff2b8; }
+@keyframes shimmer { to { background-position: 0.9em 0; } }
 
 /* frozen: an icy glaze over the number, and the sums left to thaw */
 .tile.is-frozen {

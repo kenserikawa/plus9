@@ -13,7 +13,7 @@ function carefulPick(fits, need, tiles, next, parts) {
     const wild = fits.find(([t]) => t.special === 'wild')
     const exact = numbers.filter(([t]) => t.value === need)
     if (exact.length) {
-        const combo = exact.find(([t]) => parts.every(p => p.color === t.color))
+        const combo = exact.find(([t]) => keepsCombo(parts, t))
         return combo || exact[0]
     }
     if (wild && (parts.length >= 2 || !numbers.length)) return wild

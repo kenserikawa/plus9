@@ -132,6 +132,8 @@ function renderTile(tile) {
     el.classList.toggle('is-wide', !wild && tile.value >= 10)
     el.classList.toggle('is-wild', wild)
     el.classList.toggle('is-double', tile.special === 'double')
+    el.classList.toggle('is-rainbow', tile.special === 'rainbow')
+    el.dataset.n = tile.value // the rainbow fill is drawn over the outlined number from this
     el.classList.toggle('is-frozen', tile.ice > 0)
     el.classList.remove('hint')
     el.style.setProperty('--tile', wild ? WILD_COLOR : tile.color)
@@ -141,6 +143,7 @@ function renderTile(tile) {
         tile.ice > 0 ? tr('tile.frozen', { n: tile.value, k: tile.ice })
         : wild ? tr('tile.wild')
         : tile.special === 'double' ? tr('tile.double', { n: tile.value })
+        : tile.special === 'rainbow' ? tr('tile.rainbow', { n: tile.value })
         : tr('tile.add', { n: tile.value }))
 }
 
@@ -178,6 +181,7 @@ function play(tile) {
 
     sum = total
     parts.push({ value, color: tile.special === 'wild' ? WILD_COLOR : tile.color, special: tile.special })
+    if (tile.special === 'rainbow' && parts.length > 1 && keepsCombo(parts.slice(0, -1), tile)) bump(well, 'match')
     if (tile.special === 'wild') floatText(well, tr('float.wild'), 'is-combo')
     setTile(tile, takeNext())
 
@@ -510,11 +514,11 @@ function openMap() {
 function tutorial(event) {
     if (mode !== 'journey') return
     const n = journeyDef.n
-    const later = { 6: 'tut.wild', 7: 'tut.double', 11: 'tut.ice' }
+    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice' }
     if (later[n]) {
         if (event === 'start') {
             coachSay(tr(later[n]), 6000)
-            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 11: t => t.ice > 0 }[n]
+            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0 }[n]
             tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
         }
         return
@@ -730,15 +734,18 @@ function render() {
     well.classList.toggle('is-empty', empty)
     well.setAttribute('aria-label', tr(empty ? 'aria.wellEmpty' : 'aria.wellSum', { goal, sum }))
 
-    // fill one ring segment per point, coloured by the tile that supplied it
-    const colors = parts.flatMap(p => Array(p.value).fill(p.color))
+    // fill one ring segment per point, coloured by the tile that supplied it (a rainbow tile cycles colours)
+    const colors = parts.flatMap(p => Array.from({ length: p.value }, (_, i) => (p.special === 'rainbow' ? COLORS[i % COLORS.length] : p.color)))
     ring.querySelectorAll('.seg').forEach((seg, i) => {
         seg.style.stroke = i < Math.min(sum, goal) ? (colors[i] || '') : ''
         seg.classList.toggle('on', i < sum)
     })
 
-    nextEl.textContent = next.value
-    nextEl.style.setProperty('--tile', next.color)
+    nextEl.textContent = next.special === 'wild' ? '★' : next.value
+    nextEl.dataset.n = nextEl.textContent
+    nextEl.classList.toggle('is-wild', next.special === 'wild')
+    nextEl.classList.toggle('is-rainbow', next.special === 'rainbow')
+    nextEl.style.setProperty('--tile', next.special === 'wild' ? WILD_COLOR : next.color)
 
     const cost = shuffleCost()
     shuffleBadge.textContent = freeShuffles > 0 ? freeShuffles : `-${cost}`

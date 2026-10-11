@@ -448,8 +448,9 @@ function finishJourney(won, reason) {
     endGame()
     const n = journeyDef.n
     const stars = starsFor(won, score)
+    let gained = 0 // stars this level had never earned before
     if (won) {
-        meta.journeyRecord(n, stars)
+        gained = meta.journeyRecord(n, stars)
         celebrate(meta.missionEvent('journey2', 1))
         if (n === 1) markOnboarded()
         sfx.bank()
@@ -473,8 +474,26 @@ function finishJourney(won, reason) {
         secondary: won
             ? { label: tr(stars < 3 ? 'res.retry' : 'res.map'), action: stars < 3 ? () => startGame('journey', n) : openMap }
             : { label: tr('res.map'), action: openMap },
+        // 🎬 doubles only stars that are new, so replaying a finished level can't farm them
+        reward: gained > 0 && platform.hasRewarded ? { label: tr('res.doubleStars', { n: gained }), aria: tr('aria.doubleStars', { n: gained }), action: () => doubleStars(gained) } : null,
     })
     setTimeout(() => dialog.showModal(), 500)
+}
+
+async function doubleStars(n) {
+    const id = gameId
+    // the sheet is closed while the ad runs (a modal dialog would sit above it), then comes back
+    const watched = await platform.rewardedBreak()
+    if (id !== gameId || screen !== 'game') return
+    reviveBtn.hidden = true
+    if (watched) {
+        meta.addBonusStars(n)
+        toast(tr('toast.bonusStars', { n }))
+        sfx.bank()
+        mascot.mood('cheer', { hold: true })
+        confetti(innerWidth / 2, innerHeight * 0.35, 20 + n * 15)
+    }
+    dialog.showModal()
 }
 
 function starReason(stars) {
@@ -849,7 +868,10 @@ function showResult({ title, happy, reason, stats, stars = null, compare = null,
     secondaryBtn.hidden = !secondary
     if (secondary) secondaryBtn.textContent = secondary.label
     reviveBtn.hidden = !reward
-    if (reward) $('over-reward-label').textContent = reward.label
+    if (reward) {
+        $('over-reward-label').textContent = reward.label
+        reviveBtn.setAttribute('aria-label', reward.aria || reward.label)
+    }
     resultActions = { primary: primary.action, secondary: secondary && secondary.action, reward: reward && reward.action }
 }
 

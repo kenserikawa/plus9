@@ -86,11 +86,21 @@ const meta = (() => {
         return completed
     }
 
+    // stars won by watching a 🎬 ad on a journey result; they share the wallet with mission stars
+    function addBonusStars(n) {
+        const wallet = load('plus9.wallet', { missionStars: 0 })
+        wallet.bonusStars = (wallet.bonusStars || 0) + n
+        save('plus9.wallet', wallet)
+    }
+
     const missionList = () => todaysMissions().items.map(item => ({ ...MISSIONS.find(m => m.id === item.id), ...item }))
 
     // ---------- stars and themes ----------
 
-    const totalStars = () => journeyStarTotal() + load('plus9.wallet', { missionStars: 0 }).missionStars
+    function totalStars() {
+        const wallet = load('plus9.wallet', { missionStars: 0 })
+        return journeyStarTotal() + wallet.missionStars + (wallet.bonusStars || 0)
+    }
 
     // cosmetic only: each theme recolors the background (names are in i18n.js as theme.<id>)
     const THEMES = [
@@ -110,6 +120,6 @@ const meta = (() => {
 
     return {
         dayKey, journeyRecord, journeyStarsOf, journeyStarTotal, journeyFrontier,
-        todaysMissions, missionEvent, missionList, totalStars, THEMES, theme, setTheme,
+        todaysMissions, missionEvent, missionList, addBonusStars, totalStars, THEMES, theme, setTheme,
     }
 })()

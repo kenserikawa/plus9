@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <circle cx="30" cy="34" r="27" fill="#1d0f38"/>
-  <circle cx="34" cy="30" r="27" fill="#ffffff" stroke="#1d0f38" stroke-width="4"/>
-  <text x="34" y="44" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="38" fill="#8746ff" stroke="#1d0f38" stroke-width="3" paint-order="stroke">9</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-13 -2 128 128">
+  <!-- Nine, simplified for 16–32 px: same silhouette as mascot.js with a thicker outline,
+       bigger eyes and smile, no highlight or cheeks (they blur at favicon size) -->
+  <circle cx="50" cy="44" r="43" fill="#1d0f38"/>
+  <path d="M79 46 L79 80 Q79 110 42 110" fill="none" stroke="#1d0f38" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="50" cy="44" r="37" fill="#ffd23f"/>
+  <path d="M79 46 L79 80 Q79 110 42 110" fill="none" stroke="#ffd23f" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="36" cy="38" rx="7" ry="9.5" fill="#1d0f38"/>
+  <ellipse cx="64" cy="38" rx="7" ry="9.5" fill="#1d0f38"/>
+  <path d="M37 55 Q50 67 63 55" fill="none" stroke="#1d0f38" stroke-width="7" stroke-linecap="round"/>
 </svg>

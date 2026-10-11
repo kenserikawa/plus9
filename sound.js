@@ -426,11 +426,13 @@ const sfx = (() => {
             buzz(8)
         }),
 
-        // target reached; longer chains get a longer arpeggio
-        complete: effect(chain => {
+        // target reached; longer chains get a longer arpeggio, and each step of a Classic
+        // streak (`lift` = multiplier − 1) starts it higher, so the streak is heard climbing
+        complete: effect((chain, lift = 0) => {
             const steps = Math.min(3 + chain, 9)
-            for (let i = 0; i < steps; i++) tone(note(5 + i), { type: 'triangle', dur: 0.22, vol: 0.28, at: i * 0.055 })
-            tone(note(5 + steps) * 2, { type: 'sine', dur: 0.5, vol: 0.12, at: steps * 0.055 })
+            const from = 5 + 2 * lift
+            for (let i = 0; i < steps; i++) tone(note(from + i), { type: 'triangle', dur: 0.22, vol: 0.28, at: i * 0.055 })
+            tone(note(from + steps) * 2, { type: 'sine', dur: 0.5, vol: 0.12, at: steps * 0.055 })
             buzz([15, 40, 25])
         }),
 
@@ -472,6 +474,25 @@ const sfx = (() => {
                 tone(1319 + i * 60, { type: 'square', dur: 0.18, vol: 0.1, at: i * 0.08 + 0.05 })
             }
             tone(note(12), { type: 'triangle', dur: 0.6, vol: 0.25, at: 0.55 })
+        }),
+
+        // streak pot cashed in: more coins and a higher last note for a bigger multiplier
+        cash: effect(mult => {
+            duck(1.2)
+            const coins = 2 + 2 * mult
+            for (let i = 0; i < coins; i++) {
+                tone(988 + i * 50, { type: 'square', dur: 0.06, vol: 0.09, at: i * 0.06 })
+                tone(1319 + i * 50, { type: 'square', dur: 0.14, vol: 0.09, at: i * 0.06 + 0.04 })
+            }
+            tone(note(10 + 2 * mult), { type: 'triangle', dur: 0.6, vol: 0.25, at: coins * 0.06 + 0.05 })
+            buzz([15, 30, 15, 30, 40])
+        }),
+
+        // streak pot lost: everything slides down
+        bust: effect(() => {
+            tone(note(10), { type: 'sawtooth', dur: 0.6, vol: 0.12, slide: note(-5) })
+            hiss({ dur: 0.5, vol: 0.12, from: 4000, to: 300 })
+            buzz([80, 40, 80])
         }),
 
         tick: effect(last => tone(last ? 1320 : 880, { type: 'sine', dur: 0.05, vol: 0.18 })),

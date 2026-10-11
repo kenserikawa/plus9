@@ -118,6 +118,9 @@ const i18n = (() => {
             'help.r8.t': "Streak (Classic).",
             'help.r8.b': "Each sum in a row multiplies its points: ×2, ×3, up to ×5. They go into a pot: cash it in between sums. Get stuck and the pot is lost. You also see the next three tiles.",
             'key.cash': "cash in",
+            'home.newStreak': "New! Streaks ×5",
+            'res.classicTip': "New in Classic: streaks up to ×5!",
+            'res.potRecord': "With that pot you would have beaten your best!",
         },
 
         es: {
@@ -228,6 +231,9 @@ const i18n = (() => {
             'help.r8.t': "Racha (Clásico).",
             'help.r8.b': "Cada suma seguida multiplica sus puntos: ×2, ×3, hasta ×5. Van a un bote: cóbralo entre sumas. Si te atascas, el bote se pierde. Además ves las tres fichas siguientes.",
             'key.cash': "cobrar",
+            'home.newStreak': "¡Nuevo! Rachas ×5",
+            'res.classicTip': "¡Novedad en Clásico: rachas de hasta ×5!",
+            'res.potRecord': "¡Con ese bote habrías batido tu récord!",
         },
 
         pt: {
@@ -338,6 +344,9 @@ const i18n = (() => {
             'help.r8.t': "Sequência (Clássico).",
             'help.r8.b': "Cada soma seguida multiplica seus pontos: ×2, ×3, até ×5. Eles vão para um pote: guarde-o entre as somas. Se travar, o pote se perde. Você também vê as próximas três peças.",
             'key.cash': "guardar",
+            'home.newStreak': "Novo! Sequências ×5",
+            'res.classicTip': "Novidade no Clássico: sequências até ×5!",
+            'res.potRecord': "Com esse pote você teria batido seu recorde!",
         },
 
         fr: {
@@ -448,6 +457,9 @@ const i18n = (() => {
             'help.r8.t': "Série (Classique).",
             'help.r8.b': "Chaque somme à la suite multiplie ses points : ×2, ×3, jusqu’à ×5. Ils vont dans une cagnotte : encaisse-la entre deux sommes. Si tu bloques, la cagnotte est perdue. Tu vois aussi les trois tuiles suivantes.",
             'key.cash': "encaisser",
+            'home.newStreak': "Nouveau ! Séries ×5",
+            'res.classicTip': "Nouveau en Classique : des séries jusqu’à ×5 !",
+            'res.potRecord': "Avec cette cagnotte, tu aurais battu ton record !",
         },
 
         de: {
@@ -558,6 +570,9 @@ const i18n = (() => {
             'help.r8.t': "Serie (Klassisch).",
             'help.r8.b': "Jede Summe in Folge multipliziert ihre Punkte: ×2, ×3, bis ×5. Sie kommen in einen Topf: kassiere ihn zwischen zwei Summen. Kommst du nicht weiter, ist der Topf verloren. Außerdem siehst du die nächsten drei Steine.",
             'key.cash': "kassieren",
+            'home.newStreak': "Neu! Serien ×5",
+            'res.classicTip': "Neu in Klassisch: Serien bis ×5!",
+            'res.potRecord': "Mit diesem Topf hättest du deinen Rekord geknackt!",
         },
 
         tr: {
@@ -668,6 +683,9 @@ const i18n = (() => {
             'help.r8.t': "Seri (Klasik).",
             'help.r8.b': "Art arda yapılan her toplam puanını çarpar: ×2, ×3, ×5’e kadar. Puanlar kasaya gider: toplamlar arasında bozdur. Takılırsan kasa kaybolur. Ayrıca sıradaki üç taşı da görürsün.",
             'key.cash': "bozdur",
+            'home.newStreak': "Yeni! Seriler ×5",
+            'res.classicTip': "Klasik’te yeni: ×5’e kadar seriler!",
+            'res.potRecord': "O kasayla rekorunu kırardın!",
         },
     }
 

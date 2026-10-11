@@ -238,7 +238,7 @@ function completeSum() {
     const bonus = [combo && tr('float.combo'), doubles && `×${2 ** doubles}`, mult > 1 && tr('float.streak', { n: mult })].filter(Boolean).join(' ')
     floatText(well, bonus ? `+${points} ${bonus}!` : `+${points}`, bonus ? 'is-combo' : '')
     thawIce()
-    sfx.complete(parts.length)
+    sfx.complete(parts.length, mult - 1)
     if (bonus) {
         mascot.mood('cheer')
         confettiFrom(well, 24)
@@ -310,8 +310,8 @@ function checkStuck() {
     const need = target() - sum
     stuck = !tiles.some(t => canPlay(t, need))
     if (!stuck) return
-    if (chain > 0) bust()
-    sfx.stuck()
+    if (chain > 0) bust() // has its own sound
+    else sfx.stuck()
     mascot.mood('worried', { hold: true })
     tutorial('stuck')
     // with rewarded ads the player can still watch one for a free shuffle, or give up / bank
@@ -384,8 +384,8 @@ function bank() {
 
 // Classic: move the pot into the score and start a new streak
 function cashIn() {
+    // no gameplayStart here: cashing in may happen during the level-up break; the next tile played resumes
     if (!canCash() || platform.adShowing) return
-    platform.gameplayStart()
     const gained = pot
     const mult = streakMultiplier(chain)
     score += gained
@@ -394,7 +394,7 @@ function cashIn() {
     chain = 0
     floatText(scoreEl, `+${gained}`, 'is-combo')
     bump(scoreEl, 'bump')
-    sfx.bank()
+    sfx.cash(mult)
     if (mult >= 3) {
         mascot.mood('cheer')
         confettiFrom(cashBtn, 12 + mult * 6)
@@ -411,6 +411,7 @@ function bust() {
     chain = 0
     floatText(cashBtn, lost ? `-${lost}` : tr('float.bust'), 'is-cost')
     bump(streakEl, 'shake')
+    sfx.bust()
     if (!cashedBefore()) coachSay(tr('coach.bust'), 5000)
     else floatText(well, tr('float.bust'), 'is-cost')
 }
@@ -484,7 +485,8 @@ function gameOver(reason, banked = false, completed = false) {
     }
     render()
     // a pot still open when the game ends never reached the score
-    const lostPot = streakOn() && pot > 0 ? ` ${tr('res.potLost', { n: pot })}` : ''
+    let lostPot = streakOn() && pot > 0 ? ` ${tr('res.potLost', { n: pot })}` : ''
+    if (lostPot && score <= previous && score + pot > previous) lostPot += ` ${tr('res.potRecord')}`
     showResult({
         title: tr(banked ? 'res.banked' : 'res.over'),
         happy: banked,
@@ -537,7 +539,8 @@ function finishJourney(won, reason) {
         prize,
         happy: won,
         stars: won ? stars : null,
-        reason: won ? starReason(stars) : say(reason),
+        // the first win of level 5 points a new player at Classic's streak
+        reason: won ? starReason(stars) + (n === 5 && gained > 0 && !classicSeen() ? ` ${tr('res.classicTip')}` : '') : say(reason),
         stats: gameStats(),
         // straight into the next level: its goal shows as a coach tip, no extra screen
         primary: won
@@ -754,6 +757,7 @@ function newGame() {
 
     dealBoard(mode === 'journey' ? journeyDef.initial : null)
     if (streakOn() && !cashedBefore()) coachSay(tr('coach.streak'), 8000)
+    if (streakOn()) markClassicSeen()
     if (mode === 'journey' && journeyDef.setup.length) {
         // the level's special tiles and frozen obstacles, exactly as the bot plays them
         const dealt = tiles.map(t => ({ value: t.value, color: t.color, special: t.special, ice: t.ice }))
@@ -887,7 +891,7 @@ function render() {
     bankBadge.textContent = score
     bankBtn.setAttribute('aria-label', giveUp ? tr('aria.giveUp') : tr('aria.bank', { n: score }))
 
-    scoreEl.textContent = score
+    showCount(scoreEl, score)
     renderHud()
     if (mode === 'daily' && playing) saveDailyProgress()
 }
@@ -905,7 +909,7 @@ function renderStreak() {
     }))
     $('pot').setAttribute('aria-label', tr('aria.streak', { m: nextMult }))
     streakEl.classList.toggle('is-max', chain >= STREAK_MAX)
-    cashBadge.textContent = pot
+    showCount(cashBadge, pot)
     cashBtn.disabled = !canCash()
     cashBtn.setAttribute('aria-label', pot ? tr('aria.cash', { n: pot }) : tr('aria.cashEmpty'))
 }
@@ -937,6 +941,30 @@ function renderHud() {
         hud2El.removeAttribute('aria-label')
         set('hud3-label', 'hud3', tr('hud.best'), Math.max(best, score))
     }
+}
+
+// a number that grows counts up to its new value; a drop (a paid shuffle, a lost pot) is instant
+const counters = new WeakMap() // el → { shown, target, frame }
+function showCount(el, value) {
+    let c = counters.get(el)
+    if (!c) counters.set(el, (c = { shown: value, target: null, frame: 0 }))
+    if (value === c.target) return
+    cancelAnimationFrame(c.frame)
+    c.target = value
+    if (value <= c.shown || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        c.shown = value
+        el.textContent = value
+        return
+    }
+    const from = c.shown, start = performance.now()
+    const ms = Math.min(700, 250 + (value - from) * 3)
+    const step = now => {
+        const k = Math.min(1, (now - start) / ms)
+        c.shown = Math.round(from + (value - from) * (1 - (1 - k) ** 3)) // eases out
+        el.textContent = c.shown
+        if (k < 1) c.frame = requestAnimationFrame(step)
+    }
+    c.frame = requestAnimationFrame(step)
 }
 
 function bump(el, cls) {
@@ -1336,7 +1364,10 @@ function renderHome() {
     dailyCard.classList.toggle('is-new', !done)
     const streak = readStreak().count
     $('info-daily').textContent = done ? tr('home.done', { streak }) : tr('home.new', { par: todaysPar() })
-    $('info-classic').textContent = tr('home.best', { n: readBest('classic') })
+    // Classic's streak is the deepest mode: flag it as new until it has been played once
+    const classicNew = !classicSeen()
+    document.querySelector('[data-start="classic"]').classList.toggle('is-new', classicNew)
+    $('info-classic').textContent = classicNew ? tr('home.newStreak') : tr('home.best', { n: readBest('classic') })
     $('info-timed').textContent = tr('home.best', { n: readBest('timed') })
 
     $('missions').replaceChildren(...meta.missionList().map(m => {
@@ -1524,6 +1555,14 @@ function readBest(m) {
 function saveBest(value) {
     best = value
     try { localStorage.setItem(`plus9.best.${mode}`, value) } catch { /* storage unavailable */ }
+}
+
+function classicSeen() {
+    try { return localStorage.getItem('plus9.classicSeen') === '1' } catch { return true }
+}
+
+function markClassicSeen() {
+    try { localStorage.setItem('plus9.classicSeen', '1') } catch { /* storage unavailable */ }
 }
 
 // the streak tip shows until the player has cashed in once

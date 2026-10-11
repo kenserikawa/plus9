@@ -1,3 +1,38 @@
+/* Fonts are bundled (SIL Open Font License, see fonts/) so the game makes no external requests.
+   Baloo 2 is a variable font: one file covers weights 500–700. */
+@font-face {
+    font-family: 'Ranchers';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/ranchers-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Ranchers';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(fonts/ranchers-latin-ext.woff2) format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Baloo 2';
+    font-style: normal;
+    font-weight: 500 700;
+    font-display: swap;
+    src: url(fonts/baloo2-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Baloo 2';
+    font-style: normal;
+    font-weight: 500 700;
+    font-display: swap;
+    src: url(fonts/baloo2-latin-ext.woff2) format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
     --tangerine: #ff623a;
     --sky: #37afff;
@@ -117,6 +152,19 @@ body {
 }
 
 .mode[aria-pressed="true"] { color: var(--ink); background: var(--paper); }
+.mode.is-new { position: relative; }
+.mode.is-new::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    width: 9px;
+    height: 9px;
+    background: var(--gold);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+
 .mode:focus-visible { outline: 3px solid var(--paper); outline-offset: 2px; }
 
 /* ---------- board ---------- */
@@ -472,6 +520,39 @@ body {
 .shuffle:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 .shuffle:disabled { cursor: not-allowed; background: #9a8fb3; }
 
+/* bank: end the game and keep the points (offered only when stuck with no free shuffle) */
+.bank {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--label-font);
+    font-size: var(--label-size);
+    padding: 2px 6px 2px 16px;
+    color: var(--ink);
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+    cursor: pointer;
+}
+
+.bank-badge {
+    display: grid;
+    place-items: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0 6px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+}
+
+.bank:active { transform: translate(-2px, 3px); box-shadow: -1px 2px 0 var(--ink); }
+.bank:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+
+/* these pills set display, which would otherwise override the hidden attribute */
+.next[hidden], .bank[hidden] { display: none; }
+
 .nudge { animation: nudge 900ms ease-in-out infinite; }
 @keyframes nudge {
     50% { transform: scale(1.12) rotate(-3deg); }
@@ -560,9 +641,31 @@ body {
 }
 
 .over-title { color: var(--tangerine); }
+.over-title.is-banked { color: var(--gold); }
 .over-reason { margin: 0 0 12px; font-size: 1.1rem; line-height: 1.35; }
 .over-score { margin: 0; font-size: 1.2rem; }
 .over-stats { margin: 0 0 20px; font-size: 1rem; color: var(--muted); }
+/* daily result: share grid, streak and countdown */
+.daily-result { margin: 0 0 16px; }
+.daily-result[hidden] { display: none; }
+.daily-result p { margin: 0 0 6px; }
+
+.daily-grid {
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    white-space: pre-line; /* two rows of six, same as the shared text */
+}
+
+.daily-streak { font-weight: 700; }
+.daily-next { font-size: 0.95rem; color: var(--muted); }
+
+.btn.btn-share {
+    margin-top: 8px;
+    color: var(--ink);
+    background: var(--gold);
+}
+
 .over-score strong { font-family: 'Ranchers', cursive; font-weight: 400; font-size: 2rem; }
 
 /* how to play */
@@ -600,6 +703,7 @@ body {
     border-radius: 50%;
 }
 .rule-icon.is-danger { background: var(--danger); }
+.rule-icon.is-gold { color: var(--ink); background: var(--gold); }
 .rule-icon:has(.mini-tile) { background: var(--paper); }
 
 .mini-tile { --o: 2px; color: var(--sky); }
@@ -637,6 +741,14 @@ kbd {
     .hud { gap: 6px; }
     .hud-item { gap: 5px; padding: 2px 9px; font-size: 1.1rem; }
     .hud-value { font-size: 1.4rem; min-width: 0; }
+
+    /* the actions row can hold clock + shuffle + bank with big numbers */
+    .actions { gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .next, .shuffle, .bank { gap: 5px; padding-left: 10px; font-size: 1.1rem; }
+    .clock { padding: 2px 10px; }
+    .clock span { font-size: 1.3rem; }
+    .next-tile, .shuffle-badge, .bank-badge { min-width: 1.9rem; height: 1.9rem; }
+    .next-tile { width: 1.9rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

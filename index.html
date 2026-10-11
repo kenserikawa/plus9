@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plus 9</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Ranchers&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+    <meta name="description" content="A quick number puzzle: drag tiles into the middle to make the target exactly. Classic, 60-second and daily challenge modes.">
+    <meta name="theme-color" content="#8746ff">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -26,12 +26,13 @@
         <div class="modes" role="group" aria-label="Game mode">
             <button class="mode" type="button" data-mode="classic" aria-pressed="true">Classic</button>
             <button class="mode" type="button" data-mode="timed" aria-pressed="false">60 seconds</button>
+            <button class="mode" type="button" data-mode="daily" aria-pressed="false">Daily</button>
         </div>
 
         <div class="hud">
             <p class="hud-item">Score <span id="score" class="hud-value">0</span></p>
             <p class="hud-item">Level <span id="level" class="hud-value">1</span></p>
-            <p class="hud-item">Best <span id="best" class="hud-value">0</span></p>
+            <p class="hud-item"><span id="best-label">Best</span> <span id="best" class="hud-value">0</span></p>
         </div>
 
         <!-- 3x3 board: 8 tiles around the well. Tiles are rendered by app.js -->
@@ -49,7 +50,7 @@
                     <span class="lu-arrow" aria-label="becomes">→</span>
                     <span class="lu-new" id="lu-new">10</span>
                 </p>
-                <p class="levelup-note">New target. +1 free shuffle</p>
+                <p class="levelup-note" id="lu-note">New target. +1 free shuffle</p>
             </div>
         </div>
 
@@ -59,14 +60,23 @@
             <button class="shuffle" id="shuffle" type="button" aria-keyshortcuts="S">
                 Shuffle <span class="shuffle-badge" id="shuffle-badge">1</span>
             </button>
+            <button class="bank" id="bank" type="button" aria-keyshortcuts="B" hidden>
+                Bank <span class="bank-badge" id="bank-badge">0</span>
+            </button>
         </div>
     </main>
 
     <dialog class="sheet over" id="over">
-        <h2 class="sheet-title over-title outline">Game over</h2>
+        <h2 class="sheet-title over-title outline" id="over-title">Game over</h2>
         <p class="over-reason" id="over-reason"></p>
         <p class="over-score">Score <strong id="over-score">0</strong></p>
         <p class="over-stats" id="over-stats"></p>
+        <div class="daily-result" id="daily-result" hidden>
+            <p class="daily-grid" id="daily-grid"></p>
+            <p class="daily-streak" id="daily-streak"></p>
+            <p class="daily-next" id="daily-next"></p>
+            <button class="btn btn-share" id="share" type="button">Share result</button>
+        </div>
         <button class="btn" id="again" autofocus>Play again</button>
     </dialog>
 
@@ -94,15 +104,23 @@
                 <p><strong>Shuffle rerolls the board.</strong> You get a free one at the start and one more each level. With none left, a shuffle costs points, and each one you pay for costs more.</p>
             </li>
             <li>
+                <span class="rule-icon is-gold" aria-hidden="true">$</span>
+                <p><strong>Stuck? Pay or bank.</strong> Pay for a shuffle to keep going, or bank to end the game and keep all your points.</p>
+            </li>
+            <li>
                 <span class="rule-icon" aria-hidden="true">↑</span>
-                <p><strong>Level up every 4 sums.</strong> The target and the tiles get bigger.</p>
+                <p><strong>Level up every 4 sums.</strong> The target keeps growing with no top level, and bigger numbers start to appear.</p>
+            </li>
+            <li>
+                <span class="rule-icon is-gold" aria-hidden="true">1</span>
+                <p><strong>Daily challenge.</strong> Everyone gets the same tiles each day. Play 12 sums once, share your result and keep your streak going.</p>
             </li>
             <li>
                 <span class="rule-icon" aria-hidden="true">60</span>
                 <p><strong>60 seconds mode.</strong> Race the clock. Every sum adds 2 seconds.</p>
             </li>
         </ul>
-        <p class="keys">Keys: <kbd>Tab</kbd> + <kbd>Enter</kbd> to play a tile, <kbd>S</kbd> shuffle, <kbd>M</kbd> sound, <kbd>H</kbd> help.</p>
+        <p class="keys">Keys: <kbd>Tab</kbd> + <kbd>Enter</kbd> to play a tile, <kbd>S</kbd> shuffle, <kbd>B</kbd> bank, <kbd>M</kbd> sound, <kbd>H</kbd> help.</p>
         <button class="btn" id="help-close" type="button">Let's play</button>
     </dialog>
 

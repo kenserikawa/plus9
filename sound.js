@@ -81,6 +81,9 @@ const sfx = (() => {
             try { localStorage.setItem(MUTE_KEY, value ? '1' : '0') } catch { /* storage unavailable */ }
         },
         unlock() { if (!muted) audio() },
+        // silence everything while the page is hidden (tab switch, app in background)
+        suspend() { if (ctx && ctx.state === 'running') ctx.suspend() },
+        resume() { if (ctx && !muted && ctx.state === 'suspended') ctx.resume() },
 
         // tile lifted for dragging
         lift: effect(() => tone(note(7), { type: 'sine', dur: 0.08, vol: 0.15, slide: note(9) })),
@@ -124,6 +127,15 @@ const sfx = (() => {
                 tone(988, { type: 'square', dur: 0.08, vol: 0.12, at: 0.05 })
                 tone(1319, { type: 'square', dur: 0.3, vol: 0.12, at: 0.12 })
             }
+        }),
+
+        // banked: a cascade of coins
+        bank: effect(() => {
+            for (let i = 0; i < 6; i++) {
+                tone(988 + i * 60, { type: 'square', dur: 0.07, vol: 0.1, at: i * 0.08 })
+                tone(1319 + i * 60, { type: 'square', dur: 0.18, vol: 0.1, at: i * 0.08 + 0.05 })
+            }
+            tone(note(12), { type: 'triangle', dur: 0.6, vol: 0.25, at: 0.55 })
         }),
 
         tick: effect(last => tone(last ? 1320 : 880, { type: 'sine', dur: 0.05, vol: 0.18 })),

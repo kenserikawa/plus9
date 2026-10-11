@@ -4,14 +4,18 @@
 
 const mascot = (() => {
     const INK = '#1d0f38'
-    const TAIL = 'M80 54 C84 90 64 111 30 108'
+    // the stem drops straight down the loop's right side, then curls left at the bottom
+    const TAIL = 'M79 46 L79 80 Q79 110 42 110'
 
     const svg = () => `
 <svg class="mascot-art" viewBox="0 0 100 124" aria-hidden="true">
     <g class="m-body">
-        <path d="${TAIL}" fill="none" stroke="${INK}" stroke-width="31" stroke-linecap="round" />
-        <circle cx="50" cy="44" r="38" fill="var(--m-fill)" stroke="${INK}" stroke-width="6" />
-        <path d="${TAIL}" fill="none" stroke="var(--m-fill)" stroke-width="19" stroke-linecap="round" />
+        <!-- one silhouette: all the ink first, then all the gold on top, so the outline
+             runs unbroken around the loop and the stem with no seam where they meet -->
+        <circle cx="50" cy="44" r="41.5" fill="${INK}" />
+        <path d="${TAIL}" fill="none" stroke="${INK}" stroke-width="27" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="50" cy="44" r="38" fill="var(--m-fill)" />
+        <path d="${TAIL}" fill="none" stroke="var(--m-fill)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M20 30 Q24 16 38 11" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.7" />
     </g>
     <g class="m-face" fill="${INK}" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">

@@ -39,10 +39,10 @@
         /* Nine cheering in the corner: the face of the game */
         .thumb-mascot {
             position: absolute;
-            left: 18px;
-            bottom: -6px;
-            width: 230px;
-            height: 285px;
+            left: 22px;
+            bottom: 26px;
+            width: 214px;
+            height: 266px;
             z-index: 5;
             transform: rotate(-8deg);
             filter: drop-shadow(-10px 14px 0 var(--ink));
@@ -58,7 +58,7 @@
     <script>
         // same ring drawing as the game: 9 segments, 6 filled by the tiles already played
         const board = document.getElementById('board')
-        const values = [[5, '#37afff'], ['★', '#ffd23f', 'is-wild'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], [8, '#ff623a'], [6, '#8746ff', 'is-double'], [3, '#37afff']]
+        const values = [[5, '#37afff'], ['★', '#ffd23f', 'is-wild'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], ['', '#ff623a'], [6, '#8746ff', 'is-double'], [3, '#37afff']]
         for (const v of values) {
             if (!v) {
                 const well = document.createElement('div')

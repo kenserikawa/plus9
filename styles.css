@@ -972,7 +972,23 @@ body.is-ad .game { pointer-events: none; }
 .mini-tile { --o: 2px; color: var(--sky); }
 .mini-tile.is-next { color: var(--magenta); }
 
-.keys { margin: 0 0 20px; font-size: 0.9rem; color: var(--muted); line-height: 1.8; }
+/* keyboard hints: each key stays with its action; hidden where there is no keyboard */
+.keys {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--muted);
+}
+.keys li { white-space: nowrap; }
+@media (hover: none) and (pointer: coarse) {
+    .keys { display: none; }
+}
 
 kbd {
     font: inherit;

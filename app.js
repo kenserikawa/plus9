@@ -23,6 +23,12 @@ const shuffleBadge = $('shuffle-badge')
 const bankBtn = $('bank')
 const bankBadge = $('bank-badge')
 const rewardBtn = $('reward')
+const streakEl = $('streak')
+const potMultEl = $('pot-mult')
+const potPipsEl = $('pot-pips')
+const cashBtn = $('cash')
+const cashBadge = $('cash-badge')
+const queueEl = $('queue')
 const clockEl = $('clock')
 const clockTimeEl = $('clock-time')
 const levelUpEl = $('levelup')
@@ -38,6 +44,7 @@ const help = $('help')
 
 let tiles = []      // [{ value, color, el }]
 let next = null     // { value, color } that replaces the next tile played
+let queue = []      // Classic: the tiles after `next`, in order (QUEUE_SIZE of them)
 let parts = []      // [{ value, color }] of the tiles currently in the well
 let sum = 0
 let score = 0
@@ -62,6 +69,9 @@ let bestChain = 0
 let journeyDef = null // rules.journeyLevel(n) while playing the journey
 let journeyGoals = [0, 0, 0] // score for 1★ (finish), 2★, 3★
 let tutorialStep = 0
+let pot = 0           // Classic: points from the current streak, not yet in the score
+let chain = 0         // Classic: sums in a row since the last cash-in or bust
+let bestCash = 0      // Classic: biggest cash-in this game
 
 // every random draw goes through rng: Math.random normally, a seeded generator in the
 // daily and the journey so the board is the same for everyone
@@ -76,6 +86,11 @@ const shuffleCost = () => shuffleCostFor(level, paidShuffles)
 const canShuffle = () => freeShuffles > 0 || score >= shuffleCost()
 // the daily is one attempt for everyone, so it never offers a take-back
 const canRevive = () => platform.hasRewarded && !revived && mode !== 'daily'
+// Classic plays with the streak pot and shows QUEUE_SIZE more tiles after Next
+const streakOn = () => mode === 'classic'
+const QUEUE_SIZE = 2
+// the pot can be cashed in between sums (also while a finished sum or the level-up card is on show)
+const canCash = () => playing && streakOn() && pot > 0 && !stuck && (sum === 0 || sum === target())
 
 // ---------- board setup ----------
 
@@ -149,7 +164,10 @@ function renderTile(tile) {
 
 function takeNext() {
     const tile = next
-    next = randomTile()
+    if (queue.length) {
+        next = queue.shift()
+        queue.push(randomTile())
+    } else next = randomTile()
     return tile
 }
 
@@ -195,8 +213,15 @@ function play(tile) {
 }
 
 function completeSum() {
-    const { points, combo, doubles } = sumPoints(parts, level)
-    score += points
+    const { points: base, combo, doubles } = sumPoints(parts, level)
+    // Classic: the sum goes into the pot at the streak's multiplier; elsewhere straight to the score
+    let points = base, mult = 1
+    if (streakOn()) {
+        chain++
+        mult = streakMultiplier(chain)
+        points = base * mult
+        pot += points
+    } else score += points
     sums++
     chainLog.push(parts.length)
     bestChain = Math.max(bestChain, parts.length)
@@ -209,8 +234,8 @@ function completeSum() {
     resolving = true
     render()
     bump(well, 'match')
-    bump(scoreEl, 'bump')
-    const bonus = [combo && tr('float.combo'), doubles && `×${2 ** doubles}`].filter(Boolean).join(' ')
+    bump(streakOn() ? streakEl : scoreEl, 'bump')
+    const bonus = [combo && tr('float.combo'), doubles && `×${2 ** doubles}`, mult > 1 && tr('float.streak', { n: mult })].filter(Boolean).join(' ')
     floatText(well, bonus ? `+${points} ${bonus}!` : `+${points}`, bonus ? 'is-combo' : '')
     thawIce()
     sfx.complete(parts.length)
@@ -246,6 +271,7 @@ function levelUp() {
     level++
     if (gainsShuffle) freeShuffles++
     next = randomTile()
+    queue = queue.map(() => randomTile()) // the upcoming tiles follow the new target too
 
     // the new target gets its own moment: a card over the board, then the well shows it big
     $('lu-title').textContent = tr('lu.title', { n: level + 1 })
@@ -284,6 +310,7 @@ function checkStuck() {
     const need = target() - sum
     stuck = !tiles.some(t => canPlay(t, need))
     if (!stuck) return
+    if (chain > 0) bust()
     sfx.stuck()
     mascot.mood('worried', { hold: true })
     tutorial('stuck')
@@ -355,6 +382,39 @@ function bank() {
         : { k: 'reason.bankStuck' }, true)
 }
 
+// Classic: move the pot into the score and start a new streak
+function cashIn() {
+    if (!canCash() || platform.adShowing) return
+    platform.gameplayStart()
+    const gained = pot
+    const mult = streakMultiplier(chain)
+    score += gained
+    bestCash = Math.max(bestCash, gained)
+    pot = 0
+    chain = 0
+    floatText(scoreEl, `+${gained}`, 'is-combo')
+    bump(scoreEl, 'bump')
+    sfx.bank()
+    if (mult >= 3) {
+        mascot.mood('cheer')
+        confettiFrom(cashBtn, 12 + mult * 6)
+    } else mascot.mood('happy')
+    hideCoach()
+    markCashed()
+    render()
+}
+
+// Classic: getting stuck breaks the streak and the pot is lost
+function bust() {
+    const lost = pot
+    pot = 0
+    chain = 0
+    floatText(cashBtn, lost ? `-${lost}` : tr('float.bust'), 'is-cost')
+    bump(streakEl, 'shake')
+    if (!cashedBefore()) coachSay(tr('coach.bust'), 5000)
+    else floatText(well, tr('float.bust'), 'is-cost')
+}
+
 function shuffle() {
     if (!playing || resolving || !canShuffle() || platform.adShowing) return
     platform.gameplayStart()
@@ -423,10 +483,12 @@ function gameOver(reason, banked = false, completed = false) {
         }
     }
     render()
+    // a pot still open when the game ends never reached the score
+    const lostPot = streakOn() && pot > 0 ? ` ${tr('res.potLost', { n: pot })}` : ''
     showResult({
         title: tr(banked ? 'res.banked' : 'res.over'),
         happy: banked,
-        reason: say(reason),
+        reason: say(reason) + lostPot,
         stats: gameStats(),
         compare: { score, best: previous },
         primary: { label: tr('res.again'), action: () => startGame(mode) },
@@ -440,7 +502,8 @@ const say = reason => (typeof reason === 'string' ? reason : tr(reason.k, reason
 
 function gameStats() {
     // a journey level has one fixed target, so its level number adds nothing
-    return tr('stats', { sums, lv: mode === 'journey' ? 0 : level + 1, chain: bestChain, combos })
+    const stats = tr('stats', { sums, lv: mode === 'journey' ? 0 : level + 1, chain: bestChain, combos })
+    return streakOn() && bestCash ? `${stats} ${tr('stats.cash', { n: bestCash })}` : stats
 }
 
 // ---------- journey ----------
@@ -655,11 +718,16 @@ function newGame() {
     combos = 0
     bestChain = 0
     tutorialStep = 0
+    pot = 0
+    chain = 0
+    bestCash = 0
+    queue = []
     mascot.mood('idle')
     best = readBest(mode)
     gen = null
     rng = Math.random
     clockEl.hidden = mode !== 'timed'
+    screens.game.classList.toggle('has-streak', streakOn())
     $('game-title').textContent = gameTitle()
 
     if (mode === 'daily') {
@@ -685,6 +753,7 @@ function newGame() {
     }
 
     dealBoard(mode === 'journey' ? journeyDef.initial : null)
+    if (streakOn() && !cashedBefore()) coachSay(tr('coach.streak'), 8000)
     if (mode === 'journey' && journeyDef.setup.length) {
         // the level's special tiles and frozen obstacles, exactly as the bot plays them
         const dealt = tiles.map(t => ({ value: t.value, color: t.color, special: t.special, ice: t.ice }))
@@ -710,6 +779,7 @@ function dealBoard(initial = null) {
         tiles.forEach(t => setTile(t, randomTile()))
         next = randomTile()
     }
+    queue = streakOn() ? Array.from({ length: QUEUE_SIZE }, randomTile) : []
     renderClock(TIMED_SECONDS * 1000)
     render()
 }
@@ -783,6 +853,19 @@ function render() {
     nextEl.classList.toggle('is-wild', next.special === 'wild')
     nextEl.classList.toggle('is-rainbow', next.special === 'rainbow')
     nextEl.style.setProperty('--tile', next.special === 'wild' ? WILD_COLOR : next.color)
+    queueEl.hidden = !queue.length
+    queueEl.replaceChildren(...queue.map(t => {
+        const el = document.createElement('span')
+        el.className = 'next-tile is-later'
+        el.textContent = t.special === 'wild' ? '★' : t.value
+        el.dataset.n = el.textContent
+        el.classList.toggle('is-wild', t.special === 'wild')
+        el.classList.toggle('is-rainbow', t.special === 'rainbow')
+        el.style.setProperty('--tile', t.special === 'wild' ? WILD_COLOR : t.color)
+        return el
+    }))
+    queueEl.setAttribute('aria-label', tr('aria.queue', { list: queue.map(t => (t.special === 'wild' ? '★' : t.value)).join(', ') }))
+    renderStreak()
 
     const cost = shuffleCost()
     shuffleBadge.textContent = freeShuffles > 0 ? freeShuffles : `-${cost}`
@@ -807,6 +890,24 @@ function render() {
     scoreEl.textContent = score
     renderHud()
     if (mode === 'daily' && playing) saveDailyProgress()
+}
+
+// Classic's streak row: the multiplier the next sum earns, one pip per sum in the streak, and the pot
+function renderStreak() {
+    streakEl.hidden = !streakOn()
+    if (!streakOn()) return
+    const nextMult = streakMultiplier(chain + 1)
+    potMultEl.textContent = `×${nextMult}`
+    potPipsEl.replaceChildren(...Array.from({ length: STREAK_MAX }, (_, i) => {
+        const pip = document.createElement('span')
+        pip.className = i < chain ? 'pip is-on' : 'pip'
+        return pip
+    }))
+    $('pot').setAttribute('aria-label', tr('aria.streak', { m: nextMult }))
+    streakEl.classList.toggle('is-max', chain >= STREAK_MAX)
+    cashBadge.textContent = pot
+    cashBtn.disabled = !canCash()
+    cashBtn.setAttribute('aria-label', pot ? tr('aria.cash', { n: pot }) : tr('aria.cashEmpty'))
 }
 
 // the second and third HUD pills change meaning with the mode
@@ -1425,6 +1526,15 @@ function saveBest(value) {
     try { localStorage.setItem(`plus9.best.${mode}`, value) } catch { /* storage unavailable */ }
 }
 
+// the streak tip shows until the player has cashed in once
+function cashedBefore() {
+    try { return localStorage.getItem('plus9.cashed') === '1' } catch { return true }
+}
+
+function markCashed() {
+    try { localStorage.setItem('plus9.cashed', '1') } catch { /* storage unavailable */ }
+}
+
 function onboarded() {
     try { return localStorage.getItem('plus9.onboarded') === '1' } catch { return true }
 }
@@ -1496,6 +1606,7 @@ dialog.addEventListener('close', () => clearInterval(countdownTimer))
 dialog.addEventListener('cancel', ev => ev.preventDefault())
 shuffleBtn.addEventListener('click', shuffle)
 bankBtn.addEventListener('click', bank)
+cashBtn.addEventListener('click', cashIn)
 rewardBtn.addEventListener('click', rewardShuffle)
 
 $('go-style').addEventListener('click', openStyle)
@@ -1537,6 +1648,7 @@ document.addEventListener('keydown', ev => {
     if (screen !== 'game' || dialog.open || help.open) return
     if (key === 's') shuffle()
     if (key === 'b') bank()
+    if (key === 'c') cashIn()
 })
 
 // leaving the tab or app pauses the 60-second clock and the audio

@@ -2,7 +2,8 @@
 // Uses rules.js and bot.js directly, so the numbers always match the game.
 //
 // 1. Per level: how often a sum hits a dead end (no tile fits) for three kinds of player.
-// 2. Whole open games (Classic rules: level-ups, free + paid shuffles, never banking).
+// 2. Whole open games (level-ups, free + paid shuffles, never banking), points scored at once.
+// 3. Whole Classic games with the streak pot: final score by when the bot cashes in.
 //
 // Players: careless = biggest tile that fits; normal = finish if a tile fits exactly,
 // else any tile that fits; careful = bot.js lookahead player.
@@ -63,4 +64,18 @@ console.table(['normal', 'careful'].map(player => {
         'score p50': q(0.5).score,
         endless: res.filter(r => r.sums >= 1000).length,
     }
+}))
+
+// Classic's streak pot: the decision must matter. Cashing every sum (×1) and never cashing
+// should both lose to cashing at a middle multiplier, for both kinds of player.
+console.log(`Classic streak pot (500 games each; ×1 … ×${R.STREAK_MAX}, stuck loses the pot): median final score by when the bot cashes in`)
+console.table(['normal', 'careful'].map(player => {
+    const row = { player }
+    for (const bankAt of [1, 2, 3, 4, 5, 6, 8, 12]) {
+        const res = Array.from({ length: 500 }, (_, k) =>
+            B.simulateRun({ seed: R.hashSeed(`balance:${k}`), levelUps: true, player, playerSeed: k + 1, bankAt }))
+            .map(r => r.score).sort((a, b) => a - b)
+        row[`at ${bankAt}`] = res[250]
+    }
+    return row
 }))

@@ -43,9 +43,12 @@ const PLAYERS = { careful: carefulPick, normal: normalPick }
 //   levelUps   whether the difficulty rises every SUMS_PER_LEVEL sums (daily) or stays (journey)
 //   initial    optional hand-picked { tiles, next } (journey level 1)
 //   player     'careful' | 'normal'; `playerSeed` seeds the normal player's choices
+//   bankAt     Classic streak rules: sums go into a pot (×1, ×2 … up to STREAK_MAX) that the
+//              bot cashes in after `bankAt` sums in a row; getting stuck loses the pot, and
+//              a pot still open when the run ends is lost. null = points go straight to the score
 // When stuck with no free shuffle the bot pays only if the shuffle costs under a third
 // of its score, otherwise it stops (banks, or fails a journey level).
-function simulateRun({ seed, lv = 0, sums = Infinity, levelUps = false, initial = null, specials = true, setup = [], player = 'careful', playerSeed = 1 }) {
+function simulateRun({ seed, lv = 0, sums = Infinity, levelUps = false, initial = null, specials = true, setup = [], player = 'careful', playerSeed = 1, bankAt = null }) {
     const board = createRng(seed).random
     const choice = createRng(playerSeed).random
     const pick = PLAYERS[player]
@@ -55,15 +58,19 @@ function simulateRun({ seed, lv = 0, sums = Infinity, levelUps = false, initial 
     let next = initial ? { ...initial.next } : draw()
     applySetup(tiles, setup)
     let sum = 0, parts = [], score = 0, done = 0, free = 1, paid = 0
+    let pot = 0, chain = 0, busts = 0
 
     for (let moves = 0; moves < 5000 && done < sums; moves++) {
         const need = targetFor(level) - sum
         const fits = tiles.map((t, i) => [t, i]).filter(([t]) => canPlay(t, need))
         if (!fits.length) {
+            if (pot) busts++
+            pot = 0
+            chain = 0
             const cost = shuffleCostFor(level, paid)
             if (free > 0) free--
             else if (score >= cost && cost < score / 3) { score -= cost; paid++ }
-            else return { score, sums: done, completed: false }
+            else return { score, sums: done, completed: false, busts }
             tiles = tiles.map(t => (t.ice ? t : draw())) // frozen tiles stay put
             continue
         }
@@ -74,7 +81,16 @@ function simulateRun({ seed, lv = 0, sums = Infinity, levelUps = false, initial 
         next = draw()
         if (sum < targetFor(level)) continue
 
-        score += sumPoints(parts, level).points
+        const { points } = sumPoints(parts, level)
+        if (bankAt) {
+            chain++
+            pot += points * streakMultiplier(chain)
+            if (chain >= bankAt) {
+                score += pot
+                pot = 0
+                chain = 0
+            }
+        } else score += points
         done++
         sum = 0
         parts = []
@@ -85,7 +101,7 @@ function simulateRun({ seed, lv = 0, sums = Infinity, levelUps = false, initial 
             next = draw()
         }
     }
-    return { score, sums: done, completed: done >= sums }
+    return { score, sums: done, completed: done >= sums, busts }
 }
 
 // round to a friendly number, never below 1

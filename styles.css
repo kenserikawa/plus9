@@ -932,8 +932,99 @@ body {
 .reward:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 .reward:disabled { cursor: wait; opacity: 0.6; }
 
+/* Classic: the tiles after Next, smaller and in order */
+.next-queue { display: flex; align-items: center; gap: 4px; margin-left: -2px; }
+.next-tile.is-later {
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 0.95rem;
+    --o: 1.5px;
+    border-width: 1.5px;
+    opacity: 0.85;
+}
+
+/* ---------- Classic streak: multiplier, pips and the pot ---------- */
+
+/* the streak row takes a line in portrait: the board gives up a little height for it */
+.game.has-streak { --cell: min(26vw, 13.5vh, 150px); }
+
+.streak {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+/* in portrait the streak is a row of its own above Next and Shuffle */
+.actions:has(> .streak:not([hidden])) { flex-wrap: wrap; justify-content: center; }
+.actions > .streak { flex-basis: 100%; order: -1; }
+
+.pot {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 12px 2px 14px;
+    font-family: var(--label-font);
+    font-size: var(--label-size);
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+}
+
+.pot-mult {
+    min-width: 2ch;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    color: var(--violet);
+}
+
+.pot-pips { display: flex; gap: 4px; }
+.pip {
+    width: 10px;
+    height: 10px;
+    background: var(--track);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+.pip.is-on { background: var(--gold); }
+/* the streak at its top multiplier: the pill turns gold */
+.streak.is-max .pot { background: var(--gold); }
+.streak.is-max .pot-mult { color: var(--ink); }
+.streak.is-max .pip.is-on { background: var(--ink); }
+
+/* cash in: gold like Bank (it keeps points); greyed while there is nothing to take */
+.cash {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--label-font);
+    font-size: var(--label-size);
+    padding: 2px 6px 2px 16px;
+    color: var(--ink);
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+    cursor: pointer;
+}
+.cash-badge {
+    display: grid;
+    place-items: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0 6px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+}
+.cash:active:not(:disabled) { transform: translate(-2px, 3px); box-shadow: -1px 2px 0 var(--ink); }
+.cash:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+.cash:disabled { cursor: not-allowed; background: #c9c0dc; }
+
 /* these pills set display, which would otherwise override the hidden attribute */
-.next[hidden], .bank[hidden], .reward[hidden], .bank-badge[hidden] { display: none; }
+.next[hidden], .bank[hidden], .reward[hidden], .bank-badge[hidden], .streak[hidden], .next-queue[hidden] { display: none; }
 
 /* while a portal ad plays, the game takes no input */
 body.is-ad .game { pointer-events: none; }
@@ -1245,8 +1336,14 @@ kbd {
     .next, .shuffle, .bank, .reward { gap: 5px; padding-left: 10px; font-size: 1.1rem; }
     .clock { padding: 2px 10px; }
     .clock span { font-size: 1.3rem; }
-    .next-tile, .shuffle-badge, .bank-badge { min-width: 1.9rem; height: 1.9rem; }
+    .next-tile, .shuffle-badge, .bank-badge, .cash-badge { min-width: 1.9rem; height: 1.9rem; }
     .next-tile { width: 1.9rem; }
+    .next-tile.is-later { min-width: 0; width: 1.3rem; height: 1.3rem; font-size: 0.8rem; }
+    .next-queue { gap: 3px; }
+    .streak { gap: 6px; }
+    .pot, .cash { gap: 5px; padding-left: 10px; font-size: 1.1rem; }
+    .pot { padding-right: 10px; }
+    .pip { width: 8px; height: 8px; }
 }
 
 /* ---------- special tiles ---------- */
@@ -1496,6 +1593,15 @@ kbd {
 
     .coach { grid-area: coach; max-width: 22ch; font-size: 0.95rem; }
 
+    .game.has-streak { --cell: min(27vh, 20vw, 170px); } /* the streak sits in the side column here */
+    .actions > .streak { order: 0; flex-basis: auto; flex-direction: column; align-items: stretch; gap: 8px; }
+    .pot, .cash { justify-content: space-between; white-space: nowrap; }
+    /* side columns are narrow: the pips and the later tiles take a second line */
+    .pot { flex-wrap: wrap; row-gap: 2px; padding-bottom: 6px; }
+    .pot-pips { flex-basis: 100%; justify-content: center; }
+    .next:has(.next-queue:not([hidden])) { flex-wrap: wrap; justify-content: center; row-gap: 4px; padding: 4px 8px 6px; border-radius: 22px; white-space: normal; }
+    .next-queue { flex-basis: 100%; justify-content: center; margin-left: 0; }
+
     .actions {
         grid-area: actions;
         align-self: center;
@@ -1544,6 +1650,11 @@ kbd {
     .actions { gap: 8px; }
     .next-tile, .shuffle-badge, .bank-badge { min-width: 1.7rem; height: 1.7rem; }
     .next-tile { width: 1.7rem; font-size: 1rem; }
+    .next-tile.is-later { min-width: 0; width: 1.3rem; height: 1.3rem; font-size: 0.8rem; }
+    .game.has-streak { --cell: min(25vh, 20vw, 170px); }
+    .cash-badge { min-width: 1.7rem; height: 1.7rem; }
+    .pot-mult { font-size: 1.2rem; }
+    .streak { gap: 5px; }
     .coach { font-size: 0.85rem; padding: 6px 10px; }
 
     .home { gap: 8px 20px; }

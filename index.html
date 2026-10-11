@@ -148,7 +148,7 @@
 
         <div class="actions">
             <span class="mascot mascot-game" aria-hidden="true"></span>
-            <p class="next"><span data-i18n="act.next">Next</span> <span class="next-tile" id="next" aria-live="polite"></span></p>
+            <p class="next"><span data-i18n="act.next">Next</span> <span class="next-tile" id="next" aria-live="polite"></span><span class="next-queue" id="queue" hidden></span></p>
             <p class="clock" id="clock" hidden><span id="clock-time">1:00</span></p>
             <button class="shuffle" id="shuffle" type="button" aria-keyshortcuts="S">
                 <span data-i18n="act.shuffle">Shuffle</span> <span class="shuffle-badge" id="shuffle-badge">1</span>
@@ -159,6 +159,13 @@
             <button class="reward" id="reward" type="button" hidden aria-label="Watch an ad for a free shuffle" data-i18n-aria="aria.reward">
                 <span aria-hidden="true">🎬</span> <span data-i18n="act.freeShuffle">Free shuffle</span>
             </button>
+            <!-- Classic only: the streak multiplier and the pot to cash in (a row of its own in portrait) -->
+            <div class="streak" id="streak" hidden>
+                <p class="pot" id="pot"><span data-i18n="pot.label">Streak</span> <span class="pot-mult" id="pot-mult">×1</span> <span class="pot-pips" id="pot-pips" aria-hidden="true"></span></p>
+                <button class="cash" id="cash" type="button" aria-keyshortcuts="C" disabled>
+                    <span data-i18n="act.cash">Cash in</span> <span class="cash-badge" id="cash-badge">0</span>
+                </button>
+            </div>
         </div>
     </main>
 
@@ -228,6 +235,10 @@
                 <p><strong data-i18n="help.r4.t">Plan with Next.</strong> <span data-i18n="help.r4.b">It's the number that replaces the tile you play.</span></p>
             </li>
             <li>
+                <span class="rule-icon is-gold" aria-hidden="true">×5</span>
+                <p><strong data-i18n="help.r8.t">Streak (Classic).</strong> <span data-i18n="help.r8.b">Each sum in a row multiplies its points: ×2, ×3, up to ×5. They go into a pot: cash it in between sums. Get stuck and the pot is lost.</span></p>
+            </li>
+            <li>
                 <span class="rule-icon is-danger" aria-hidden="true">!</span>
                 <p><strong data-i18n="help.r5.t">Don't go over.</strong> <span data-i18n="help.r5.b">If no tile fits, shuffle: free ones first, then you pay points. You can also bank your points and stop, or watch an ad 🎬 where offered.</span></p>
             </li>
@@ -243,6 +254,7 @@
         <ul class="keys" aria-label="Keyboard">
             <li><kbd>Tab</kbd> + <kbd>Enter</kbd> <span data-i18n="key.play">play a tile</span></li>
             <li><kbd>S</kbd> <span data-i18n="key.shuffle">shuffle</span></li>
+            <li><kbd>C</kbd> <span data-i18n="key.cash">cash in</span></li>
             <li><kbd>B</kbd> <span data-i18n="key.bank">bank</span></li>
             <li><kbd>M</kbd> <span data-i18n="key.sound">sound</span></li>
             <li><kbd>Esc</kbd> <span data-i18n="key.pause">pause</span></li>

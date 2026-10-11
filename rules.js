@@ -28,10 +28,17 @@ const RAINBOW_CHANCE = 0.04
 // a frozen tile can't be played until ICE_SUMS more sums are completed (journey obstacle)
 const ICE_SUMS = 2
 const DAILY_SUMS = 12 // a daily challenge is levels 1–3: short and comparable
+// Classic streak: completed sums go into a pot instead of the score, the k-th sum in a row
+// worth k times its points (up to STREAK_MAX). Cashing in moves the pot to the score and
+// restarts the streak; getting stuck loses the pot. Tuned with tools/balance.js: banking at
+// ×3–×5 beats both cashing every sum and never cashing.
+const STREAK_MAX = 5
 
 const targetFor = lv => (lv < TARGETS.length ? TARGETS[lv] : TARGETS[TARGETS.length - 1] + 2 * (lv - TARGETS.length + 1))
 const lambdaFor = lv => (lv < TILE_LAMBDA.length ? TILE_LAMBDA[lv] : 0.78 * targetFor(lv))
 const shuffleCostFor = (lv, paid) => SHUFFLE_COST * (lv + 1) * (paid + 1)
+// multiplier of the `chain`-th sum in a row (1-based)
+const streakMultiplier = chain => Math.min(Math.max(chain, 1), STREAK_MAX)
 
 function drawValue(lv, rnd) {
     const max = targetFor(lv) - 1
@@ -194,7 +201,7 @@ function applySetup(tiles, setup) {
 if (typeof module !== 'undefined') {
     module.exports = {
         JOURNEY_SEEDS, COLORS, TARGETS, SUMS_PER_LEVEL, TILE_LAMBDA, MAX_FREE_SHUFFLES, SHUFFLE_COST, COMBO_MULTIPLIER, DAILY_SUMS,
-        WILD_CHANCE, DOUBLE_CHANCE, RAINBOW_CHANCE, ICE_SUMS, anyColor, keepsCombo,
+        WILD_CHANCE, DOUBLE_CHANCE, RAINBOW_CHANCE, ICE_SUMS, STREAK_MAX, streakMultiplier, anyColor, keepsCombo,
         targetFor, lambdaFor, shuffleCostFor, drawValue, drawColor, drawTile, tileValue, canPlay, sumPoints, hashSeed, createRng,
         journeyLevel, applySetup, WORLD_SIZE, WORLDS, worldOf, isBoss,
     }

@@ -120,6 +120,18 @@ body {
     box-shadow: -3px 4px 0 var(--ink);
 }
 
+/* journey stars in the HUD: solid, ink-outlined, same look as the result sheet */
+.hud-star {
+    display: inline-block;
+    margin-left: 1px;
+    font-family: system-ui, sans-serif;
+    font-size: 1.15em;
+    line-height: 1;
+    color: #e2dcef;
+    text-shadow: 0 1.5px 0 var(--ink), 1.5px 0 0 var(--ink), -1.5px 0 0 var(--ink), 0 -1.5px 0 var(--ink);
+}
+.hud-star.is-on { color: var(--gold); }
+
 .hud-value {
     font-family: 'Ranchers', cursive;
     color: var(--violet);
@@ -315,6 +327,16 @@ body {
     gap: 6px;
 }
 .route::-webkit-scrollbar { display: none; }
+
+/* soft edges: the route fades out at the top and bottom instead of being cut off;
+   the extra padding lets the first and last levels scroll clear of the fade */
+.route {
+    padding-top: 56px;
+    padding-bottom: 64px;
+    --fade: 56px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+}
 
 .stop {
     position: relative;

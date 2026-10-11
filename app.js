@@ -725,13 +725,23 @@ function renderHud() {
         $(value).textContent = valueText
     }
     if (mode === 'journey') {
-        set('hud2-label', 'hud2', 'Stars', starText(starsFor(sums >= journeyDef.sums, score)))
+        const earned = starsFor(sums >= journeyDef.sums, score)
+        set('hud2-label', 'hud2', 'Stars', '')
+        // solid stars like the result sheet: gold when earned, pale when not
+        hud2El.replaceChildren(...[0, 1, 2].map(i => {
+            const star = document.createElement('span')
+            star.className = i < earned ? 'hud-star is-on' : 'hud-star'
+            star.textContent = '★'
+            return star
+        }))
+        hud2El.setAttribute('aria-label', `${earned} of 3 stars`)
         set('hud3-label', 'hud3', 'Sums', `${sums}/${journeyDef.sums}`)
     } else if (mode === 'daily') {
         set('hud2-label', 'hud2', 'Sums', `${sums}/${DAILY_SUMS}`)
         set('hud3-label', 'hud3', 'Par', todaysPar())
     } else {
         set('hud2-label', 'hud2', 'Level', level + 1)
+        hud2El.removeAttribute('aria-label')
         set('hud3-label', 'hud3', 'Best', Math.max(best, score))
     }
 }

@@ -43,6 +43,7 @@
         </symbol>
         <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11.5 12 4l8.5 7.5M6 10v9.5h4.5V15h3v4.5H18V10" /></symbol>
         <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12" /></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M10.3 3h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9L3 13.7v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z" /></symbol>
         <symbol id="i-lock" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3M5.5 11h13v9h-13z" /></symbol>
     </svg>
 
@@ -51,8 +52,8 @@
         <header class="home-top">
             <button class="icon-btn help-btn" type="button" aria-label="How to play" data-i18n-aria="nav.help" aria-keyshortcuts="H">?</button>
             <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><button class="nine-poke" type="button" aria-label="Poke Nine" data-i18n-aria="nine.poke"><span class="mascot mascot-title" aria-hidden="true"></span></button></h1>
-            <button class="icon-btn sound-btn" type="button" aria-label="Sound" aria-pressed="true" aria-keyshortcuts="M">
-                <svg><use href="#i-sound-on" /></svg>
+            <button class="icon-btn settings-btn" type="button" aria-label="Settings" data-i18n-aria="nav.settings">
+                <svg><use href="#i-gear" /></svg>
             </button>
         </header>
 
@@ -259,18 +260,30 @@
             <li><kbd>M</kbd> <span data-i18n="key.sound">sound</span></li>
             <li><kbd>Esc</kbd> <span data-i18n="key.pause">pause</span></li>
         </ul>
+        <div class="sheet-actions">
+            <button class="btn" id="help-close" type="button">Got it</button>
+        </div>
+    </dialog>
+
+    <!-- settings, and the pause menu during a game -->
+    <dialog class="sheet settings-sheet" id="settings" aria-labelledby="settings-title">
+        <h2 class="sheet-title outline" id="settings-title">Settings</h2>
         <div class="settings">
+            <button class="music-btn" id="sound-toggle" type="button" aria-pressed="true" aria-keyshortcuts="M">
+                <span data-i18n="help.sound">Sound</span> <span class="music-state" id="sound-state">On</span>
+            </button>
+            <button class="music-btn" id="music-btn" type="button" aria-pressed="true">
+                <span data-i18n="help.music">Music</span> <span class="music-state" id="music-state">On</span>
+            </button>
             <label class="lang-pick">
                 <span data-i18n="help.language">Language</span>
                 <select id="lang"></select>
             </label>
-            <button class="music-btn" id="music-btn" type="button" aria-pressed="true">
-                <span data-i18n="help.music">Music</span> <span class="music-state" id="music-state">On</span>
-            </button>
         </div>
         <div class="sheet-actions">
-            <button class="btn" id="help-close" type="button">Resume</button>
-            <button class="btn btn-quiet" id="help-home" type="button" hidden data-i18n="nav.home">Home</button>
+            <button class="btn" id="settings-close" type="button">Resume</button>
+            <button class="btn btn-quiet" id="settings-help" type="button" data-i18n="nav.help">How to play</button>
+            <button class="btn btn-quiet" id="settings-home" type="button" hidden data-i18n="nav.home">Home</button>
         </div>
     </dialog>
 

@@ -39,6 +39,7 @@ const secondaryBtn = $('over-secondary')
 const shareBtn = $('share')
 const reviveBtn = $('over-reward')
 const help = $('help')
+const settingsSheet = $('settings')
 
 // ---------- state ----------
 
@@ -300,7 +301,7 @@ function levelUp() {
         render()
         bump(well, 'target-pop')
         bump(shuffleBtn, 'bump')
-        if (!help.open) resumeClock()
+        if (!paused()) resumeClock()
         checkStuck()
     }, LEVEL_UP_MS)
 }
@@ -363,7 +364,7 @@ function offerRevive(value, reason) {
                 bump(well, 'pop-in')
                 floatText(well, tr('float.revive'), 'is-combo')
                 mascot.mood('happy')
-                if (!help.open) resumeClock()
+                if (!paused()) resumeClock()
                 checkStuck()
             },
         },
@@ -694,7 +695,8 @@ function goHome() {
     gameId++
     playing = false
     hideCoach()
-    for (const d of [dialog, help]) if (d.open) d.close()
+    helpFromSettings = false // closing help here must not reopen the pause menu
+    for (const d of [dialog, help, settingsSheet]) if (d.open) d.close()
     showScreen('home')
 }
 
@@ -1585,19 +1587,47 @@ function markOnboarded() {
     try { localStorage.setItem('plus9.onboarded', '1') } catch { /* storage unavailable */ }
 }
 
-// ---------- help (doubles as the pause menu) and sound ----------
+// ---------- settings (doubles as the pause menu), how to play, and sound ----------
+
+// In a game, the settings sheet is the pause menu; "How to play" opened from it (or with H
+// mid-game) comes back to it, so the game stays paused until the player resumes.
+let helpFromSettings = false
+const paused = () => help.open || settingsSheet.open
+
+function pauseGame() {
+    if (screen !== 'game' || !playing) return
+    platform.gameplayStop()
+    pauseClock()
+}
+
+function openSettings() {
+    if (paused() || dialog.open || platform.adShowing) return
+    pauseGame()
+    renderSheetLabels()
+    sfx.ui()
+    settingsSheet.showModal()
+}
 
 function openHelp() {
     if (help.open || dialog.open || platform.adShowing) return
-    const inGame = screen === 'game' && playing
-    if (inGame) {
-        platform.gameplayStop()
-        pauseClock()
+    if (settingsSheet.open) {
+        helpFromSettings = true // set first: closing settings must not resume the game
+        settingsSheet.close()
+    } else if (screen === 'game' && playing) {
+        helpFromSettings = true
+        pauseGame()
     }
-    $('help-close').textContent = tr(inGame ? 'help.resume' : 'help.gotIt')
-    $('help-home').hidden = !inGame
+    renderSheetLabels()
     sfx.ui()
     help.showModal()
+}
+
+function renderSheetLabels() {
+    const inGame = screen === 'game' && playing
+    $('settings-title').textContent = tr(inGame ? 'nav.pause' : 'nav.settings')
+    $('settings-close').textContent = tr(inGame ? 'help.resume' : 'help.done')
+    $('settings-home').hidden = !inGame
+    $('help-close').textContent = tr(helpFromSettings ? 'help.back' : 'help.gotIt')
 }
 
 function toggleSound() {
@@ -1619,6 +1649,8 @@ function renderMusic() {
 }
 
 function renderSound() {
+    $('sound-toggle').setAttribute('aria-pressed', !sfx.muted)
+    $('sound-state').textContent = tr(sfx.muted ? 'help.soundOff' : 'help.soundOn')
     document.querySelectorAll('.sound-btn').forEach(b => {
         b.setAttribute('aria-pressed', !sfx.muted)
         b.setAttribute('aria-label', tr(sfx.muted ? 'sound.off' : 'sound.on'))
@@ -1664,13 +1696,24 @@ document.querySelectorAll('.home-btn').forEach(b => b.addEventListener('click', 
     sfx.ui()
     goHome()
 }))
-document.querySelectorAll('.help-btn, .pause-btn').forEach(b => b.addEventListener('click', openHelp))
+document.querySelectorAll('.help-btn').forEach(b => b.addEventListener('click', openHelp))
+document.querySelectorAll('.pause-btn, .settings-btn').forEach(b => b.addEventListener('click', openSettings))
 document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click', toggleSound))
+$('sound-toggle').addEventListener('click', toggleSound)
 $('music-btn').addEventListener('click', toggleMusic)
 
 $('help-close').addEventListener('click', () => help.close())
-$('help-home').addEventListener('click', goHome)
-help.addEventListener('close', async () => {
+$('settings-close').addEventListener('click', () => settingsSheet.close())
+$('settings-help').addEventListener('click', openHelp)
+$('settings-home').addEventListener('click', goHome)
+help.addEventListener('close', () => {
+    if (!helpFromSettings) return
+    helpFromSettings = false
+    renderSheetLabels()
+    settingsSheet.showModal() // back to the settings / pause menu
+})
+settingsSheet.addEventListener('close', async () => {
+    if (helpFromSettings) return // went to How to play; the game stays paused
     if (screen !== 'game' || !playing || !levelUpEl.hidden) return // the level-up card resumes play itself
     if (sum > 0 || sums > 0) await platform.commercialBreak() // unpausing a game in progress
     resumeClock()
@@ -1680,14 +1723,14 @@ document.addEventListener('keydown', ev => {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return
     // keep the host page from scrolling when the game runs inside a portal iframe;
     // an open sheet and the journey map still scroll with the arrow keys
-    const scrollable = help.open || dialog.open || styleSheet.open || screen !== 'game'
+    const scrollable = paused() || dialog.open || styleSheet.open || screen !== 'game'
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
     if (platform.adShowing) return
     const key = ev.key.toLowerCase()
-    if (key === 'escape' && screen === 'game' && !help.open && !dialog.open) return openHelp() // open dialogs close themselves on ESC
+    if (key === 'escape' && screen === 'game' && !paused() && !dialog.open) return openSettings() // open dialogs close themselves on ESC
     if (key === 'h' || key === '?') return help.open ? help.close() : openHelp()
     if (key === 'm') return toggleSound()
-    if (screen !== 'game' || dialog.open || help.open) return
+    if (screen !== 'game' || dialog.open || paused()) return
     if (key === 's') shuffle()
     if (key === 'b') bank()
     if (key === 'c') cashIn()
@@ -1702,8 +1745,8 @@ document.addEventListener('visibilitychange', () => {
     }
     if (platform.adShowing) return // the ad's end restores audio and the flow that started it resumes play
     sfx.resume()
-    // the help sheet and the level-up card resume the clock themselves when they close
-    if (!help.open && !dialog.open && levelUpEl.hidden) resumeClock()
+    // the pause sheets and the level-up card resume the clock themselves when they close
+    if (!paused() && !dialog.open && levelUpEl.hidden) resumeClock()
 })
 
 // keep the record if the tab is closed mid-game
@@ -1785,7 +1828,7 @@ function relocalize() {
         tiles.forEach(renderTile)
         render()
     }
-    if (help.open) $('help-close').textContent = tr(screen === 'game' && playing ? 'help.resume' : 'help.gotIt')
+    if (paused()) renderSheetLabels()
 }
 
 const langSelect = $('lang')

@@ -121,6 +121,12 @@ const i18n = (() => {
             'home.newStreak': "New! Streaks ×5",
             'res.classicTip': "New in Classic: streaks up to ×5!",
             'res.potRecord': "With that pot you would have beaten your best!",
+            'nav.settings': "Settings",
+            'help.done': "Done",
+            'help.back': "Back",
+            'help.sound': "Sound",
+            'help.soundOn': "On",
+            'help.soundOff': "Off",
         },
 
         es: {
@@ -234,6 +240,12 @@ const i18n = (() => {
             'home.newStreak': "¡Nuevo! Rachas ×5",
             'res.classicTip': "¡Novedad en Clásico: rachas de hasta ×5!",
             'res.potRecord': "¡Con ese bote habrías batido tu récord!",
+            'nav.settings': "Ajustes",
+            'help.done': "Listo",
+            'help.back': "Volver",
+            'help.sound': "Sonido",
+            'help.soundOn': "Sí",
+            'help.soundOff': "No",
         },
 
         pt: {
@@ -347,6 +359,12 @@ const i18n = (() => {
             'home.newStreak': "Novo! Sequências ×5",
             'res.classicTip': "Novidade no Clássico: sequências até ×5!",
             'res.potRecord': "Com esse pote você teria batido seu recorde!",
+            'nav.settings': "Configurações",
+            'help.done': "Pronto",
+            'help.back': "Voltar",
+            'help.sound': "Som",
+            'help.soundOn': "Ligado",
+            'help.soundOff': "Desligado",
         },
 
         fr: {
@@ -460,6 +478,12 @@ const i18n = (() => {
             'home.newStreak': "Nouveau ! Séries ×5",
             'res.classicTip': "Nouveau en Classique : des séries jusqu’à ×5 !",
             'res.potRecord': "Avec cette cagnotte, tu aurais battu ton record !",
+            'nav.settings': "Réglages",
+            'help.done': "OK",
+            'help.back': "Retour",
+            'help.sound': "Son",
+            'help.soundOn': "Oui",
+            'help.soundOff': "Non",
         },
 
         de: {
@@ -573,6 +597,12 @@ const i18n = (() => {
             'home.newStreak': "Neu! Serien ×5",
             'res.classicTip': "Neu in Klassisch: Serien bis ×5!",
             'res.potRecord': "Mit diesem Topf hättest du deinen Rekord geknackt!",
+            'nav.settings': "Einstellungen",
+            'help.done': "Fertig",
+            'help.back': "Zurück",
+            'help.sound': "Ton",
+            'help.soundOn': "An",
+            'help.soundOff': "Aus",
         },
 
         tr: {
@@ -686,6 +716,12 @@ const i18n = (() => {
             'home.newStreak': "Yeni! Seriler ×5",
             'res.classicTip': "Klasik’te yeni: ×5’e kadar seriler!",
             'res.potRecord': "O kasayla rekorunu kırardın!",
+            'nav.settings': "Ayarlar",
+            'help.done': "Tamam",
+            'help.back': "Geri",
+            'help.sound': "Ses",
+            'help.soundOn': "Açık",
+            'help.soundOff': "Kapalı",
         },
     }
 

@@ -453,8 +453,11 @@ function finishJourney(won, reason) {
     const n = journeyDef.n
     const stars = starsFor(won, score)
     let gained = 0 // stars this level had never earned before
+    let prize = null // set when this win completes a world for the first time
     if (won) {
+        const firstWin = meta.journeyStarsOf(n) === 0
         gained = meta.journeyRecord(n, stars)
+        if (journeyDef.boss && firstWin) prize = completeWorld(journeyDef.world)
         celebrate(meta.missionEvent('journey2', 1))
         if (n === 1) markOnboarded()
         sfx.bank()
@@ -465,8 +468,10 @@ function finishJourney(won, reason) {
         mascot.mood('sad', { hold: true })
     }
     render()
+    announceNewItems(prize && prize.item)
     showResult({
-        title: tr(won ? (stars === 3 ? 'res.perfect' : 'res.complete') : 'res.tryAgain'),
+        title: tr(prize ? 'res.worldDone' : won ? (stars === 3 ? 'res.perfect' : 'res.complete') : 'res.tryAgain'),
+        prize,
         happy: won,
         stars: won ? stars : null,
         reason: won ? starReason(stars) : say(reason),
@@ -484,6 +489,33 @@ function finishJourney(won, reason) {
     setTimeout(() => dialog.showModal(), 500)
 }
 
+// A world's boss beaten for the first time: Nine gets the world's item (and wears it), and
+// the next world's theme and music switch on, so the journey feels like moving on.
+function completeWorld(w) {
+    const item = WORLDS[w].reward
+    meta.wear(item)
+    const next = WORLDS[w + 1] || null
+    if (next) {
+        meta.setTheme(next.id)
+        applyTheme()
+    }
+    mascot.dress(meta.outfit())
+    return { item, next: next && next.id }
+}
+
+const unlockedItems = () => meta.WARDROBE.filter(meta.itemUnlocked).map(i => i.id)
+let knownItems = null // items already unlocked when last checked; set at boot
+
+// toast items unlocked since the last check (`except` is announced by the result sheet)
+function announceNewItems(except = null) {
+    const now = unlockedItems()
+    for (const id of now) {
+        if (knownItems.includes(id) || id === except) continue
+        toast(tr('toast.item', { item: tr(`item.${id}`) }))
+    }
+    knownItems = now
+}
+
 async function doubleStars(n) {
     const id = gameId
     // the sheet is closed while the ad runs (a modal dialog would sit above it), then comes back
@@ -493,6 +525,7 @@ async function doubleStars(n) {
     if (watched) {
         meta.addBonusStars(n)
         toast(tr('toast.bonusStars', { n }))
+        announceNewItems()
         sfx.bank()
         mascot.mood('cheer', { hold: true })
         confetti(innerWidth / 2, innerHeight * 0.35, 20 + n * 15)
@@ -525,7 +558,7 @@ function tutorial(event) {
     }
     if (n > 4) {
         // no lesson on this level: say what it asks for, since there is no intro screen
-        if (event === 'start') coachSay(tr('coach.goal', { target: journeyDef.target, sums: journeyDef.sums, two: journeyGoals[1], three: journeyGoals[2] }), 5000)
+        if (event === 'start') coachSay(tr(journeyDef.boss ? 'coach.boss' : 'coach.goal', { target: journeyDef.target, sums: journeyDef.sums, two: journeyGoals[1], three: journeyGoals[2] }), 5000)
         return
     }
     if (n === 1) {
@@ -627,9 +660,7 @@ function newGame() {
     gen = null
     rng = Math.random
     clockEl.hidden = mode !== 'timed'
-    $('game-title').textContent = mode === 'journey' ? tr('home.level', { n: journeyDef.n })
-        : mode === 'daily' ? tr('daily.title', { n: dailyNumber() })
-        : tr(`mode.${mode}`)
+    $('game-title').textContent = gameTitle()
 
     if (mode === 'daily') {
         const saved = readDaily()
@@ -662,6 +693,12 @@ function newGame() {
         render()
     }
     tutorial('start')
+}
+
+function gameTitle() {
+    if (mode === 'journey') return tr(journeyDef.boss ? 'title.boss' : 'home.level', { n: journeyDef.n })
+    if (mode === 'daily') return tr('daily.title', { n: dailyNumber() })
+    return tr(`mode.${mode}`)
 }
 
 function dealBoard(initial = null) {
@@ -834,13 +871,22 @@ function celebrate(completed) {
         toast(tr('toast.mission', { text: tr(`mission.${m.id}`) }))
         sfx.bank()
     }
+    // a mission star can push the total past a wardrobe item's price
+    if (completed.length) setTimeout(() => announceNewItems(), 1500)
 }
 
 // ---------- result sheet ----------
 
 let resultActions = {}
 
-function showResult({ title, happy, reason, stats, stars = null, compare = null, primary, secondary = null, reward = null }) {
+function showResult({ title, happy, reason, stats, stars = null, compare = null, primary, secondary = null, reward = null, prize = null }) {
+    $('over-prize').hidden = !prize
+    if (prize) {
+        $('over-prize-text').textContent = tr(prize.next ? 'res.reward' : 'res.rewardLast', {
+            item: tr(`item.${prize.item}`),
+            world: prize.next ? tr(`theme.${prize.next}`) : '',
+        })
+    }
     const titleEl = $('over-title')
     titleEl.textContent = title
     titleEl.classList.toggle('is-banked', happy)
@@ -1113,7 +1159,8 @@ function showScreen(name) {
 
 function renderHome() {
     const frontier = meta.journeyFrontier()
-    $('journey-sub').textContent = frontier === 1 ? tr('home.start') : tr('home.level', { n: frontier })
+    $('journey-sub').textContent = frontier === 1 ? tr('home.start')
+        : tr('home.worldLevel', { world: tr(`theme.${WORLDS[worldOf(frontier)].id}`), n: frontier })
     $('star-total').textContent = meta.totalStars()
 
     const daily = readDaily()
@@ -1139,24 +1186,59 @@ function renderHome() {
         return li
     }))
 
-    const stars = meta.totalStars()
+}
+
+// ---------- customize: Nine's wardrobe and the themes ----------
+
+const styleSheet = $('style')
+
+function openStyle() {
+    sfx.ui()
+    renderStyle()
+    styleSheet.showModal()
+}
+
+function renderStyle() {
+    const worn = meta.outfit()
+    $('wardrobe').replaceChildren(...meta.WARDROBE.map(item => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.className = 'wear-chip'
+        const unlocked = meta.itemUnlocked(item)
+        const name = tr(`item.${item.id}`)
+        const how = item.world !== undefined ? tr('item.lockWorld', { n: item.world + 1 }) : tr('item.lockStars', { n: item.stars })
+        b.disabled = !unlocked
+        b.setAttribute('aria-pressed', worn[item.slot] === item.id)
+        b.setAttribute('aria-label', unlocked ? name : tr('item.lockedAria', { name, how }))
+        b.innerHTML = `<span class="mascot wear-art" data-mood="happy" aria-hidden="true">${mascot.preview(item.id)}</span><span class="wear-name"></span>`
+        b.querySelector('.wear-name').textContent = unlocked ? name : how
+        b.addEventListener('click', () => {
+            meta.toggleItem(item.id)
+            mascot.dress(meta.outfit())
+            mascot.mood('happy')
+            sfx.ui()
+            renderStyle()
+        })
+        return b
+    }))
+
     const current = meta.theme()
     $('themes').replaceChildren(...meta.THEMES.map(t => {
         const b = document.createElement('button')
         b.type = 'button'
         b.className = `theme-chip theme-${t.id}`
-        const locked = stars < t.stars
+        const locked = !meta.worldReached(t.world)
         b.disabled = locked
         b.setAttribute('aria-pressed', t.id === current)
         b.innerHTML = `<span class="theme-swatch" aria-hidden="true"></span><span class="theme-name"></span>`
         const name = tr(`theme.${t.id}`)
-        b.querySelector('.theme-name').textContent = locked ? `★ ${t.stars}` : name
-        b.setAttribute('aria-label', locked ? tr('theme.locked', { name, n: t.stars }) : tr('theme.aria', { name }))
+        b.querySelector('.theme-name').textContent = locked ? tr('world.short', { n: t.world + 1 }) : name
+        b.setAttribute('aria-label', locked ? tr('theme.lockedWorld', { name, n: t.world + 1 }) : tr('theme.aria', { name }))
         b.addEventListener('click', () => {
             meta.setTheme(t.id)
             applyTheme()
             sfx.ui()
-            renderHome()
+            renderStyle()
         })
         return b
     }))
@@ -1173,6 +1255,7 @@ function renderMap() {
         const locked = n > frontier
         const li = document.createElement('li')
         li.className = 'stop'
+        li.classList.toggle('is-boss', isBoss(n))
         li.style.setProperty('--x', ['0px', '64px', '0px', '-64px'][i % 4]) // a winding road
         const b = document.createElement('button')
         b.type = 'button'
@@ -1180,16 +1263,27 @@ function renderMap() {
         b.classList.toggle('is-done', stars > 0)
         b.classList.toggle('is-current', n === frontier)
         b.disabled = locked
+        b.classList.toggle('is-boss', isBoss(n))
         b.innerHTML = locked ? '<svg aria-hidden="true"><use href="#i-lock" /></svg>' : `<span class="outline">${n}</span>`
-        b.setAttribute('aria-label', locked ? tr('map.locked', { n }) : tr('map.level', { n, s: stars }))
+        if (isBoss(n)) b.insertAdjacentHTML('beforeend', '<span class="boss-crown" aria-hidden="true">♛</span>')
+        b.setAttribute('aria-label', locked ? tr('map.locked', { n }) : tr(isBoss(n) ? 'map.boss' : 'map.level', { n, s: stars }))
         b.addEventListener('click', () => startGame('journey', n))
         const s = document.createElement('span')
         s.className = 'node-stars'
         s.setAttribute('aria-hidden', 'true')
         s.textContent = locked ? '' : starText(stars)
         li.append(b, s)
+        // a banner where each world begins
+        if ((n - 1) % WORLD_SIZE === 0 && worldOf(n) === (n - 1) / WORLD_SIZE) {
+            const w = worldOf(n)
+            const banner = document.createElement('li')
+            banner.className = `world-banner theme-${WORLDS[w].id}`
+            banner.classList.toggle('is-locked', !meta.worldReached(w))
+            banner.textContent = tr('world.banner', { n: w + 1, name: tr(`theme.${WORLDS[w].id}`) })
+            return [banner, li]
+        }
         return li
-    }))
+    }).flat())
     drawRoad()
     const current = route.querySelector('.is-current')
     if (current) current.scrollIntoView({ block: 'center' })
@@ -1338,6 +1432,10 @@ shuffleBtn.addEventListener('click', shuffle)
 bankBtn.addEventListener('click', bank)
 rewardBtn.addEventListener('click', rewardShuffle)
 
+$('go-style').addEventListener('click', openStyle)
+$('style-close').addEventListener('click', () => styleSheet.close())
+styleSheet.addEventListener('close', () => { if (screen === 'home') renderHome() })
+
 $('go-journey').addEventListener('click', () => {
     sfx.ui()
     openMap()
@@ -1363,7 +1461,7 @@ document.addEventListener('keydown', ev => {
     if (ev.metaKey || ev.ctrlKey || ev.altKey) return
     // keep the host page from scrolling when the game runs inside a portal iframe;
     // an open sheet and the journey map still scroll with the arrow keys
-    const scrollable = help.open || dialog.open || screen !== 'game'
+    const scrollable = help.open || dialog.open || styleSheet.open || screen !== 'game'
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
     if (platform.adShowing) return
     const key = ev.key.toLowerCase()
@@ -1410,10 +1508,9 @@ function relocalize() {
     renderMusic()
     if (screen === 'home') renderHome()
     if (screen === 'map') renderMap()
+    if (styleSheet.open) renderStyle()
     if (screen === 'game' && next) {
-        $('game-title').textContent = mode === 'journey' ? tr('home.level', { n: journeyDef.n })
-            : mode === 'daily' ? tr('daily.title', { n: dailyNumber() })
-            : tr(`mode.${mode}`)
+        $('game-title').textContent = gameTitle()
         tiles.forEach(renderTile)
         render()
     }
@@ -1434,6 +1531,8 @@ i18n.set(i18n.detect(platform.language()))
 langSelect.value = i18n.lang
 applyTheme()
 mascot.mount()
+mascot.dress(meta.outfit())
+knownItems = unlockedItems()
 buildTiles()
 renderSound()
 renderMusic()

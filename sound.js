@@ -242,6 +242,85 @@ const sfx = (() => {
                 }
             },
         },
+
+        // Candy: a bouncy music box. Twinkling bell arpeggios, pizzicato bass, shaker and claps.
+        candy: {
+            bpm: 112, cutoff: 3400, level: 0.95,
+            parts: [['C', 'F', 'G', 'C'], ['Am', 'F', 'G', 'C']],
+            arp: [0, 2, 1, 2, 3, 2, 4, 2],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                const i = this.arp[pos]
+                const n = chord[i % 3] + 12 * Math.floor(i / 3) + 12
+                tone(midi(n), { type: 'sine', dur: e * 1.6, vol: 0.03, attack: 0.004, at, dest: out })
+                tone(midi(n) * 4, { type: 'sine', dur: e * 0.3, vol: 0.004, attack: 0.002, at, dest: out })
+                if (pos % 2 === 0) tone(midi(chord[pos % 4 === 0 ? 0 : 2] - 12), { type: 'triangle', dur: e * 0.6, vol: 0.09, attack: 0.004, at, dest: out })
+                hiss({ dur: 0.04, vol: 0.018, at, from: 6000, to: 7000, dest: out })
+                if (pos === 2 || pos === 6) hiss({ dur: 0.12, vol: 0.05, at, from: 1400, to: 2600, dest: out })
+            },
+        },
+
+        // Forest: a wooden walk. A breathy flute melody, marimba, woodblocks and a soft bass.
+        forest: {
+            bpm: 88, cutoff: 2300, level: 1,
+            parts: [['Am', 'C', 'G', 'F'], ['F', 'C', 'G', 'Am']],
+            melody: [69, 72, 76, 74, 72, 74, 71, 67, 65, 69, 72, 69, 69, null, 64, 67],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                if (pos === 0) tone(midi(chord[0] - 24), { type: 'sine', dur: e * 6, vol: 0.13, attack: 0.03, at, dest: out })
+                // marimba on the off-beats
+                if (pos % 2 === 1) tone(midi(chord[(pos >> 1) % 3]), { type: 'sine', dur: e * 1.1, vol: 0.05, attack: 0.003, at, dest: out })
+                // flute: two eighths per note, with breathy vibrato
+                if (pos % 2 === 0) {
+                    const m = this.melody[((bar % 4) * 4 + pos / 2) % this.melody.length]
+                    if (m) pad(midi(m), { type: 'triangle', dur: e * 1.9, vol: 0.035, attack: 0.06, release: 0.3, wobble: 14, at, dest: out })
+                }
+                // woodblocks
+                if (pos === 0 || pos === 3 || pos === 6) tone(1150, { type: 'sine', dur: 0.05, vol: 0.06, attack: 0.002, at, dest: out })
+                if (pos === 4) tone(760, { type: 'sine', dur: 0.06, vol: 0.06, attack: 0.002, at, dest: out })
+            },
+        },
+
+        // Space: slow and wide. A sub bass, a shimmering pad, an arpeggio with echoes and
+        // distant star pings.
+        space: {
+            bpm: 70, cutoff: 2100, level: 1,
+            parts: [['Fmaj7', 'Cmaj7', 'Am9', 'Gsus']],
+            arp: [0, 1, 2, 3, 2, 1, 3, 2],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                if (pos === 0) {
+                    pad(midi(chord[0] - 12), { type: 'sine', dur: e * 8.5, vol: 0.09, attack: 0.6, release: 1.2, at, dest: out })
+                    for (const n of chord) pad(midi(n + 12), { type: 'sawtooth', dur: e * 9, vol: 0.006, attack: 1.4, release: 1.6, detune: 20, wobble: 8, at, dest: out })
+                }
+                // the arpeggio and two fading echoes
+                const n = chord[this.arp[pos] % chord.length] + 12
+                for (const [delay, vol] of [[0, 0.024], [1.5, 0.012], [3, 0.006]]) {
+                    tone(midi(n), { type: 'square', dur: e * 0.7, vol, attack: 0.004, at: at + delay * e, dest: out })
+                }
+                if (Math.random() < 0.12) tone(midi(88 + 2 * Math.floor(Math.random() * 4)), { type: 'sine', dur: 0.9, vol: 0.015, attack: 0.01, at, dest: out })
+            },
+        },
+
+        // Neon: synthwave. A pumping octave bass, a wide saw pad, punchy kick and snare, a lead.
+        neon: {
+            bpm: 108, cutoff: 3000, level: 0.9,
+            parts: [['Am', 'F', 'C', 'G']],
+            lead: [0, 2, 1, 2, 3, 2, 1, 4],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                if (pos === 0) for (const n of chord) pad(midi(n), { type: 'sawtooth', dur: e * 8, vol: 0.009, attack: 0.15, release: 0.6, detune: 10, at, dest: out })
+                tone(midi(chord[0] - (pos % 2 ? 12 : 24)), { type: 'sawtooth', dur: e * 0.85, vol: 0.045, attack: 0.005, at, dest: out })
+                if (pos === 0 || pos === 4) kick(at, 0.24, out)
+                if (pos === 2 || pos === 6) {
+                    hiss({ dur: 0.32, vol: 0.09, at, from: 2200, to: 1200, dest: out })
+                    tone(190, { type: 'triangle', dur: 0.1, vol: 0.06, at, dest: out })
+                }
+                hiss({ dur: 0.03, vol: 0.025, at, from: 8000, to: 9500, dest: out })
+                const i = this.lead[pos]
+                tone(midi(chord[i % 3] + 12 * Math.floor(i / 3) + 12), { type: 'square', dur: e * 0.7, vol: 0.016, attack: 0.004, at, dest: out })
+            },
+        },
     }
 
     function musicTick() {

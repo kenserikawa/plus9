@@ -72,6 +72,21 @@ body {
 [data-theme="sunset"], .theme-sunset { --bg: linear-gradient(165deg, #ff8a3a 0%, #ff623a 40%, #ff31cc 100%); }
 [data-theme="ocean"], .theme-ocean { --bg: linear-gradient(165deg, #37afff 0%, #3d7dff 50%, #8746ff 100%); }
 [data-theme="night"], .theme-night { --bg: linear-gradient(165deg, #2b1760 0%, #1d0f38 55%, #4a1f8c 100%); }
+[data-theme="candy"], .theme-candy { --bg: linear-gradient(165deg, #ffb3e1 0%, #ff7ac6 45%, #ffb36b 100%); }
+[data-theme="forest"], .theme-forest { --bg: linear-gradient(165deg, #7fd36b 0%, #2f9e5b 50%, #1b6b4a 100%); }
+/* space: a deep sky with a few fixed stars */
+[data-theme="space"], .theme-space {
+    --bg:
+        radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 78% 12%, #fff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 64% 72%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 28% 84%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 90% 48%, #fff 50%, transparent 51%),
+        radial-gradient(2px 2px at 44% 36%, #ffd23f 50%, transparent 51%),
+        linear-gradient(165deg, #1a2a6c 0%, #0f1640 50%, #3b1c71 100%);
+}
+/* neon: a synthwave sunset */
+[data-theme="neon"], .theme-neon { --bg: linear-gradient(180deg, #1b0b3d 0%, #5b1a8f 50%, #ff3d8b 85%, #ff9e3d 100%); }
 
 /* cartoon ink outline used on display type */
 .outline {
@@ -298,6 +313,64 @@ body {
 .theme-chip:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
 .theme-swatch { width: 22px; height: 22px; background: var(--bg); border: 2px solid var(--ink); border-radius: 50%; }
 
+/* customize card on home: Nine as dressed, and the current theme */
+.customize-card {
+    display: grid;
+    grid-template-columns: 48px 1fr 34px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 16px;
+    font: inherit;
+    text-align: left;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.92);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: -3px 4px 0 var(--ink);
+    cursor: pointer;
+}
+.customize-card:active { transform: translate(-2px, 3px); box-shadow: -1px 2px 0 var(--ink); }
+.customize-card:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+.mascot-card { width: 44px; height: 54px; margin-top: 6px; }
+.customize-text { display: grid; }
+.customize-title { font-family: var(--label-font); font-size: 1.25rem; }
+.customize-sub { font-size: 0.9rem; font-weight: 700; color: var(--muted); }
+.customize-swatch { width: 30px; height: 30px; }
+
+/* customize sheet */
+.style { width: min(460px, calc(100vw - 32px)); }
+.mascot-style { width: 84px; height: 104px; margin: 46px auto 4px; } /* room for a hat */
+.sheet-subtitle { margin: 14px 0 8px; font-family: var(--label-font); font-size: 1.2rem; font-weight: 400; text-align: left; }
+.style .theme-list { margin-bottom: 18px; }
+
+.wardrobe { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.wear-chip {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 20px 4px 6px;
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    cursor: pointer;
+}
+.wear-chip[aria-pressed="true"] { background: #fff1c2; box-shadow: inset 0 0 0 3px var(--gold); }
+.wear-chip:disabled { cursor: default; background: var(--track); }
+.wear-chip:disabled .wear-art { filter: grayscale(1) brightness(0.55); opacity: 0.45; }
+.wear-chip:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+.wear-art { width: 40px; height: 50px; }
+.wear-name { font-size: 0.8rem; font-weight: 700; line-height: 1.15; text-align: center; }
+.wear-chip:disabled .wear-name { color: var(--muted); }
+
+/* world complete: Nine in its new item, and what comes next */
+.over-prize { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 12px; margin: 0 0 16px; padding: 10px 14px; text-align: left; background: #fff1c2; border-radius: 16px; }
+.over-prize[hidden] { display: none; }
+.mascot-prize { width: 56px; height: 70px; margin-top: 10px; }
+.over-prize-text { margin: 0; font-weight: 700; line-height: 1.3; }
+
 /* ---------- journey map ---------- */
 
 .map { height: calc(100vh - 32px); max-height: 900px; }
@@ -375,6 +448,37 @@ body {
 .node:disabled { cursor: default; color: var(--muted); background: #cfc6e4; box-shadow: none; }
 .node svg { width: 26px; height: 26px; fill: none; stroke: var(--muted); stroke-width: 2.6; stroke-linejoin: round; }
 .node:focus-visible { outline: 3px solid var(--paper); outline-offset: 4px; }
+
+/* a world's last level: bigger, with a crown */
+.node.is-boss { position: relative; width: 74px; height: 74px; }
+.node.is-boss.is-current { width: 84px; height: 84px; }
+.boss-crown {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--gold);
+    text-shadow: 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink);
+    transform: translateX(-50%) rotate(-8deg);
+}
+
+/* where a world begins: a ticket in the world's colours */
+.world-banner {
+    position: relative;
+    z-index: 1;
+    margin: 18px 0 8px;
+    padding: 6px 18px;
+    font-family: var(--label-font);
+    font-size: 1.15rem;
+    color: var(--paper);
+    text-shadow: -1px 2px 0 var(--ink);
+    background: var(--bg);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+}
+.world-banner.is-locked { filter: grayscale(0.7) brightness(0.85); }
 .node-stars { min-height: 1.3em; font-size: 1.05rem; letter-spacing: 0.05em; color: var(--gold); text-shadow: 0 1px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink), 0 -1px 0 var(--ink); }
 
 /* ---------- coach tips and toasts ---------- */
@@ -1225,7 +1329,10 @@ kbd {
 
 .mascot { --m-fill: var(--gold); display: inline-block; flex: none; line-height: 0; }
 .mascot-art { width: 100%; height: 100%; overflow: visible; }
-.mascot-game { width: 52px; height: 64px; }
+.mascot-game { position: relative; z-index: 2; width: 52px; height: 64px; }
+/* a hat rises up to ~40% of Nine's height above its box: keep that space free so it never
+   tucks under the tiles (the tallest is the wizard hat) */
+.mascot-game.has-hat { margin-top: 28px; }
 
 /* the title: "Plus" and Nine standing in for the 9 */
 .title { display: inline-flex; align-items: flex-end; justify-content: center; gap: 0.08em; }
@@ -1359,7 +1466,7 @@ kbd {
     .journey-card { grid-area: journey; }
     .mode-cards { grid-area: modes; }
     .missions { grid-area: missions; }
-    .themes { grid-area: themes; }
+    .customize-card { grid-area: themes; align-self: start; }
     .home .title { font-size: clamp(2.2rem, 10vh, 3.6rem); }
 
     .map { height: calc(100vh - 24px); }

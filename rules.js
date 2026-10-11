@@ -108,27 +108,50 @@ function createRng(seed) {
 
 // ---------- journey ----------
 
-// Board seeds for journey levels 1–60, chosen by tools/journey.js so the share of typical
-// players who finish falls smoothly from 95% (level 1) to 40%. Past 60, seeds are unchecked.
+// Board seeds for journey levels 1–80, chosen by tools/journey.js so the share of typical
+// players who finish falls smoothly from 95% (level 1) to 40% (bosses a notch lower, down to
+// 33%). Past 80, seeds are unchecked.
 const JOURNEY_SEEDS = [
     -379896306, 180182684, -2121801329, 573878263, -1846710963, -534442939,
-    1321658012, 2109272321, -1763492830, -215909369, 1884198763, -745356091,
+    1321658012, 505803635, -1763492830, 595326767, 1884198763, -745356091,
     1893195087, 2138459205, 970594561, 1837064158, -2090012157, 1203587240,
     -1987899275, -816915529, -1287550635, 2023935127, 1529889490, 2143558191,
-    -225536298, -1192084894, -1564676465, -534140330, -712845400, 1234602441,
+    -225536298, -1192084894, -1564676465, -534140330, -712845400, -687045234,
     1884689658, 2029929591, -400925218, 1583288150, 1872010784, -152537883,
-    821495000, 740952252, 1299623127, 590034053, -1741297103, 778195952,
+    821495000, 740952252, 1299623127, 489368339, -1741297103, 778195952,
     671315480, 98943072, -2137092345, -1884233377, -1826299123, 44039830,
-    -391108722, 808364326, 297051319, 514201628, 966836814, -891080828,
-    -1518673698, 320179099, -1470457971, -1672175794, -914875249, 476344523,
+    -391108722, -1053554025, 297051319, 514201628, 966836814, -891080828,
+    -1518673698, 320179099, -1470457971, -1672175794, -914875249, -1686491797,
+    -24605530, 105828790, 652400382, 1069961922, -1675282448, -1495353914,
+    546800346, -1540375965, -1791665936, -1347920353, -1252477915, -1148025569,
+    -470205028, -2068712347, -1918348772, 285086755, -1391042929, -672549404,
+    1415370038, 1861286507,
 ]
+
+// The journey is split into worlds of WORLD_SIZE levels. Reaching a world unlocks its theme
+// (background and music); finishing it (its last level is a boss) gives Nine an accessory.
+// Past the last world the journey goes on in it.
+const WORLD_SIZE = 10
+const WORLDS = [
+    { id: 'grape', reward: 'party' },
+    { id: 'sunset', reward: 'shades' },
+    { id: 'ocean', reward: 'goggles' },
+    { id: 'night', reward: 'wizard' },
+    { id: 'candy', reward: 'bowtie' },
+    { id: 'forest', reward: 'explorer' },
+    { id: 'space', reward: 'antennae' },
+    { id: 'neon', reward: 'headphones' },
+]
+// world index (0-based) of journey level n
+const worldOf = n => Math.min(Math.floor((n - 1) / WORLD_SIZE), WORLDS.length - 1)
+const isBoss = n => n % WORLD_SIZE === 0
 
 // Level n (1-based) is a fixed, seeded board: make the target `sums` times at a fixed
 // difficulty. Difficulty rises every 5 levels; within a tier the number of sums grows.
 // Levels 1–4 teach the basics (level 1 starts from a hand-picked board). Special tiles
 // appear from level 6, which hands out a wild tile; level 7 hands out a ×2 tile and level 8
-// a rainbow tile. From
-// level 11, some levels start with frozen tiles; level 11 introduces them.
+// a rainbow tile. From level 11, some levels start with frozen tiles; level 11 introduces
+// them. The last level of each world is a boss: 8 sums, and three frozen tiles from level 20.
 // `setup` changes tiles after the deal: { index, special } or { index, ice }.
 function journeyLevel(n) {
     const tier = Math.floor((n - 1) / 5)
@@ -136,17 +159,21 @@ function journeyLevel(n) {
         n,
         lv: tier,
         target: targetFor(tier),
-        sums: 3 + ((n - 1) % 5),
+        sums: isBoss(n) ? 8 : 3 + ((n - 1) % 5),
         seed: n <= JOURNEY_SEEDS.length ? JOURNEY_SEEDS[n - 1] : hashSeed(`journey:${n}`),
         initial: null,
         specials: n >= 6,
         setup: [],
+        world: worldOf(n),
+        boss: isBoss(n),
     }
     if (n === 6) level.setup = [{ index: 3, special: 'wild' }]
     if (n === 7) level.setup = [{ index: 1, special: 'double' }]
     if (n === 8) level.setup = [{ index: 5, special: 'rainbow' }]
     // frozen tiles: two on the 1st, 3rd and 5th level of every tier from level 11
     if (n >= 11 && [0, 2, 4].includes((n - 1) % 5)) level.setup = [{ index: 0, ice: ICE_SUMS }, { index: 7, ice: ICE_SUMS }]
+    // bosses add a third frozen tile once ice has been introduced (the first boss is just longer)
+    if (level.boss && n > 10) level.setup = [{ index: 0, ice: ICE_SUMS }, { index: 3, ice: ICE_SUMS }, { index: 7, ice: ICE_SUMS }]
     if (n === 1) {
         level.initial = {
             tiles: [4, 5, 2, 7, 3, 6, 1, 8].map((value, i) => ({ value, color: COLORS[i % COLORS.length] })),
@@ -169,6 +196,6 @@ if (typeof module !== 'undefined') {
         JOURNEY_SEEDS, COLORS, TARGETS, SUMS_PER_LEVEL, TILE_LAMBDA, MAX_FREE_SHUFFLES, SHUFFLE_COST, COMBO_MULTIPLIER, DAILY_SUMS,
         WILD_CHANCE, DOUBLE_CHANCE, RAINBOW_CHANCE, ICE_SUMS, anyColor, keepsCombo,
         targetFor, lambdaFor, shuffleCostFor, drawValue, drawColor, drawTile, tileValue, canPlay, sumPoints, hashSeed, createRng,
-        journeyLevel, applySetup,
+        journeyLevel, applySetup, WORLD_SIZE, WORLDS, worldOf, isBoss,
     }
 }

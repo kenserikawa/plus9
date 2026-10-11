@@ -13,12 +13,12 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 
 ### Modes
 
-- **Journey**: a route of levels, each a fixed board with a goal and up to 3 stars. The first levels teach the game as you play.
+- **Journey**: eight worlds of ten levels (Grape, Sunset, Ocean, Night, Candy, Forest, Space, Neon), each a fixed board with a goal and up to 3 stars. The first levels teach the game as you play. Each world ends with a boss; beat it to reach the next world, with its own look and music, and to win an outfit for Nine.
 - **Daily**: the same tiles for everyone each day. 12 sums, one try, a par to beat, a result grid to share and a streak to keep.
 - **Classic**: play as long as you can; the target grows every 4 sums.
 - **60 seconds**: race the clock; every sum adds 2 seconds.
 
-Three **daily missions** give extra stars, and stars unlock **themes**, each with its own colors and music: bright chiptune, vaporwave sunset, underwater ambient and a mysterious night. Nine, the game's mascot, cheers you on.
+Three **daily missions** give extra stars. In **Customize** you pick the theme (colors and music) of any world you have reached and dress Nine: one outfit per world, plus a cap, a scarf and a crown bought with stars.
 
 ### Controls
 

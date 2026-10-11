@@ -8,11 +8,13 @@
 const R = require('../rules.js')
 const B = require('../bot.js')
 
-const LEVELS = 60
+const LEVELS = 80
 const CANDIDATES = 40
 const RUNS = 150
-// share of typical players who should finish level n
-const winGoal = n => Math.max(0.4, 0.95 - 0.015 * (n - 1))
+// share of typical players who should finish level n; a world's boss is a notch harder
+const winGoal = n => (R.isBoss(n)
+    ? Math.max(0.33, 0.95 - 0.015 * (n - 1) - 0.08)
+    : Math.max(0.4, 0.95 - 0.015 * (n - 1)))
 
 function winRate(def, seed) {
     let wins = 0

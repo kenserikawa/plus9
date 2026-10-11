@@ -102,24 +102,72 @@ const meta = (() => {
         return journeyStarTotal() + wallet.missionStars + (wallet.bonusStars || 0)
     }
 
-    // cosmetic only: each theme recolors the background (names are in i18n.js as theme.<id>)
-    const THEMES = [
-        { id: 'grape', stars: 0 },
-        { id: 'sunset', stars: 10 },
-        { id: 'ocean', stars: 25 },
-        { id: 'night', stars: 45 },
-    ]
+    // ---------- worlds, themes and Nine's wardrobe ----------
+    // Themes are the journey's worlds (WORLDS in rules.js): a world's theme (background and
+    // music) unlocks when the player reaches it. Names are in i18n.js as theme.<id>.
+    const THEMES = WORLDS.map((w, i) => ({ id: w.id, world: i }))
+
+    // a world is reached once the previous world's boss has a star
+    const worldReached = w => journeyFrontier() > w * WORLD_SIZE
+    // a world is complete once its boss has a star
+    const worldComplete = w => journeyStarsOf((w + 1) * WORLD_SIZE) > 0
 
     function theme() {
         const id = load('plus9.theme', 'grape')
         const t = THEMES.find(x => x.id === id)
-        return t && totalStars() >= t.stars ? t.id : 'grape'
+        return t && worldReached(t.world) ? t.id : 'grape'
     }
 
     const setTheme = id => save('plus9.theme', id)
 
+    // Nine's wardrobe: one item per completed world, plus a few bought with total stars.
+    // One item per slot can be worn. Names are in i18n.js as item.<id>.
+    const WARDROBE = [
+        ...WORLDS.map((w, i) => ({ id: w.reward, world: i })),
+        { id: 'cap', stars: 15 },
+        { id: 'scarf', stars: 30 },
+        { id: 'crown', stars: 60 },
+    ]
+    const SLOTS = {
+        party: 'head', wizard: 'head', explorer: 'head', antennae: 'head', headphones: 'head', cap: 'head', crown: 'head',
+        shades: 'face', goggles: 'face',
+        bowtie: 'neck', scarf: 'neck',
+    }
+    WARDROBE.forEach(item => { item.slot = SLOTS[item.id] })
+
+    const itemUnlocked = item => (item.world !== undefined ? worldComplete(item.world) : totalStars() >= item.stars)
+
+    // what Nine wears: { head, face, neck } of unlocked item ids
+    function outfit() {
+        const saved = load('plus9.outfit', {})
+        const worn = {}
+        for (const [slot, id] of Object.entries(saved)) {
+            const item = WARDROBE.find(x => x.id === id)
+            if (item && item.slot === slot && itemUnlocked(item)) worn[slot] = id
+        }
+        return worn
+    }
+
+    // put an item on, or take it off if it is already worn
+    function toggleItem(id) {
+        const item = WARDROBE.find(x => x.id === id)
+        if (!item || !itemUnlocked(item)) return outfit()
+        const worn = outfit()
+        if (worn[item.slot] === id) delete worn[item.slot]
+        else worn[item.slot] = id
+        save('plus9.outfit', worn)
+        return worn
+    }
+
+    function wear(id) {
+        const item = WARDROBE.find(x => x.id === id)
+        if (!item || !itemUnlocked(item)) return
+        save('plus9.outfit', { ...outfit(), [item.slot]: id })
+    }
+
     return {
         dayKey, journeyRecord, journeyStarsOf, journeyStarTotal, journeyFrontier,
         todaysMissions, missionEvent, missionList, addBonusStars, totalStars, THEMES, theme, setTheme,
+        worldReached, worldComplete, WARDROBE, itemUnlocked, outfit, toggleItem, wear,
     }
 })()

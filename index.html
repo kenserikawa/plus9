@@ -63,10 +63,14 @@
             <ul class="mission-list" id="missions"></ul>
         </section>
 
-        <section class="panel themes" aria-labelledby="themes-title">
-            <h2 class="panel-title" id="themes-title" data-i18n="home.themes">Themes</h2>
-            <div class="theme-list" id="themes"></div>
-        </section>
+        <button class="customize-card" id="go-style" type="button">
+            <span class="mascot mascot-card" aria-hidden="true"></span>
+            <span class="customize-text">
+                <span class="customize-title" data-i18n="style.title">Customize</span>
+                <span class="customize-sub" data-i18n="style.sub">Themes and outfits for Nine</span>
+            </span>
+            <span class="theme-swatch customize-swatch" aria-hidden="true"></span>
+        </button>
     </section>
 
     <!-- ===== Journey map ===== -->
@@ -148,6 +152,10 @@
         <p class="over-reason" id="over-reason"></p>
         <p class="over-score"><span data-i18n="hud.score">Score</span> <strong id="over-score">0</strong></p>
         <p class="over-stats" id="over-stats"></p>
+        <div class="over-prize" id="over-prize" hidden>
+            <span class="mascot mascot-prize" aria-hidden="true"></span>
+            <p class="over-prize-text" id="over-prize-text"></p>
+        </div>
         <div class="compare" id="over-compare" hidden>
             <span class="compare-bar"><span class="compare-fill" id="compare-fill"></span></span>
             <span class="compare-text" id="compare-text"></span>
@@ -168,6 +176,18 @@
         </div>
     </dialog>
 
+
+    <dialog class="sheet style" id="style" aria-labelledby="style-title">
+        <h2 class="sheet-title outline" id="style-title" data-i18n="style.title">Customize</h2>
+        <span class="mascot mascot-style" aria-hidden="true"></span>
+        <h3 class="sheet-subtitle" data-i18n="style.wardrobe">Nine's wardrobe</h3>
+        <div class="wardrobe" id="wardrobe"></div>
+        <h3 class="sheet-subtitle" data-i18n="style.themes">Themes</h3>
+        <div class="theme-list" id="themes"></div>
+        <div class="sheet-actions">
+            <button class="btn" id="style-close" type="button" data-i18n="help.gotIt">Got it</button>
+        </div>
+    </dialog>
 
     <dialog class="sheet help" id="help" aria-labelledby="help-title">
         <h2 class="sheet-title outline" id="help-title" data-i18n="help.title">How to play</h2>

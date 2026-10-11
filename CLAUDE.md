@@ -70,7 +70,7 @@ Poki UI rules followed: 16:9 frames (640×360, 836×470, 1031×580) use the land
 
 ## Conventions
 
-- **Input** goes through `play(tile)`: `click` for tap/keyboard, Pointer Events with a `.ghost` clone for drag; the click after a drag is suppressed.
+- **Input** goes through `play(tile)`: `click` for tap/keyboard, Pointer Events with a `.ghost` clone for drag; the click after a drag is suppressed. Drag writes the ghost's `translate3d` once per animation frame, eases its tilt from horizontal speed, and hit-tests a circular `dropZone()` measured at drag start (never the live well rect: the well scales up under a tile, and measuring that made it flicker at the edge). On release the ghost slides into the well or back home (`land`).
 - **Ring**: one SVG segment per unit of the target, coloured by the tile that filled it.
 - **Nine** sits in the actions row (top of the actions column in landscape) and is the "9" of the home title. Moods: hop on every tile, happy on a sum, cheer on combos / ×2 / level-ups / wins / new records (with confetti), worried while stuck, sad on a loss. Confetti also marks the tutorial's first sum. Confetti skips with reduced motion; the mascot's only idle motion is a blink every few seconds.
 - **Poking Nine**: on the home screen (title) and in Customize, Nine is a `.nine-poke` button (`pokeNine`). Pokes cycle love (hearts), spin, wink (star), boing; five pokes within two seconds make it dizzy (spiral eyes, wobble). Each has a sound (`sfx.poke(kind)`) and floating symbols (`.poke-bit`, skipped with reduced motion). Its open pupils follow the pointer or last touch there (`mascot.look`), never during play.

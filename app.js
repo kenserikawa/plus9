@@ -930,9 +930,14 @@ function showResult({ title, happy, reason, stats, stars = null, compare = null,
 
 // ---------- input: tap, keyboard and pointer drag ----------
 
+// Drag: a floating copy of the tile follows the pointer. Its position is written once per
+// animation frame; the tilt follows the horizontal speed and eases back. The drop zone is a
+// circle measured once when the drag starts, so the well growing under the tile can't move
+// it (that feedback made the well flicker at its edge).
 function attachInput(tile) {
     const el = tile.el
-    let start = null, ghost = null, suppressClick = false
+    let drag = null // { startX, startY, x, y, ghost, zone, tilt, lastX, frame }
+    let suppressClick = false
 
     el.addEventListener('click', () => {
         if (suppressClick) { suppressClick = false; return }
@@ -943,52 +948,101 @@ function attachInput(tile) {
 
     el.addEventListener('pointerdown', ev => {
         suppressClick = false
-        if (!playing || ev.button !== 0) return
-        start = { x: ev.clientX, y: ev.clientY }
+        if (!playing || ev.button !== 0 || drag) return
+        drag = { startX: ev.clientX, startY: ev.clientY, x: ev.clientX, y: ev.clientY, ghost: null }
         el.setPointerCapture(ev.pointerId)
     })
 
     el.addEventListener('pointermove', ev => {
-        if (!start) return
-        const dx = ev.clientX - start.x, dy = ev.clientY - start.y
-        if (!ghost && Math.hypot(dx, dy) < 8) return
-        if (!ghost) {
-            ghost = el.cloneNode(true)
-            ghost.classList.add('ghost')
-            ghost.classList.remove('pop-in', 'hint')
-            const rect = el.getBoundingClientRect()
-            ghost.style.width = rect.width + 'px'
-            ghost.style.height = rect.height + 'px'
-            ghost.style.left = rect.left + 'px'
-            ghost.style.top = rect.top + 'px'
-            document.body.appendChild(ghost)
-            el.classList.add('lifted')
-            sfx.lift()
+        if (!drag) return
+        drag.x = ev.clientX
+        drag.y = ev.clientY
+        if (!drag.ghost) {
+            if (Math.hypot(drag.x - drag.startX, drag.y - drag.startY) < 8) return
+            lift()
         }
-        ghost.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx / 30}deg) scale(1.08)`
-        well.classList.toggle('is-target', overWell(ev))
+        if (!drag.frame) drag.frame = requestAnimationFrame(frame)
     })
 
+    function lift() {
+        const rect = el.getBoundingClientRect()
+        const ghost = el.cloneNode(true)
+        ghost.classList.add('ghost')
+        ghost.classList.remove('pop-in', 'hint')
+        ghost.removeAttribute('aria-label')
+        ghost.setAttribute('aria-hidden', 'true')
+        Object.assign(ghost.style, { width: `${rect.width}px`, height: `${rect.height}px`, left: `${rect.left}px`, top: `${rect.top}px` })
+        document.body.appendChild(ghost)
+        drag.ghost = ghost
+        drag.tilt = 0
+        drag.lastX = drag.x
+        drag.zone = dropZone()
+        el.classList.add('lifted')
+        sfx.lift()
+    }
+
+    function frame() {
+        drag.frame = 0
+        const dx = drag.x - drag.startX, dy = drag.y - drag.startY
+        // tilt towards the motion, eased so small jitters don't shake the tile
+        const speed = drag.x - drag.lastX
+        drag.lastX = drag.x
+        drag.tilt += (Math.max(-12, Math.min(12, speed * 0.8)) - drag.tilt) * 0.25
+        const over = inZone(drag.zone, drag.x, drag.y)
+        drag.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${drag.tilt.toFixed(2)}deg) scale(${over ? 0.92 : 1.08})`
+        well.classList.toggle('is-target', over)
+        // keep easing the tilt back to level while the pointer rests
+        if (Math.abs(drag.tilt) > 0.05) drag.frame = requestAnimationFrame(frame)
+    }
+
     const end = ev => {
-        if (!start) return
-        start = null
-        if (!ghost) return
+        if (!drag) return
+        const d = drag
+        drag = null
+        cancelAnimationFrame(d.frame)
+        if (!d.ghost) return
         suppressClick = true // the click that follows a drag is not a tap
-        const dropped = ev.type === 'pointerup' && overWell(ev)
-        ghost.remove()
-        ghost = null
-        el.classList.remove('lifted')
+        const dropped = ev.type === 'pointerup' && inZone(d.zone, ev.clientX, ev.clientY)
         well.classList.remove('is-target')
+        land(d, dropped)
         if (dropped) play(tile)
     }
     el.addEventListener('pointerup', end)
     el.addEventListener('pointercancel', end)
+
+    // the floating copy settles: into the well when dropped there, back home otherwise
+    function land(d, dropped) {
+        const ghost = d.ghost
+        const home = el.getBoundingClientRect()
+        const g = ghost.getBoundingClientRect()
+        let to
+        if (dropped) {
+            to = `translate3d(${d.zone.x - (g.left + g.width / 2) + (d.x - d.startX)}px, ${d.zone.y - (g.top + g.height / 2) + (d.y - d.startY)}px, 0) scale(0.4)`
+            ghost.classList.add('is-dropping')
+        } else {
+            to = `translate3d(${home.left - parseFloat(ghost.style.left)}px, ${home.top - parseFloat(ghost.style.top)}px, 0) scale(1)`
+            ghost.classList.add('is-returning')
+        }
+        const done = () => {
+            ghost.remove()
+            if (!dropped) el.classList.remove('lifted')
+        }
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return done()
+        requestAnimationFrame(() => { ghost.style.transform = to })
+        ghost.addEventListener('transitionend', done, { once: true })
+        setTimeout(done, 400) // in case the transition never ends (hidden tab)
+        if (dropped) el.classList.remove('lifted') // the tile below already shows its new number
+    }
 }
 
-function overWell(ev) {
+// the well's drop area: a circle a little larger than the well, measured at drag start
+function dropZone() {
     const r = well.getBoundingClientRect()
-    return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom
+    const scale = well.classList.contains('is-target') ? 1.08 : 1
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: (r.width / scale / 2) * 1.15 }
 }
+
+const inZone = (zone, x, y) => Math.hypot(x - zone.x, y - zone.y) <= zone.r
 
 // ---------- daily challenge ----------
 

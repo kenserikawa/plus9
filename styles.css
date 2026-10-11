@@ -568,7 +568,11 @@ body {
     cursor: grabbing;
     box-shadow: -8px 14px 0 var(--ink);
     transition: none;
+    will-change: transform; /* its own layer: moving it repaints nothing else */
 }
+/* letting go: the copy slides into the well, or back to its place */
+.ghost.is-dropping { transition: transform 140ms ease-in, opacity 140ms ease-in; opacity: 0; }
+.ghost.is-returning { transition: transform 200ms cubic-bezier(.3, 1.4, .5, 1); box-shadow: -4px 6px 0 var(--ink); }
 
 .pop-in { animation: pop-in 260ms cubic-bezier(.3, 1.6, .5, 1); }
 

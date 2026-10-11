@@ -18,12 +18,14 @@ Scripts load in this order (plain globals, no modules):
 | `styles.css` | `@font-face`, tokens and themes, screens, board, dialogs, then the landscape layout and reduced-motion overrides at the end. |
 | `fonts/`, `icon.svg` | Bundled Ranchers + Baloo 2 (OFL licences included) and the favicon. |
 | `tools/balance.js` | `node tools/balance.js`: dead-end rates per level and whole-game lengths. |
+| `tools/build.js` | `node tools/build.js poki`: copies the game into `dist/poki/`, injects the Poki SDK and `PLUS9_PLATFORM`, and writes `dist/plus9-poki.zip` (no dependencies). `dist/` is git-ignored. |
+| `promo/` | Store assets: `thumbnail.html` (scene, screenshot at 628×628 ×2) and `thumbnail.png` (1256×1256, no text, full-bleed, as Poki asks). |
 | `tools/journey.js` | `node tools/journey.js`: picks a seed per journey level so difficulty follows a curve; paste its output over `JOURNEY_SEEDS` in `rules.js`. |
 
 ## Screens and modes
 
 - **Home** (`#home`): Journey card (next level, total stars), Daily / Classic / 60 seconds cards, today's missions, themes. A first-time player skips it and lands in Journey level 1 (`plus9.onboarded` is set when they win it).
-- **Journey map** (`#map`): a winding route of levels (`renderMap`); finished levels show their stars, the next one is gold, later ones locked. A level opens the `#intro` sheet (goal and star thresholds) before playing.
+- **Journey map** (`#map`): a winding route of levels (`renderMap`); finished levels show their stars, the next one is gold, later ones locked. `drawRoad()` draws an SVG under the nodes with an S-curve from each node's centre to the next: stretches after a level with a star are an ink-cased rainbow that slides along (SMIL `animateTransform`, off with reduced motion); the rest are dotted. It measures the nodes, so it reruns on resize. A level opens the `#intro` sheet (goal and star thresholds) before playing.
 - **Game** (`#game`): bar (home, title, pause, sound), HUD, coach tip, board, actions. The HUD's 2nd and 3rd pills change with the mode (`renderHud`): Level/Best (Classic, 60 s), Sums/Par (Daily), Stars/Sums (Journey).
 - Starting any game calls `platform.commercialBreak()` first; `goHome()` abandons the current game (Classic/60 s records are kept, the daily keeps its own saved progress).
 
@@ -57,7 +59,7 @@ The adapter enforces Poki's rules (no repeated start/stop, no events during ads,
 
 Poki UI rules followed: 16:9 frames (640×360, 836×470, 1031×580) use the landscape layout; the 🎬 button is never green, sits beside or after the standard choices and is never larger or animated; no external links or requests; arrow keys, space and the wheel don't scroll the host page except inside `.sheet` and `.scroll` (the map).
 
-**Not done yet**: the build that sets `PLUS9_PLATFORM = 'poki'` and adds `<script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js">` (no SRI: Poki updates that file in place), zipping, static and animated thumbnails, Poki Inspector check.
+**Build**: `node tools/build.js poki` adds `<script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js">` (no SRI: Poki updates that file in place) and zips the package. Verified over HTTP with the real SDK: it loads, and the event order is start → stop (level end) → commercialBreak (next start) → start → stop (pause) → commercialBreak (resume). **Still to do**: upload to Poki for Developers, run Poki Inspector, the animated thumbnail (needed for Soft Release), set `DAILY_EPOCH` to the launch date.
 
 ## Conventions
 

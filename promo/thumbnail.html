@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Store thumbnail scene. Open at 628×628 (device scale 2) and screenshot the viewport.
+         Poki rules: square, full-bleed, no text, no borders, one clear subject, strong contrast. -->
+    <title>Plus 9 thumbnail</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        html, body { width: 628px; height: 628px; margin: 0; padding: 0; overflow: hidden; }
+        body { display: block; background: var(--bg); }
+        :root { --cell: 230px; --gap: 24px; }
+
+        /* the board, close up and slightly turned so it reads as a sticker toy */
+        .board {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-8deg);
+        }
+        .tile { cursor: default; }
+        .tile, .tile:hover { transform: none; box-shadow: -8px 12px 0 var(--ink); border-width: 7px; }
+        .well { box-shadow: 0 0 0 10px var(--paper), -8px 12px 0 10px var(--ink); }
+        .well .well-sum { font-size: calc(var(--cell) * 0.46); margin-top: 0; }
+
+        /* the tile in flight towards the well */
+        .flying {
+            position: absolute;
+            left: 368px;
+            top: 92px;
+            width: 190px;
+            height: 190px;
+            font-size: 104px;
+            transform: rotate(16deg);
+            box-shadow: -14px 22px 0 var(--ink) !important;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body data-theme="grape">
+    <div class="board" id="board"></div>
+    <button class="tile flying" style="--tile: #ff31cc; --o: 6px">3</button>
+
+    <script>
+        // same ring drawing as the game: 9 segments, 6 filled by the tiles already played
+        const board = document.getElementById('board')
+        const values = [[5, '#37afff'], [2, '#ff623a'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], [8, '#ff623a'], [6, '#8746ff'], [3, '#37afff']]
+        for (const v of values) {
+            if (!v) {
+                const well = document.createElement('div')
+                well.className = 'well'
+                const n = 9, r = 44, c = 2 * Math.PI * r, gap = 2.2, seg = c / n - gap
+                const fill = ['#37afff', '#37afff', '#37afff', '#37afff', '#ff623a', '#ff623a']
+                let arcs = ''
+                for (let i = 0; i < n; i++) {
+                    const color = fill[i] || '#3a2a5c'
+                    arcs += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-dasharray="${seg} ${c - seg}" stroke-dashoffset="${-(i * c / n) + c / 4 - gap / 2}" />`
+                }
+                well.innerHTML = `<svg class="ring" viewBox="0 0 100 100">${arcs}</svg><span class="well-sum outline">6</span>`
+                board.appendChild(well)
+                continue
+            }
+            const tile = document.createElement('button')
+            tile.className = 'tile'
+            tile.style.setProperty('--tile', v[1])
+            tile.textContent = v[0]
+            board.appendChild(tile)
+        }
+    </script>
+</body>
+</html>

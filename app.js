@@ -1034,9 +1034,60 @@ function renderMap() {
         li.append(b, s)
         return li
     }))
+    drawRoad()
     const current = route.querySelector('.is-current')
     if (current) current.scrollIntoView({ block: 'center' })
 }
+
+// The road between levels: one S-curve from each node's centre to the next. Stretches
+// already travelled (level n has a star) are a flowing rainbow; the rest are dashed.
+function drawRoad() {
+    const route = $('route')
+    const nodes = [...route.querySelectorAll('.node')]
+    if (!nodes.length) return
+    const box = route.getBoundingClientRect()
+    const centre = el => {
+        const r = el.getBoundingClientRect()
+        return [r.left - box.left + r.width / 2, r.top - box.top + route.scrollTop + r.height / 2]
+    }
+    const points = nodes.map(centre)
+    const curve = ([x1, y1], [x2, y2]) => {
+        const mid = (y1 + y2) / 2
+        return `M${x1} ${y1} C${x1} ${mid} ${x2} ${mid} ${x2} ${y2}`
+    }
+    let done = '', todo = ''
+    for (let i = 0; i < points.length - 1; i++) {
+        if (meta.journeyStarsOf(i + 1) > 0) done += curve(points[i], points[i + 1])
+        else todo += curve(points[i], points[i + 1])
+    }
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    const ns = 'http://www.w3.org/2000/svg'
+    const svg = document.createElementNS(ns, 'svg')
+    svg.classList.add('road')
+    svg.setAttribute('aria-hidden', 'true')
+    svg.setAttribute('width', route.scrollWidth)
+    svg.setAttribute('height', route.scrollHeight)
+    // the rainbow repeats every 240px and slides along the road (SMIL, so it needs no JS loop)
+    svg.innerHTML = `
+        <defs>
+            <linearGradient id="rainbow" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="240" spreadMethod="repeat">
+                <stop offset="0" stop-color="#ff623a" />
+                <stop offset="0.2" stop-color="#ffd23f" />
+                <stop offset="0.4" stop-color="#37afff" />
+                <stop offset="0.6" stop-color="#8746ff" />
+                <stop offset="0.8" stop-color="#ff31cc" />
+                <stop offset="1" stop-color="#ff623a" />
+                ${still ? '' : '<animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="0 240" dur="2.4s" repeatCount="indefinite" />'}
+            </linearGradient>
+        </defs>
+        <path class="road-todo" d="${todo}" />
+        <path class="road-casing" d="${done}" />
+        <path class="road-done" d="${done}" />`
+    route.querySelector('.road')?.remove()
+    route.prepend(svg)
+}
+
+addEventListener('resize', () => { if (screen === 'map') drawRoad() })
 
 function applyTheme() {
     document.body.dataset.theme = meta.theme()

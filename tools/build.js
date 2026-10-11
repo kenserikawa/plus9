@@ -9,6 +9,7 @@
 const fs = require('fs')
 const path = require('path')
 const zlib = require('zlib')
+const crypto = require('crypto')
 
 const ROOT = path.join(__dirname, '..')
 const PORTALS = {
@@ -33,8 +34,23 @@ fs.mkdirSync(out, { recursive: true })
 for (const file of FILES) fs.copyFileSync(path.join(ROOT, file), path.join(out, file))
 for (const dir of DIRS) fs.cpSync(path.join(ROOT, dir), path.join(out, dir), { recursive: true })
 
+// Cache busting: every script and stylesheet in index.html gets ?v=<hash of its content>.
+// Hosts cache files for a while, and a browser that mixes a new index.html with an old
+// app.js or styles.css breaks (new markup, old code). A changed file now has a new URL.
+function bustCache(indexPath) {
+    let html = fs.readFileSync(indexPath, 'utf8')
+    for (const file of FILES.filter(f => /\.(js|css)$/.test(f))) {
+        const hash = crypto.createHash('sha1').update(fs.readFileSync(path.join(out, file))).digest('hex').slice(0, 8)
+        const before = html
+        html = html.replace(new RegExp(`(src|href)="${file.replace('.', '\\.')}"`, 'g'), `$1="${file}?v=${hash}"`)
+        if (html === before) throw new Error(`index.html: no reference to ${file}, update tools/build.js`)
+    }
+    fs.writeFileSync(indexPath, html)
+}
+
 if (portal === 'web') {
-    console.log(`dist/web/: ${FILES.length} files + ${DIRS.join(', ')}`)
+    bustCache(path.join(out, 'index.html'))
+    console.log(`dist/web/: ${FILES.length} files + ${DIRS.join(', ')}, assets versioned`)
     process.exit(0)
 }
 
@@ -46,6 +62,7 @@ const marker = '<link rel="stylesheet" href="styles.css">'
 if (!html.includes(marker)) throw new Error('index.html: stylesheet link not found, update tools/build.js')
 fs.writeFileSync(indexPath, html.replace(marker,
     `${marker}\n    <script>window.PLUS9_PLATFORM = '${portal}'</script>\n    ${PORTALS[portal]}`))
+bustCache(indexPath)
 
 // ---------- zip (stored paths relative to the package root, index.html at the top) ----------
 

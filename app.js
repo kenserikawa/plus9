@@ -972,25 +972,31 @@ function attachInput(tile) {
         ghost.removeAttribute('aria-label')
         ghost.setAttribute('aria-hidden', 'true')
         Object.assign(ghost.style, { width: `${rect.width}px`, height: `${rect.height}px`, left: `${rect.left}px`, top: `${rect.top}px` })
-        document.body.appendChild(ghost)
         drag.ghost = ghost
         drag.tilt = 0
         drag.lastX = drag.x
         drag.zone = dropZone()
+        place() // born under the pointer, not one frame late at the tile's spot
+        document.body.appendChild(ghost)
         el.classList.add('lifted')
         sfx.lift()
     }
 
-    function frame() {
-        drag.frame = 0
+    // put the floating tile under the pointer, tilted towards the motion
+    function place() {
         const dx = drag.x - drag.startX, dy = drag.y - drag.startY
-        // tilt towards the motion, eased so small jitters don't shake the tile
-        const speed = drag.x - drag.lastX
-        drag.lastX = drag.x
-        drag.tilt += (Math.max(-12, Math.min(12, speed * 0.8)) - drag.tilt) * 0.25
         const over = inZone(drag.zone, drag.x, drag.y)
         drag.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${drag.tilt.toFixed(2)}deg) scale(${over ? 0.92 : 1.08})`
         well.classList.toggle('is-target', over)
+    }
+
+    function frame() {
+        drag.frame = 0
+        // tilt eases towards the horizontal speed, so small jitters don't shake the tile
+        const speed = drag.x - drag.lastX
+        drag.lastX = drag.x
+        drag.tilt += (Math.max(-12, Math.min(12, speed * 0.8)) - drag.tilt) * 0.25
+        place()
         // keep easing the tilt back to level while the pointer rests
         if (Math.abs(drag.tilt) > 0.05) drag.frame = requestAnimationFrame(frame)
     }
@@ -1002,7 +1008,8 @@ function attachInput(tile) {
         cancelAnimationFrame(d.frame)
         if (!d.ghost) return
         suppressClick = true // the click that follows a drag is not a tap
-        const dropped = ev.type === 'pointerup' && inZone(d.zone, ev.clientX, ev.clientY)
+        if (ev.type === 'pointerup') { d.x = ev.clientX; d.y = ev.clientY }
+        const dropped = ev.type === 'pointerup' && inZone(d.zone, d.x, d.y)
         well.classList.remove('is-target')
         land(d, dropped)
         if (dropped) play(tile)
@@ -1010,17 +1017,22 @@ function attachInput(tile) {
     el.addEventListener('pointerup', end)
     el.addEventListener('pointercancel', end)
 
-    // the floating copy settles: into the well when dropped there, back home otherwise
+    // The floating copy settles: into the well when dropped there, back home otherwise.
+    // It first snaps to where the pointer let go (the last frame may not have been drawn),
+    // then slides to a target measured from its untransformed box, so it can't fly off.
     function land(d, dropped) {
         const ghost = d.ghost
-        const home = el.getBoundingClientRect()
-        const g = ghost.getBoundingClientRect()
+        const baseX = parseFloat(ghost.style.left) + parseFloat(ghost.style.width) / 2
+        const baseY = parseFloat(ghost.style.top) + parseFloat(ghost.style.height) / 2
+        ghost.style.transform = `translate3d(${d.x - d.startX}px, ${d.y - d.startY}px, 0) rotate(${d.tilt.toFixed(2)}deg) scale(${dropped ? 0.92 : 1.08})`
+        void ghost.offsetWidth // commit that position before the transition starts
         let to
         if (dropped) {
-            to = `translate3d(${d.zone.x - (g.left + g.width / 2) + (d.x - d.startX)}px, ${d.zone.y - (g.top + g.height / 2) + (d.y - d.startY)}px, 0) scale(0.4)`
+            to = `translate3d(${d.zone.x - baseX}px, ${d.zone.y - baseY}px, 0) scale(0.4)`
             ghost.classList.add('is-dropping')
         } else {
-            to = `translate3d(${home.left - parseFloat(ghost.style.left)}px, ${home.top - parseFloat(ghost.style.top)}px, 0) scale(1)`
+            const home = el.getBoundingClientRect()
+            to = `translate3d(${home.left + home.width / 2 - baseX}px, ${home.top + home.height / 2 - baseY}px, 0) scale(1)`
             ghost.classList.add('is-returning')
         }
         const done = () => {
@@ -1028,7 +1040,7 @@ function attachInput(tile) {
             if (!dropped) el.classList.remove('lifted')
         }
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return done()
-        requestAnimationFrame(() => { ghost.style.transform = to })
+        ghost.style.transform = to
         ghost.addEventListener('transitionend', done, { once: true })
         setTimeout(done, 400) // in case the transition never ends (hidden tab)
         if (dropped) el.classList.remove('lifted') // the tile below already shows its new number

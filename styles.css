@@ -560,7 +560,9 @@ body {
 
 .tile.lifted { opacity: 0.25; box-shadow: none; transform: none; }
 
-.ghost {
+/* .tile.ghost, not .ghost: `.tile { position: relative }` (for the ×2 / ice badges) comes
+   later in this file and would otherwise drop the floating copy into the page flow */
+.tile.ghost {
     position: fixed;
     margin: 0;
     z-index: 10;
@@ -571,8 +573,8 @@ body {
     will-change: transform; /* its own layer: moving it repaints nothing else */
 }
 /* letting go: the copy slides into the well, or back to its place */
-.ghost.is-dropping { transition: transform 140ms ease-in, opacity 140ms ease-in; opacity: 0; }
-.ghost.is-returning { transition: transform 200ms cubic-bezier(.3, 1.4, .5, 1); box-shadow: -4px 6px 0 var(--ink); }
+.tile.ghost.is-dropping { transition: transform 140ms ease-in, opacity 140ms ease-in; opacity: 0; }
+.tile.ghost.is-returning { transition: transform 200ms cubic-bezier(.3, 1.4, .5, 1); box-shadow: -4px 6px 0 var(--ink); }
 
 .pop-in { animation: pop-in 260ms cubic-bezier(.3, 1.6, .5, 1); }
 

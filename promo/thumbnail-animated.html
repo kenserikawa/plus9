@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Animated store thumbnail: the static thumbnail's scene, looping. The pink 3 flies into the
+         well, the ring closes on 9, the well pops with confetti and Nine hops; then it all eases back.
+         Every frame is a pure function of time (frameAt(t)), so the loop is seamless and can be
+         recorded frame by frame: ?capture&t=<seconds> draws one frame; tools/record-thumbnail.sh
+         screenshots every frame with headless Chrome at 628×628 ×2 and encodes the loop.
+         Poki rules: square, full-bleed, no text, no borders, one clear subject. -->
+    <title>Plus 9 animated thumbnail</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        html, body { width: 628px; height: 628px; margin: 0; padding: 0; overflow: hidden; }
+        body { display: block; background: var(--bg); }
+        :root { --cell: 230px; --gap: 24px; }
+        /* time drives everything here: no CSS animations or transitions */
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+
+        .board {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-8deg);
+        }
+        .tile { cursor: default; }
+        .tile, .tile:hover { transform: none; box-shadow: -8px 12px 0 var(--ink); border-width: 7px; }
+        .well { box-shadow: 0 0 0 10px var(--paper), -8px 12px 0 10px var(--ink); }
+        .well .well-sum { font-size: calc(var(--cell) * 0.46); margin-top: 0; }
+        .well-sum.is-done { color: var(--gold); }
+
+        .flying {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 190px;
+            height: 190px;
+            font-size: 104px;
+            box-shadow: -14px 22px 0 var(--ink) !important;
+            z-index: 3;
+            will-change: transform, opacity;
+        }
+
+        .thumb-mascot {
+            position: absolute;
+            left: 22px;
+            bottom: 26px;
+            width: 214px;
+            height: 266px;
+            z-index: 5;
+            filter: drop-shadow(-10px 14px 0 var(--ink));
+            transform-origin: 50% 100%;
+        }
+
+        .bits { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+        .bit {
+            position: absolute;
+            width: 28px;
+            height: 15px;
+            border: 3px solid var(--ink);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body data-theme="grape">
+    <div class="board" id="board"></div>
+    <button class="tile flying" id="flying" style="--tile: #ff31cc; --o: 6px">3</button>
+    <div class="bits" id="bits"></div>
+    <span class="mascot thumb-mascot" id="nine"></span>
+
+    <script src="../mascot.js"></script>
+    <script>
+        const LOOP = 3.2 // seconds
+        const PINK = '#ff31cc'
+
+        const board = document.getElementById('board')
+        const values = [[5, '#37afff'], ['★', '#ffd23f', 'is-wild'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], ['', '#ff623a'], [6, '#8746ff', 'is-double'], [3, '#37afff']]
+        let ring, sumEl, well
+        for (const v of values) {
+            if (!v) {
+                well = document.createElement('div')
+                well.className = 'well'
+                well.innerHTML = '<svg class="ring" viewBox="0 0 100 100"></svg><span class="well-sum outline">6</span>'
+                ring = well.querySelector('svg')
+                sumEl = well.querySelector('.well-sum')
+                board.appendChild(well)
+                continue
+            }
+            const tile = document.createElement('button')
+            tile.className = 'tile'
+            tile.style.setProperty('--tile', v[1])
+            tile.textContent = v[0]
+            if (v[2]) tile.classList.add(v[2])
+            if (v[2] === 'is-double') tile.insertAdjacentHTML('beforeend', '<span class="tile-badge">×2</span>')
+            board.appendChild(tile)
+        }
+
+        // the ring: 9 segments, 6 already filled; `pink` (0..3) more fill in, faded by `alpha`
+        function drawRing(pink, alpha) {
+            const n = 9, r = 44, c = 2 * Math.PI * r, gap = 2.2, seg = c / n - gap
+            const fill = ['#37afff', '#37afff', '#37afff', '#37afff', '#ff623a', '#ff623a']
+            let arcs = ''
+            for (let i = 0; i < n; i++) {
+                const k = i - 6 // index among the pink segments
+                const on = i < 6 || k < pink
+                const color = i < 6 ? fill[i] : '#3a2a5c'
+                const dash = `stroke-dasharray="${seg} ${c - seg}" stroke-dashoffset="${-(i * c / n) + c / 4 - gap / 2}"`
+                arcs += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="9" ${dash} />`
+                if (i >= 6 && on) arcs += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${PINK}" stroke-opacity="${alpha * Math.min(1, pink - k)}" stroke-width="9" ${dash} />`
+            }
+            ring.innerHTML = arcs
+        }
+
+        // confetti: fixed pieces, each a pure function of the time since the pop
+        const bitsEl = document.getElementById('bits')
+        const COLORS = ['#ff623a', '#37afff', '#8746ff', '#ff31cc', '#ffd23f', '#5fe08a']
+        let seed = 7
+        const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
+        const bits = Array.from({ length: 34 }, (_, i) => {
+            const angle = -Math.PI / 2 + (rnd() - 0.5) * 2.6
+            const speed = 560 + rnd() * 560
+            const el = document.createElement('span')
+            el.className = 'bit'
+            el.style.background = COLORS[i % COLORS.length]
+            bitsEl.appendChild(el)
+            return { el, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, spin: (rnd() - 0.5) * 900, rot: rnd() * 180 }
+        })
+
+        const clamp = x => Math.max(0, Math.min(1, x))
+        const ease = x => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2) // in-out cubic
+        const out = x => 1 - (1 - x) ** 3
+        const span = (t, a, b) => clamp((t - a) / (b - a))
+
+        const flying = document.getElementById('flying')
+        const nine = document.getElementById('nine')
+        const START = { x: 463, y: 187, rot: 16, scale: 1 } // the static thumbnail's pose
+        const WELL = { x: 314, y: 314, rot: -8, scale: 0.42 }
+
+        function frameAt(time) {
+            const t = ((time % LOOP) + LOOP) % LOOP
+
+            // 0.15–0.85 s: the 3 flies into the well along an arc; 2.5–3.2 s: a new one pops in at the start
+            const fly = ease(span(t, 0.15, 0.85))
+            const back = out(span(t, 2.5, 3.1))
+            let x, y, rot, scale, alpha
+            if (t < 0.85) {
+                x = START.x + (WELL.x - START.x) * fly
+                y = START.y + (WELL.y - START.y) * fly - Math.sin(fly * Math.PI) * 70
+                rot = START.rot + (WELL.rot - START.rot) * fly
+                scale = START.scale + (WELL.scale - START.scale) * fly
+                alpha = 1 - span(t, 0.75, 0.85)
+                // a little anticipation: lift before the throw
+                const lift = Math.sin(span(t, 0, 0.2) * Math.PI) * (1 - fly)
+                y -= lift * 14
+                scale += lift * 0.05
+            } else {
+                x = START.x
+                y = START.y
+                rot = START.rot
+                scale = 0.5 + 0.5 * back
+                alpha = back
+            }
+            flying.style.opacity = alpha
+            flying.style.transform = `translate(${x - 95}px, ${y - 95}px) rotate(${rot}deg) scale(${scale})`
+
+            // 0.8–1.1 s: the ring closes, 2.4–2.9 s: it eases back to 6
+            const pink = 3 * span(t, 0.8, 1.1)
+            const reset = span(t, 2.4, 2.9)
+            drawRing(t < 2.4 ? pink : 3, 1 - reset)
+            const done = t >= 1.0 && t < 2.65
+            sumEl.textContent = done ? '9' : '6'
+            sumEl.classList.toggle('is-done', done)
+
+            // the pop: the well swells and settles
+            const pop = span(t, 1.0, 1.45)
+            const swell = Math.sin(pop * Math.PI) * 0.16 * (1 - pop * 0.4)
+            well.style.transform = `scale(${1 + swell})`
+
+            // confetti from the well after the pop
+            const dt = t - 1.02
+            for (const b of bits) {
+                if (dt < 0 || dt > 1.5) { b.el.style.opacity = 0; continue }
+                const px = 314 + b.vx * dt
+                const py = 314 + b.vy * dt + 1300 * dt * dt
+                b.el.style.opacity = 1 - span(dt, 1.0, 1.5)
+                b.el.style.transform = `translate(${px - 14}px, ${py - 7}px) rotate(${b.rot + b.spin * dt}deg)`
+            }
+
+            // Nine: leans in as the tile flies, hops on the pop, settles back
+            const hop = Math.sin(span(t, 1.0, 1.5) * Math.PI)
+            const lean = Math.sin(span(t, 0.1, 0.9) * Math.PI)
+            const squash = Math.sin(span(t, 1.5, 1.7) * Math.PI) * 0.06
+            nine.style.transform = `translate(0, ${-hop * 46}px) rotate(${-8 + lean * 4 - hop * 6}deg) scale(${1 + squash}, ${1 - squash})`
+            nine.dataset.mood = t >= 0.95 && t < 2.3 ? 'cheer' : 'happy' // faces without blinks, so frames repeat exactly
+        }
+
+        mascot.mount()
+        window.frameAt = frameAt
+        frameAt(0)
+        // ?capture&t=1.25 draws one still frame (for headless screenshots); otherwise a live preview
+        const params = new URLSearchParams(location.search)
+        if (params.has('t')) frameAt(parseFloat(params.get('t')))
+        else if (!params.has('capture')) {
+            const t0 = performance.now()
+            const tick = now => { frameAt((now - t0) / 1000); requestAnimationFrame(tick) }
+            requestAnimationFrame(tick)
+        }
+    </script>
+</body>
+</html>

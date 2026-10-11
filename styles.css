@@ -63,16 +63,15 @@ body {
     padding: 16px;
     font-family: 'Baloo 2', system-ui, sans-serif;
     color: var(--paper);
-    background: linear-gradient(170deg, var(--tangerine), var(--sky), var(--violet), var(--magenta));
-    background-size: 400% 400%;
-    animation: drift 30s ease infinite;
+    background: var(--bg) fixed;
     overflow-x: hidden;
 }
 
-@keyframes drift {
-    0%, 100% { background-position: 30% 0%; }
-    50% { background-position: 70% 100%; }
-}
+/* themes: a fixed background per theme (unlocked with stars, see meta.js) */
+[data-theme="grape"], .theme-grape { --bg: linear-gradient(165deg, #9a5cff 0%, #8746ff 45%, #d93bd0 100%); }
+[data-theme="sunset"], .theme-sunset { --bg: linear-gradient(165deg, #ff8a3a 0%, #ff623a 40%, #ff31cc 100%); }
+[data-theme="ocean"], .theme-ocean { --bg: linear-gradient(165deg, #37afff 0%, #3d7dff 50%, #8746ff 100%); }
+[data-theme="night"], .theme-night { --bg: linear-gradient(165deg, #2b1760 0%, #1d0f38 55%, #4a1f8c 100%); }
 
 /* cartoon ink outline used on display type */
 .outline {
@@ -130,42 +129,272 @@ body {
     display: inline-block;
 }
 
-/* ---------- mode switch ---------- */
+/* ---------- screens ---------- */
 
-.modes {
+.screen {
     display: flex;
-    padding: 3px;
-    background: rgba(29, 15, 56, 0.35);
-    border-radius: 999px;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(10px, 2vh, 18px);
+    width: min(100%, 460px);
+}
+.screen[hidden] { display: none; }
+
+/* a row of icon buttons with a title in the middle (game and map screens) */
+.bar {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px 44px;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.map .bar { grid-template-columns: 44px 1fr auto; }
+
+.bar-title {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
 }
 
-.mode {
-    font-family: var(--label-font);
-    font-size: var(--label-size);
-    font-weight: 400;
-    padding: 2px 14px;
-    color: var(--paper);
-    background: transparent;
-    border: 0;
-    border-radius: 999px;
+.icon-btn svg { fill: none; }
+.home-btn svg, .pause-btn svg { stroke-width: 2.8; }
+
+/* ---------- home ---------- */
+
+.home-top {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.home-top .title { text-align: center; }
+
+.journey-card, .mode-card {
+    font: inherit;
+    color: var(--ink);
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: -4px 6px 0 var(--ink);
     cursor: pointer;
 }
+.journey-card:active, .mode-card:active { transform: translate(-2px, 3px); box-shadow: -2px 3px 0 var(--ink); }
+.journey-card:focus-visible, .mode-card:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
-.mode[aria-pressed="true"] { color: var(--ink); background: var(--paper); }
-.mode.is-new { position: relative; }
-.mode.is-new::after {
+/* the main way in: big, gold, the only element that gets this much weight */
+.journey-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "title stars" "sub stars";
+    align-items: center;
+    width: 100%;
+    padding: 12px 20px;
+    text-align: left;
+    background: var(--gold);
+    border-radius: 26px;
+}
+.card-title { grid-area: title; font-size: 2.3rem; line-height: 1; }
+.card-sub { grid-area: sub; font-family: var(--label-font); font-size: 1.2rem; }
+.card-stars {
+    grid-area: stars;
+    font-family: var(--label-font);
+    font-size: 1.6rem;
+    padding: 4px 14px;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+}
+
+.mode-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.mode-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    border-radius: 20px;
+}
+.mode-name { font-family: var(--label-font); font-size: clamp(1rem, 4.6vw, var(--label-size)); line-height: 1.1; white-space: nowrap; }
+.mode-info { font-size: 0.85rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
+
+/* gold dot: today's daily hasn't been played */
+.mode-card.is-new::after {
     content: '';
     position: absolute;
-    top: 2px;
-    right: 4px;
-    width: 9px;
-    height: 9px;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
     background: var(--gold);
-    border: 2px solid var(--ink);
+    border: 3px solid var(--ink);
     border-radius: 50%;
 }
 
-.mode:focus-visible { outline: 3px solid var(--paper); outline-offset: 2px; }
+.panel {
+    width: 100%;
+    padding: 10px 16px 12px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.92);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+}
+.panel-title { margin: 0 0 6px; font-family: var(--label-font); font-size: 1.15rem; font-weight: 400; }
+
+.mission-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.mission {
+    display: grid;
+    grid-template-columns: 1fr 64px auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.mission-bar { height: 10px; background: var(--track); border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; }
+.mission-bar span { display: block; height: 100%; background: var(--violet); }
+.mission-count { min-width: 2.6ch; font-family: var(--label-font); font-weight: 400; text-align: right; }
+.mission.is-done .mission-text { color: var(--muted); text-decoration: line-through; }
+.mission.is-done .mission-bar span { background: var(--gold); }
+.mission.is-done .mission-count { color: #c99700; font-size: 1.2rem; }
+
+.theme-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.theme-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px 3px 4px;
+    font-family: var(--label-font);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.theme-chip[aria-pressed="true"] { background: var(--gold); }
+.theme-chip:disabled { cursor: default; opacity: 0.55; }
+.theme-chip:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+.theme-swatch { width: 22px; height: 22px; background: var(--bg); border: 2px solid var(--ink); border-radius: 50%; }
+
+/* ---------- journey map ---------- */
+
+.map { height: calc(100vh - 32px); max-height: 900px; }
+.stars-pill {
+    margin: 0;
+    padding: 2px 14px;
+    font-family: var(--label-font);
+    font-size: var(--label-size);
+    color: var(--ink);
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+}
+
+.route {
+    flex: 1;
+    width: 100%;
+    margin: 0;
+    padding: 12px 0 24px;
+    list-style: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.route::-webkit-scrollbar { display: none; }
+
+.stop {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(var(--x));
+}
+/* the dashed road between stops */
+.stop + .stop::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    height: 14px;
+    border-left: 4px dashed rgba(29, 15, 56, 0.45);
+}
+
+.node {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    font-family: var(--label-font);
+    font-size: 1.7rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: -3px 5px 0 var(--ink);
+    cursor: pointer;
+}
+.node .outline { --o: 2px; }
+.node.is-done { background: var(--violet); }
+.node.is-current { width: 76px; height: 76px; background: var(--gold); box-shadow: 0 0 0 5px var(--paper), -3px 5px 0 5px var(--ink); }
+.node:disabled { cursor: default; color: var(--muted); background: #cfc6e4; box-shadow: none; }
+.node svg { width: 26px; height: 26px; fill: none; stroke: var(--muted); stroke-width: 2.6; stroke-linejoin: round; }
+.node:focus-visible { outline: 3px solid var(--paper); outline-offset: 4px; }
+.node-stars { min-height: 1.3em; font-size: 1.05rem; letter-spacing: 0.05em; color: var(--gold); text-shadow: 0 1px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink), 0 -1px 0 var(--ink); }
+
+/* ---------- coach tips and toasts ---------- */
+
+.coach {
+    margin: 0;
+    max-width: 34ch;
+    padding: 8px 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: -3px 4px 0 var(--ink);
+}
+.coach[hidden] { display: none; }
+
+/* suggested tile in the tutorial: a steady gold ring, no looping motion */
+.tile.hint { box-shadow: 0 0 0 6px var(--gold), -4px 6px 0 6px var(--ink); }
+
+.toast {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    z-index: 30;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    margin: 0;
+    padding: 8px 18px;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+    transform: translateX(-50%);
+}
+.toast[hidden] { display: none; }
+.toast.pop-in { animation: toast-in 260ms cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes toast-in { from { transform: translate(-50%, -20px) scale(0.8); opacity: 0; } }
 
 /* ---------- board ---------- */
 
@@ -284,13 +513,14 @@ body {
     grid-area: 1 / 1;
     align-self: end;
     margin-bottom: 15%;
-    font-size: calc(var(--cell) * 0.1);
-    font-weight: 700;
+    font-family: var(--label-font);
+    font-size: calc(var(--cell) * 0.13);
+    font-weight: 400;
     max-width: 72%;
     text-align: center;
     line-height: 1.1;
     white-space: nowrap;
-    color: #c9bde6;
+    color: var(--paper);
 }
 
 /* empty well: the target itself is the big number, in gold, with "Make" above it */
@@ -301,8 +531,8 @@ body {
 
 .well.is-empty .well-label {
     align-self: start;
-    margin: 17% 0 0;
-    font-size: calc(var(--cell) * 0.11);
+    margin: 15% 0 0;
+    font-size: calc(var(--cell) * 0.13);
 }
 
 .target-pop { animation: target-pop 700ms cubic-bezier(.3, 1.6, .5, 1); }
@@ -550,8 +780,43 @@ body {
 .bank:active { transform: translate(-2px, 3px); box-shadow: -1px 2px 0 var(--ink); }
 .bank:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
+/* rewarded ad: optional, beside or after the standard choices, never larger and never green */
+.reward {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--label-font);
+    font-size: var(--label-size);
+    padding: 2px 14px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: -3px 4px 0 var(--ink);
+    cursor: pointer;
+}
+.reward:active:not(:disabled) { transform: translate(-2px, 3px); box-shadow: -1px 2px 0 var(--ink); }
+.reward:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+.reward:disabled { cursor: wait; opacity: 0.6; }
+
 /* these pills set display, which would otherwise override the hidden attribute */
-.next[hidden], .bank[hidden] { display: none; }
+.next[hidden], .bank[hidden], .reward[hidden] { display: none; }
+
+/* while a portal ad plays, the game takes no input */
+body.is-ad .game { pointer-events: none; }
+
+/* local ?testads mode only */
+.test-ad {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    font-family: var(--label-font);
+    font-size: 3rem;
+    color: var(--paper);
+    background: rgba(0, 0, 0, 0.85);
+}
 
 .nudge { animation: nudge 900ms ease-in-out infinite; }
 @keyframes nudge {
@@ -576,12 +841,6 @@ body {
 
 /* ---------- header buttons ---------- */
 
-.top {
-    display: grid;
-    grid-template-columns: 44px 1fr 44px;
-    align-items: center;
-    gap: 16px;
-}
 
 .icon-btn {
     display: grid;
@@ -628,6 +887,10 @@ body {
     border-radius: 28px;
     box-shadow: -6px 10px 0 var(--ink);
 }
+
+/* sheets still scroll on short screens, but without a visible scrollbar */
+.sheet { scrollbar-width: none; }
+.sheet::-webkit-scrollbar { display: none; }
 
 .sheet::backdrop { background: rgba(29, 15, 56, 0.55); }
 .sheet[open] { animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1); }
@@ -721,6 +984,40 @@ kbd {
     border-radius: 6px;
 }
 
+/* result extras: stars, record comparison, daily par */
+.result-stars { margin: 4px 0 6px; font-size: 3rem; line-height: 1; letter-spacing: 0.08em; }
+.result-stars[hidden] { display: none; }
+.result-stars span { display: inline-block; color: #e2dcef; text-shadow: none; }
+.result-stars span.is-on {
+    color: var(--gold);
+    text-shadow: 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink);
+    animation: star-in 420ms cubic-bezier(.3, 1.8, .5, 1) both;
+}
+@keyframes star-in { from { transform: scale(0) rotate(-40deg); } }
+
+.compare { display: grid; gap: 4px; margin: 0 0 16px; }
+.compare[hidden] { display: none; }
+.compare-bar { height: 12px; background: var(--track); border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; }
+.compare-fill { display: block; height: 100%; background: var(--violet); }
+.compare.is-record .compare-fill { background: var(--gold); }
+.compare-text { font-size: 0.95rem; font-weight: 700; color: var(--muted); }
+.compare.is-record .compare-text { color: var(--ink); }
+
+.daily-par { font-weight: 700; }
+.daily-par.is-beaten { color: #b88600; }
+
+.sheet-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.btn.btn-quiet { color: var(--ink); background: var(--paper); }
+.btn[hidden] { display: none; }
+
+.intro-goal { margin: 0 0 12px; font-size: 1.15rem; font-weight: 700; }
+.star-goals { margin: 0 0 18px; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; }
+.star-goals li { display: grid; grid-template-columns: 3.4em 1fr; align-items: center; gap: 8px; padding: 6px 12px; background: var(--track); border-radius: 12px; font-weight: 700; }
+.star-goals li.is-earned { background: #fff1c2; }
+.goal-stars { color: var(--gold); text-shadow: 0 1px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink), 0 -1px 0 var(--ink); }
+
+.float.is-combo { color: var(--gold); font-size: 2.4rem; }
+
 .btn {
     font: inherit;
     font-family: 'Ranchers', cursive;
@@ -744,11 +1041,119 @@ kbd {
 
     /* the actions row can hold clock + shuffle + bank with big numbers */
     .actions { gap: 6px; flex-wrap: wrap; justify-content: center; }
-    .next, .shuffle, .bank { gap: 5px; padding-left: 10px; font-size: 1.1rem; }
+    .next, .shuffle, .bank, .reward { gap: 5px; padding-left: 10px; font-size: 1.1rem; }
     .clock { padding: 2px 10px; }
     .clock span { font-size: 1.3rem; }
     .next-tile, .shuffle-badge, .bank-badge { min-width: 1.9rem; height: 1.9rem; }
     .next-tile { width: 1.9rem; }
+}
+
+/* Landscape and short (portal frames are 16:9, e.g. 640×360 to 1031×580, and phones held
+   sideways). Game: three columns, the board in the middle as big as the height allows.
+   Home: two columns. */
+@media (min-aspect-ratio: 4/3) and (max-height: 640px) {
+    :root { --cell: min(27vh, 20vw, 170px); }
+
+    body { padding: 12px 16px; }
+
+    .game {
+        display: grid;
+        width: 100%;
+        max-width: none;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-areas:
+            "bar   board actions"
+            "hud   board actions"
+            "coach board actions";
+        grid-template-rows: auto auto 1fr;
+        align-items: start;
+        justify-items: center;
+        column-gap: clamp(16px, 4vw, 48px);
+        row-gap: 12px;
+    }
+
+    /* the side column is narrow: the title on its own row, the icons below it */
+    .game-bar {
+        grid-area: bar;
+        width: auto;
+        grid-template-columns: repeat(3, 44px);
+        grid-template-areas: "title title title" "home pause sound";
+        justify-content: center;
+        gap: 6px 10px;
+    }
+    .game-bar .bar-title { grid-area: title; font-size: clamp(1.4rem, 6vh, 2rem); }
+    .game-bar .home-btn { grid-area: home; }
+    .game-bar .pause-btn { grid-area: pause; }
+    .game-bar .sound-btn { grid-area: sound; }
+
+    .board { grid-area: board; align-self: center; }
+
+    .hud {
+        grid-area: hud;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .hud-item { justify-content: space-between; }
+
+    .coach { grid-area: coach; max-width: 22ch; font-size: 0.95rem; }
+
+    .actions {
+        grid-area: actions;
+        align-self: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .actions > * { justify-content: space-between; }
+
+    /* one line per label; the rewarded button must never be taller than Shuffle or Bank */
+    .hud-item, .actions > * { white-space: nowrap; }
+
+    .home {
+        display: grid;
+        width: min(100%, 900px);
+        max-width: none;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "top     missions"
+            "journey missions"
+            "modes   themes";
+        align-items: start;
+        gap: 12px 24px;
+    }
+    .home-top { grid-area: top; }
+    .journey-card { grid-area: journey; }
+    .mode-cards { grid-area: modes; }
+    .missions { grid-area: missions; }
+    .themes { grid-area: themes; }
+    .home .title { font-size: clamp(2.2rem, 10vh, 3.6rem); }
+
+    .map { height: calc(100vh - 24px); }
+}
+
+/* the smallest portal frame (640×360) and phones held sideways */
+@media (min-aspect-ratio: 4/3) and (max-height: 420px) {
+    :root { --label-size: 1rem; }
+    .game { row-gap: 6px; }
+    .icon-btn { width: 34px; height: 34px; font-size: 1.2rem; }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .game-bar { grid-template-columns: repeat(3, 34px); }
+    .hud { gap: 5px; }
+    .hud-item { padding: 0 10px; }
+    .hud-value { font-size: 1.2rem; }
+    .actions { gap: 8px; }
+    .next-tile, .shuffle-badge, .bank-badge { min-width: 1.7rem; height: 1.7rem; }
+    .next-tile { width: 1.7rem; font-size: 1rem; }
+    .coach { font-size: 0.85rem; padding: 6px 10px; }
+
+    .home { gap: 8px 20px; }
+    .home-top { grid-template-columns: 34px 1fr 34px; }
+    .journey-card { padding: 6px 14px; }
+    .card-title { font-size: 1.8rem; }
+    .mode-card { padding: 6px 4px; }
+    .panel { padding: 6px 12px 8px; }
+    .mission { font-size: 0.85rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,40 +1,76 @@
 # Plus 9
 
-Tiny vanilla HTML/CSS/JS puzzle game. No build step, no dependencies, no package.json. Open `index.html` directly in a browser (file:// works). The page makes **no external requests** (fonts are bundled), which web portals expect; keep it that way.
+Vanilla HTML/CSS/JS number puzzle: drag or tap tiles into the centre until they add up to the target exactly. No build step for local play, no dependencies, no package.json. Open `index.html` directly (file:// works). The page makes **no external requests** (fonts are bundled); web portals require this, so keep it that way. There is **no server**: all progress lives in `localStorage` (see *Saving*).
 
 ## Files
 
-- `index.html` – static shell: header (help `?` button, title, sound toggle), mode switch, HUD (score/level/best), the 3x3 board with the centre "well", the actions row (next tile, clock, shuffle), the game-over `<dialog>`, and the how-to-play `<dialog id="help">` (opens automatically on the first visit, `plus9.seenHelp`).
-- `sound.js` – synthesised sound effects (Web Audio, no asset files), exposed as the global `sfx` (`sfx.add(progress)`, `sfx.complete(chain)`, …). Notes come from a C major pentatonic scale so effects harmonise. Mute state is `plus9.muted`. Loaded before `app.js`.
-- `app.js` – all game logic. Tiles are created at runtime (`buildTiles`), so the 8 tile `<button>`s are not in the HTML.
-- `tools/balance.js` – Node balance simulator (not loaded by the page).
-- `fonts/` – Ranchers and Baloo 2 (variable, 500–700) as latin + latin-ext `woff2`, with their OFL licences. Declared with `@font-face` at the top of `styles.css`.
-- `icon.svg` – favicon.
-- `styles.css` – design tokens on `:root`, sticker/cartoon look (Ranchers display font + Baloo 2 body from Google Fonts).
+Scripts load in this order (plain globals, no modules):
+
+| File | What it is |
+|---|---|
+| `platform.js` | Web-portal adapter, global `platform`. See *Portals*. |
+| `rules.js` | Pure rules shared by the game, the bot and the tools: constants, `targetFor`, `drawTile(lv, rnd)`, `sumPoints(parts, lv)`, `shuffleCostFor`, `createRng`/`hashSeed`, `journeyLevel(n)` and `JOURNEY_SEEDS`. Also exported for Node. |
+| `bot.js` | Simulated players on top of `rules.js`: `simulateRun`, `journeyStars(def)` (star thresholds) and `dailyPar(seed)`. Same draw order as the game, so a seeded run sees the player's board. Also exported for Node. |
+| `meta.js` | Long-term progress, global `meta`: journey stars, daily missions, the star wallet and themes. |
+| `sound.js` | Synthesised Web Audio effects and haptics, global `sfx`. C major pentatonic. Mute (`plus9.muted`) also silences vibration. |
+| `app.js` | Game engine, the three screens (home, journey map, game), modes, dialogs, input. Tiles are created at runtime (`buildTiles`). State lives in top-level `let`s. |
+| `index.html` | Icon `<symbol>`s, the three `.screen`s, the toast, and the dialogs: result `#over`, journey intro `#intro`, help/pause `#help`. |
+| `styles.css` | `@font-face`, tokens and themes, screens, board, dialogs, then the landscape layout and reduced-motion overrides at the end. |
+| `fonts/`, `icon.svg` | Bundled Ranchers + Baloo 2 (OFL licences included) and the favicon. |
+| `tools/balance.js` | `node tools/balance.js`: dead-end rates per level and whole-game lengths. |
+| `tools/journey.js` | `node tools/journey.js`: picks a seed per journey level so difficulty follows a curve; paste its output over `JOURNEY_SEEDS` in `rules.js`. |
+
+## Screens and modes
+
+- **Home** (`#home`): Journey card (next level, total stars), Daily / Classic / 60 seconds cards, today's missions, themes. A first-time player skips it and lands in Journey level 1 (`plus9.onboarded` is set when they win it).
+- **Journey map** (`#map`): a winding route of levels (`renderMap`); finished levels show their stars, the next one is gold, later ones locked. A level opens the `#intro` sheet (goal and star thresholds) before playing.
+- **Game** (`#game`): bar (home, title, pause, sound), HUD, coach tip, board, actions. The HUD's 2nd and 3rd pills change with the mode (`renderHud`): Level/Best (Classic, 60 s), Sums/Par (Daily), Stars/Sums (Journey).
+- Starting any game calls `platform.commercialBreak()` first; `goHome()` abandons the current game (Classic/60 s records are kept, the daily keeps its own saved progress).
 
 ## Rules (as implemented)
 
-- 8 tiles show numbers from 1 to `target - 1`, weighted towards small ones: P(v) ∝ exp(-v / λ), with λ per level from `TILE_LAMBDA` (≈ 0.78 × target past the table; `Infinity` = uniform). Playing a tile adds its value to the well and the tile takes the **Next** value shown under the board.
-- Reaching the target exactly scores `tiles used × level`, so longer chains are worth more. The well resets after a short animation (`resolving` blocks input meanwhile).
-- Every `SUMS_PER_LEVEL` (4) sums the level rises with **no top level**: the target follows `TARGETS` (9, 10, 12 … 20), then +2 per level (`targetFor`). You gain a free shuffle if you have fewer than 3.
-- **Shuffle** rerolls all 8 tiles. Free shuffles: start with 1, +1 per level (max 3). With none free, a shuffle costs `SHUFFLE_COST × level × (paid so far + 1)` points; the button badge shows the free count or the price. Key: `S`.
-- Going over the target ends the game. Being stuck (sum above 0 and no tile ≤ what's needed) pauses play until you shuffle. With no free shuffle the player chooses: pay, or **Bank** (`bank()`, key `B`) to end the game keeping every point. The Bank button replaces the Next pill while it shows. If they can't afford a shuffle, the game ends.
-- Modes: Classic, 60 seconds (clock starts on the first move, +2s per sum), or Daily (below). The record is the **final** score (saved at game over, on mode switch and on `pagehide`), so points spent on shuffles count against it. Banking is how a player protects it. Each mode keeps its own best in `localStorage` (`plus9.best.classic`, `plus9.best.timed`; the old `plus9.best` key is read as the classic record). The chosen mode is saved as `plus9.mode`.
-- **Daily challenge** (`mode === 'daily'`): the same tiles for everyone on a given local date. All randomness goes through `rng`, which is `seededRandom` (mulberry32, seed from `hashSeed(todayKey())`) in the daily and `Math.random` otherwise. Never call `Math.random` directly for game draws. A daily is `DAILY_SUMS` (12) sums with the normal rules; it ends on completion, bust, can't-afford or bank. Progress is saved on every `render()` (`plus9.daily`: seed state, tiles, next, sum, score, …), so reloading resumes instead of rerolling, and a finished daily can't be replayed. The result dialog shows a 2×6 emoji grid (🟦 2 tiles, 🟪 3, 🟨 4+, 💥 bust, ⬜ unplayed), the streak (`plus9.streak`: consecutive days with a finished daily) and a countdown; **Share** uses `navigator.share` or the clipboard. Daily #1 is `DAILY_EPOCH` (2026-10-11). The Daily tab shows a gold dot until today's daily is done. In daily mode the third HUD pill shows `sums/12` instead of Best.
-- Opening help pauses the 60-second clock (`pauseClock`/`resumeClock`), and so does hiding the page (`visibilitychange`), which also suspends audio. Keys: `H`/`?` help, `M` mute, `S` shuffle, `B` bank.
-- Difficulty is tuned with `node tools/balance.js`, which reads the constants from `app.js` and simulates careless, normal and careful players. Current design target: the normal player's dead-end rate rises ~2 points per level (≈16% at level 1, ≈28% at level 7). Whole games: normal ≈22 sums, careful ≈95, none endless. Run it before and after touching `TARGETS`, `TILE_LAMBDA`, `SUMS_PER_LEVEL`, `MAX_FREE_SHUFFLES` or `SHUFFLE_COST`: uniform big tiles spike the difficulty, while small tiles with a flat shuffle cost make careful play endless.
+- **Tiles**: 8 tiles, values 1…`target − 1`, weighted towards small numbers: P(v) ∝ exp(−v / λ), λ per level from `TILE_LAMBDA`. Playing a tile adds it to the well and the tile becomes the **Next** value. Four random colors.
+- **Scoring**: a completed sum scores `tiles used × level`, **×2 when every tile has the same color** (a combo, at least 2 tiles).
+- **Levels** (Classic, 60 s, Daily): every `SUMS_PER_LEVEL` (4) sums, no top level. Target follows `TARGETS` (9 … 20), then +2 per level. The `#levelup` card shows the old target struck through and the new one.
+- **Shuffle** rerolls all 8 tiles (key `S`). Free shuffles: 1 at the start, +1 per level-up while under 3. Otherwise it costs `SHUFFLE_COST × level × (paid so far + 1)` points.
+- **Losing**: going over the target ends the game. **Stuck** (sum above 0, no tile fits) blocks play until the player acts: free shuffle, pay, **Bank** (key `B`: end and keep the points; in the Journey it reads **Give up**) or **🎬 Free shuffle** when `platform.hasRewarded`. With none of those available the game ends.
+- **Records**: the final score, per mode (`plus9.best.classic`, `plus9.best.timed`), so points spent on shuffles count against it. The result sheet compares the score with the previous record.
+- **Journey** (`journeyLevel(n)`): a fixed seeded board; make the target `sums` times at a fixed difficulty (no level-ups). Tier = every 5 levels (target 9, 10, 12, 14 …); within a tier sums go 3 → 7. Stars: 1★ finishing, 2★ and 3★ at score thresholds from `journeyStars` (2★ ≈ a typical player, 3★ ≈ the careful bot). Level 1 starts from a hand-picked board. Levels 1–4 show coach tips (`tutorial()`): level 1 walks through the first sum with a highlighted tile; 2 = Next, 3 = color combos, 4 = shuffle. `JOURNEY_SEEDS` (levels 1–60) were chosen by `tools/journey.js` so typical players win ~95 % at level 1 down to 40 %; past 60 the seed is unchecked.
+- **Daily** (`mode === 'daily'`): same tiles for everyone on a local date (`createRng(hashSeed(todayKey()))`). **All randomness goes through `rng`; never call `Math.random` directly for game draws.** `DAILY_SUMS` (12) sums, one attempt. Progress is saved on every `render()` (`plus9.daily`), so reloading resumes instead of rerolling. **Par** = what the careful bot scores on today's board (`todaysPar()`); shown when the daily starts, in the HUD and in the result and share text. Result: 2×6 emoji grid (🟦 2 tiles, 🟪 3, 🟨 4+, 💥 bust, ⬜ unplayed), streak (`plus9.streak`), countdown, Share (`navigator.share` or clipboard, URL from `platform.shareURL()`). Daily #1 is `DAILY_EPOCH`: **set it to the launch date before publishing**.
+- **Missions** (`meta.MISSIONS`): 3 a day, the same for everyone (seeded by the date). Events from `app.js` (`meta.missionEvent`) advance them; each completed mission adds a star to `plus9.wallet` and shows a toast.
+- **Stars and themes**: total stars = journey stars + mission stars. Themes (`meta.THEMES`: Grape 0, Sunset 10, Ocean 25, Night 45) are cosmetic and set `body[data-theme]`, which defines `--bg`.
+- **Pause**: the help sheet is the pause menu (`Esc`, the pause button; `H`/`?` too). It pauses the 60-second clock, and so does hiding the page. `M` mutes.
+
+## Saving
+
+Everything is `localStorage` under `plus9.*` (each access in try/catch): `best.classic`, `best.timed`, `daily`, `streak`, `journey`, `missions`, `wallet`, `theme`, `muted`, `onboarded`. No backend. On Poki, a logged-in player's `localStorage` is synced to their account automatically by the SDK (restored across devices, 1 MB limit); keys starting with `poki_ignore` are excluded. Keep saves small and in `localStorage` so that keeps working.
+
+## Balance
+
+`node tools/balance.js` (rules.js + bot.js): normal player's dead-end rate ≈16 % at level 1 rising ~2 points per level; whole Classic games: normal ≈15 sums, careful ≈90, none endless. Run it before and after touching `TARGETS`, `TILE_LAMBDA`, `SUMS_PER_LEVEL`, `MAX_FREE_SHUFFLES`, `SHUFFLE_COST` or `COMBO_MULTIPLIER`. If the journey's rules change, rerun `node tools/journey.js` and update `JOURNEY_SEEDS`.
+
+## Portals (Poki first, CrazyGames later)
+
+`platform.js` hides each SDK behind `init`, `loadingFinished`, `gameplayStart`, `gameplayStop`, `commercialBreak()` → Promise, `rewardedBreak()` → Promise<boolean>, `shareURL()`, `hasRewarded`, `adShowing`. `window.PLUS9_PLATFORM` picks the SDK (`'poki'`); unset means `'none'`: no-ops and **no rewarded ads** (a self-hosted copy would otherwise hand out unlimited free shuffles). `?testads` simulates 1.2 s ads locally.
+
+The adapter enforces Poki's rules (no repeated start/stop, no events during ads, ad promises always resolve). `app.js` calls `gameplayStart()` on the first input; `gameplayStop()` on game over, level-up, pause and leaving; `commercialBreak()` when starting a game, after the level-up card and when unpausing mid-game; `rewardedBreak()` only from 🎬. During an ad: audio suspended, clock paused, `body.is-ad` blocks input.
+
+Poki UI rules followed: 16:9 frames (640×360, 836×470, 1031×580) use the landscape layout; the 🎬 button is never green, sits beside or after the standard choices and is never larger or animated; no external links or requests; arrow keys, space and the wheel don't scroll the host page except inside `.sheet` and `.scroll` (the map).
+
+**Not done yet**: the build that sets `PLUS9_PLATFORM = 'poki'` and adds `<script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js">` (no SRI: Poki updates that file in place), zipping, static and animated thumbnails, Poki Inspector check.
 
 ## Conventions
 
-- Input goes through one path: `play(tile)`. Tap/click and keyboard (Enter/Space on the focused button) use the `click` event; drag uses Pointer Events with a floating `.ghost` clone, so it works on touch. The click that follows a drag is suppressed via `suppressClick`.
-- The centre ring is an SVG with one dashed circle segment per unit of the target (rebuilt by `buildRing` on level up); each segment is coloured by the tile that filled it (`parts`).
-- Motion only responds to the player (pop-in on reroll, `match`, `shake`, `bump`, floating `+points`; the shuffle `nudge` only loops while stuck); `prefers-reduced-motion` disables it. Avoid adding idle/looping animations to game elements.
-- Numbers on tiles (board, Next, help icons) are **outlined only**, with no offset shadow. The outline is 16 unblurred `text-shadow`s on a circle of radius `--o` (set per element), not `-webkit-text-stroke`, whose mitred joins make spiky corners. The hard offset shadow is for buttons and pills, not for digits.
-- The target must always be prominent: an empty well shows it as a big gold number under "Make". Levelling up (`levelUp()`) shows the `#levelup` card (old target struck through → new one) for `LEVEL_UP_MS`, blocking input and pausing the 60-second clock, then rebuilds the ring with a staggered `.seg.intro` sweep. Delayed callbacks check `gameId` so a new game started mid-animation isn't disturbed.
-- Every pill/button label (Score, Level, Best, mode switch, Next, Shuffle) uses the Shuffle button's type via `--label-font`/`--label-size` (Ranchers, weight 400). Labels are ink on white; the inactive mode is white on the translucent track. Baloo 2 is for running text (help sheet, dialogs, well labels).
-- Board size is driven by `--cell` so it fits both phone and desktop viewports without scrolling. Check a 375×667 phone and ~1000×780 desktop after layout changes.
-- Code style: 4-space indent, no semicolons, `const`/`let` (no implicit globals).
+- **Input** goes through `play(tile)`: `click` for tap/keyboard, Pointer Events with a `.ghost` clone for drag; the click after a drag is suppressed.
+- **Ring**: one SVG segment per unit of the target, coloured by the tile that filled it.
+- **Motion** only answers the player (pop-in, match, shake, bump, floating points, level-up card, result stars). The only loop is the Shuffle `nudge` while stuck and payable. Tutorial hints are a steady gold ring, not an animation. `prefers-reduced-motion` turns motion off.
+- **Numbers** on tiles, Next and help icons are outlined with 16 unblurred `text-shadow`s (radius `--o`), not `-webkit-text-stroke`.
+- **The target is always prominent**: an empty well shows it big in gold under "Make".
+- **Labels** on pills and buttons use `--label-font`/`--label-size` (Ranchers 400), ink on white. Baloo 2 is for running text.
+- **Icons** are `<symbol>`s in `index.html` used via `<use>`; CSS can't reach inside them, so state changes swap the symbol (`#i-sound-on` / `#i-sound-off`) instead of styling inner paths.
+- **Layout**: `--cell` sizes the board. Portrait is one column (max 460 px); landscape-and-short switches the game to three columns (info | board | actions) and home to two. Check 375×667, ~1000×780, 640×360, 836×470 and 1031×580 after layout changes; none may scroll except the map route.
+- **Style**: 4-space indent, no semicolons, `const`/`let`, no implicit globals; `localStorage` always in try/catch; set user-facing text with `textContent`.
 
 ## Testing
 
-No test suite. Verify in a browser: play to 9, overshoot, get stuck and shuffle, level up, timed mode running out, drag with mouse and touch, reload to check best scores persist. Game state lives in top-level `let`s, so DevTools can force states (e.g. `setTile(tiles[0], { value: 7, color: '#ff31cc' }); checkStuck()`).
+No test suite. In a browser: first visit (clear storage) → tutorial level 1 → result → next level intro → map → home; each mode to the end; stuck → shuffle/pay/bank/🎬 with `?testads`; daily reload mid-sum; missions completing (toast, stars); themes unlocking; every layout size above. State is in top-level `let`s, so DevTools can force situations, e.g. `freeShuffles = 0; score = 5; setTile(tiles[0], { value: 7, color: '#ff31cc' }); checkStuck()`, or `meta.journeyRecord(5, 3)` to unlock levels.

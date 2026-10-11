@@ -71,6 +71,11 @@ const sfx = (() => {
         src.stop(t + dur + 0.05)
     }
 
+    // short vibrations on phones that support it; muting the game silences them too
+    function buzz(pattern) {
+        try { if (navigator.vibrate) navigator.vibrate(pattern) } catch { /* not allowed here */ }
+    }
+
     // wrap each effect so it is a no-op while muted or without Web Audio
     const effect = fn => (...args) => { if (!muted && audio()) fn(...args) }
 
@@ -93,6 +98,7 @@ const sfx = (() => {
             const n = Math.round(progress * 9)
             tone(note(n), { type: 'triangle', dur: 0.16, vol: 0.35 })
             tone(note(n) * 2, { type: 'sine', dur: 0.06, vol: 0.12 })
+            buzz(8)
         }),
 
         // target reached; longer chains get a longer arpeggio
@@ -100,18 +106,21 @@ const sfx = (() => {
             const steps = Math.min(3 + chain, 9)
             for (let i = 0; i < steps; i++) tone(note(5 + i), { type: 'triangle', dur: 0.22, vol: 0.28, at: i * 0.055 })
             tone(note(5 + steps) * 2, { type: 'sine', dur: 0.5, vol: 0.12, at: steps * 0.055 })
+            buzz([15, 40, 25])
         }),
 
         levelUp: effect(() => {
             ;[0, 2, 4, 5].forEach((n, i) => tone(note(10 + n), { type: 'square', dur: 0.18, vol: 0.12, at: 0.35 + i * 0.1 }))
             tone(note(15), { type: 'triangle', dur: 0.7, vol: 0.3, at: 0.75 })
             hiss({ dur: 0.6, vol: 0.08, at: 0.75, from: 3000, to: 9000 })
+            buzz([20, 30, 20, 30, 40])
         }),
 
         // went over the target
         overshoot: effect(() => {
             tone(220, { type: 'sawtooth', dur: 0.45, vol: 0.18, slide: 90 })
             tone(233, { type: 'sawtooth', dur: 0.45, vol: 0.12, slide: 95 })
+            buzz([60, 40, 60])
         }),
 
         stuck: effect(() => {

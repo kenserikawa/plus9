@@ -1,0 +1,114 @@
+// Progress that lives outside a single game: journey stars, daily missions, the star wallet
+// and the color themes they unlock. Plain data on top of localStorage (always try/catch).
+
+const meta = (() => {
+    const load = (key, fallback) => {
+        try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback }
+    }
+    const save = (key, value) => {
+        try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* storage unavailable */ }
+    }
+
+    const dayKey = (date = new Date()) => {
+        const pad = n => String(n).padStart(2, '0')
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+    }
+
+    // ---------- journey ----------
+
+    // { stars: { [level]: 0..3 } } — a level is unlocked when the previous one has a star
+    const journey = () => load('plus9.journey', { stars: {} })
+
+    function journeyRecord(n, stars) {
+        const data = journey()
+        const before = data.stars[n] || 0
+        data.stars[n] = Math.max(before, stars)
+        save('plus9.journey', data)
+        return data.stars[n] - before // stars newly earned
+    }
+
+    const journeyStarsOf = n => journey().stars[n] || 0
+    const journeyStarTotal = () => Object.values(journey().stars).reduce((a, b) => a + b, 0)
+    // the next level to play: one past the furthest level with at least one star
+    function journeyFrontier() {
+        const stars = journey().stars
+        let n = 1
+        while (stars[n] > 0) n++
+        return n
+    }
+
+    // ---------- daily missions ----------
+
+    // `count` missions add up over the day; `max` missions take the best single game
+    const MISSIONS = [
+        { id: 'chains4', text: 'Make 3 sums with 4 or more tiles', goal: 3, count: true },
+        { id: 'combos', text: 'Get 2 color combos', goal: 2, count: true },
+        { id: 'score80', text: 'Score 80 points in one game', goal: 80 },
+        { id: 'sums15', text: 'Complete 15 sums', goal: 15, count: true },
+        { id: 'daily', text: "Play today's daily", goal: 1, count: true },
+        { id: 'journey2', text: 'Win 2 Journey levels', goal: 2, count: true },
+        { id: 'level4', text: 'Reach level 4 in Classic', goal: 4 },
+    ]
+
+    // three missions a day, the same for everyone (seeded by the date)
+    function todaysMissions() {
+        const key = dayKey()
+        const saved = load('plus9.missions', null)
+        if (saved && saved.date === key) return saved
+        const rnd = createRng(hashSeed(`missions:${key}`)).random
+        const pool = [...MISSIONS]
+        const items = []
+        while (items.length < 3) items.push({ id: pool.splice(Math.floor(rnd() * pool.length), 1)[0].id, progress: 0, done: false })
+        const fresh = { date: key, items }
+        save('plus9.missions', fresh)
+        return fresh
+    }
+
+    // returns the missions completed by this event, so the UI can celebrate them
+    function missionEvent(id, amount) {
+        const data = todaysMissions()
+        const completed = []
+        for (const item of data.items) {
+            const def = MISSIONS.find(m => m.id === item.id)
+            if (item.id !== id || item.done) continue
+            item.progress = def.count ? item.progress + amount : Math.max(item.progress, amount)
+            if (item.progress >= def.goal) {
+                item.progress = def.goal
+                item.done = true
+                completed.push(def)
+                const wallet = load('plus9.wallet', { missionStars: 0 })
+                wallet.missionStars++
+                save('plus9.wallet', wallet)
+            }
+        }
+        save('plus9.missions', data)
+        return completed
+    }
+
+    const missionList = () => todaysMissions().items.map(item => ({ ...MISSIONS.find(m => m.id === item.id), ...item }))
+
+    // ---------- stars and themes ----------
+
+    const totalStars = () => journeyStarTotal() + load('plus9.wallet', { missionStars: 0 }).missionStars
+
+    // cosmetic only: each theme recolors the background and the well
+    const THEMES = [
+        { id: 'grape', name: 'Grape', stars: 0 },
+        { id: 'sunset', name: 'Sunset', stars: 10 },
+        { id: 'ocean', name: 'Ocean', stars: 25 },
+        { id: 'night', name: 'Night', stars: 45 },
+    ]
+
+    function theme() {
+        const id = load('plus9.theme', 'grape')
+        const t = THEMES.find(x => x.id === id)
+        return t && totalStars() >= t.stars ? t.id : 'grape'
+    }
+
+    const setTheme = id => save('plus9.theme', id)
+
+    return {
+        dayKey, journeyRecord, journeyStarsOf, journeyStarTotal, journeyFrontier,
+        todaysMissions, missionEvent, missionList, totalStars, THEMES, theme, setTheme,
+    }
+})()

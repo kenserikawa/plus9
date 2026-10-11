@@ -1164,14 +1164,17 @@ function attachInput(tile) {
             to = `translate3d(${home.left + home.width / 2 - baseX}px, ${home.top + home.height / 2 - baseY}px, 0) scale(1)`
             ghost.classList.add('is-returning')
         }
+        let settled = false
         const done = () => {
+            if (settled) return
+            settled = true
             ghost.remove()
             if (!dropped) el.classList.remove('lifted')
         }
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return done()
         ghost.style.transform = to
-        ghost.addEventListener('transitionend', done, { once: true })
-        setTimeout(done, 400) // in case the transition never ends (hidden tab)
+        ghost.addEventListener('transitionend', ev => { if (ev.propertyName === 'transform') done() })
+        setTimeout(done, 500) // in case the transition never ends (hidden tab)
         if (dropped) el.classList.remove('lifted') // the tile below already shows its new number
     }
 }

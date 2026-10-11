@@ -558,7 +558,8 @@ body {
 .tile:active { transform: translate(-2px, 3px); box-shadow: -2px 3px 0 var(--ink); }
 .tile:focus-visible { outline: 4px solid var(--paper); outline-offset: 4px; }
 
-.tile.lifted { opacity: 0.25; box-shadow: none; transform: none; }
+/* the tile being dragged leaves an empty slot: only its floating copy is visible */
+.tile.lifted { opacity: 0; transform: none; }
 
 /* .tile.ghost, not .ghost: `.tile { position: relative }` (for the ×2 / ice badges) comes
    later in this file and would otherwise drop the floating copy into the page flow */
@@ -574,7 +575,7 @@ body {
 }
 /* letting go: the copy slides into the well, or back to its place */
 .tile.ghost.is-dropping { transition: transform 140ms ease-in, opacity 140ms ease-in; opacity: 0; }
-.tile.ghost.is-returning { transition: transform 200ms cubic-bezier(.3, 1.4, .5, 1); box-shadow: -4px 6px 0 var(--ink); }
+.tile.ghost.is-returning { transition: transform 320ms cubic-bezier(.22, 1, .36, 1), box-shadow 320ms cubic-bezier(.22, 1, .36, 1); box-shadow: -4px 6px 0 var(--ink); }
 
 .pop-in { animation: pop-in 260ms cubic-bezier(.3, 1.6, .5, 1); }
 

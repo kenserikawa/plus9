@@ -35,16 +35,30 @@
             box-shadow: -14px 22px 0 var(--ink) !important;
             z-index: 3;
         }
+
+        /* Nine cheering in the corner: the face of the game */
+        .thumb-mascot {
+            position: absolute;
+            left: 18px;
+            bottom: -6px;
+            width: 230px;
+            height: 285px;
+            z-index: 5;
+            transform: rotate(-8deg);
+            filter: drop-shadow(-10px 14px 0 var(--ink));
+        }
     </style>
 </head>
 <body data-theme="grape">
     <div class="board" id="board"></div>
     <button class="tile flying" style="--tile: #ff31cc; --o: 6px">3</button>
+    <span class="mascot thumb-mascot"></span>
 
+    <script src="../mascot.js"></script>
     <script>
         // same ring drawing as the game: 9 segments, 6 filled by the tiles already played
         const board = document.getElementById('board')
-        const values = [[5, '#37afff'], [2, '#ff623a'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], [8, '#ff623a'], [6, '#8746ff'], [3, '#37afff']]
+        const values = [[5, '#37afff'], ['★', '#ffd23f', 'is-wild'], [7, '#8746ff'], [1, '#ff31cc'], null, [4, '#37afff'], [8, '#ff623a'], [6, '#8746ff', 'is-double'], [3, '#37afff']]
         for (const v of values) {
             if (!v) {
                 const well = document.createElement('div')
@@ -64,8 +78,13 @@
             tile.className = 'tile'
             tile.style.setProperty('--tile', v[1])
             tile.textContent = v[0]
+            if (v[2]) tile.classList.add(v[2])
+            if (v[2] === 'is-double') tile.insertAdjacentHTML('beforeend', '<span class="tile-badge">×2</span>')
             board.appendChild(tile)
         }
+        mascot.mount()
+        mascot.mood('cheer', { hold: true })
+        document.querySelectorAll('.mascot').forEach(el => el.classList.remove('m-cheer')) // a still pose
     </script>
 </body>
 </html>

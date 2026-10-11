@@ -17,7 +17,7 @@ const PORTALS = {
     web: null,
 }
 // everything the page loads (index.html adds the SDK on top)
-const FILES = ['index.html', 'styles.css', 'icon.svg', 'platform.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'app.js']
+const FILES = ['index.html', 'styles.css', 'icon.svg', 'platform.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'mascot.js', 'app.js']
 const DIRS = ['fonts']
 
 const portal = process.argv[2]

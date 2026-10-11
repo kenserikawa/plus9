@@ -12,6 +12,7 @@ Scripts load in this order (plain globals, no modules):
 | `rules.js` | Pure rules shared by the game, the bot and the tools: constants, `targetFor`, `drawTile(lv, rnd)`, `sumPoints(parts, lv)`, `shuffleCostFor`, `createRng`/`hashSeed`, `journeyLevel(n)` and `JOURNEY_SEEDS`. Also exported for Node. |
 | `bot.js` | Simulated players on top of `rules.js`: `simulateRun`, `journeyStars(def)` (star thresholds) and `dailyPar(seed)`. Same draw order as the game, so a seeded run sees the player's board. Also exported for Node. |
 | `meta.js` | Long-term progress, global `meta`: journey stars, daily missions, the star wallet and themes. |
+| `mascot.js` | Nine, the mascot: a gold "9" with a face, global `mascot` (`mount`, `mood(name, { hold, ms })`, `hop`), plus `confetti(x, y)` / `confettiFrom(el)`. Inline SVG so CSS switches the face by `data-mood` (idle, happy, cheer, worried, sad). |
 | `sound.js` | Synthesised Web Audio effects and haptics, global `sfx`. C major pentatonic. Mute (`plus9.muted`) also silences vibration. |
 | `app.js` | Game engine, the three screens (home, journey map, game), modes, dialogs, input. Tiles are created at runtime (`buildTiles`). State lives in top-level `let`s. |
 | `index.html` | Icon `<symbol>`s, the three `.screen`s, the toast, and the dialogs: result `#over`, journey intro `#intro`, help/pause `#help`. |
@@ -20,7 +21,7 @@ Scripts load in this order (plain globals, no modules):
 | `tools/balance.js` | `node tools/balance.js`: dead-end rates per level and whole-game lengths. |
 | `tools/build.js` | `node tools/build.js poki`: copies the game into `dist/poki/`, injects the Poki SDK and `PLUS9_PLATFORM`, drops the `noindex` and writes `dist/plus9-poki.zip` (no dependencies). `node tools/build.js web`: the plain game in `dist/web/` (keeps `noindex`). `dist/` is git-ignored. |
 | `.github/workflows/pages.yml` | On every push to `master`, builds `web` and deploys only that to GitHub Pages: the review copy at https://kenserikawa.github.io/plus9/ (repo Settings → Pages → Source: GitHub Actions). |
-| `promo/` | Store assets: `thumbnail.html` (scene, screenshot at 628×628 ×2) and `thumbnail.png` (1256×1256, no text, full-bleed, as Poki asks). |
+| `promo/` | Store assets: `thumbnail.html` (scene with Nine, screenshot at 628×628 ×2) → `thumbnail.png` (1256×1256, no text, full-bleed, as Poki asks), and three 16:9 gameplay screenshots (1031×580 ×2). |
 | `tools/journey.js` | `node tools/journey.js`: picks a seed per journey level so difficulty follows a curve; paste its output over `JOURNEY_SEEDS` in `rules.js`. |
 
 ## Screens and modes
@@ -33,12 +34,13 @@ Scripts load in this order (plain globals, no modules):
 ## Rules (as implemented)
 
 - **Tiles**: 8 tiles, values 1…`target − 1`, weighted towards small numbers: P(v) ∝ exp(−v / λ), λ per level from `TILE_LAMBDA`. Playing a tile adds it to the well and the tile becomes the **Next** value. Four random colors.
-- **Scoring**: a completed sum scores `tiles used × level`, **×2 when every tile has the same color** (a combo, at least 2 tiles).
+- **Scoring**: a completed sum scores `tiles used × level`, **×2 when every tile has the same color** (a combo, at least 2 tiles; wild tiles match any color), and ×2 more for each ×2 tile in it.
+- **Special tiles** (`drawTile` rolls them; every draw consumes the roll so seeded sequences don't shift): **★ wild** (`WILD_CHANCE` 3 %) is worth exactly what the sum still needs (`tileValue`), so it always finishes it; **×2** (`DOUBLE_CHANCE` 6 %) doubles its sum's points. **Frozen** tiles (`ice`, journey only) can't be played (`canPlay`) and thaw by one per completed sum (`ICE_SUMS` = 2); shuffles leave them in place.
 - **Levels** (Classic, 60 s, Daily): every `SUMS_PER_LEVEL` (4) sums, no top level. Target follows `TARGETS` (9 … 20), then +2 per level. The `#levelup` card shows the old target struck through and the new one.
 - **Shuffle** rerolls all 8 tiles (key `S`). Free shuffles: 1 at the start, +1 per level-up while under 3. Otherwise it costs `SHUFFLE_COST × level × (paid so far + 1)` points.
 - **Losing**: going over the target ends the game. **Stuck** (sum above 0, no tile fits) blocks play until the player acts: free shuffle, pay, **Bank** (key `B`: end and keep the points; in the Journey it reads **Give up**) or **🎬 Free shuffle** when `platform.hasRewarded`. With none of those available the game ends.
 - **Records**: the final score, per mode (`plus9.best.classic`, `plus9.best.timed`), so points spent on shuffles count against it. The result sheet compares the score with the previous record.
-- **Journey** (`journeyLevel(n)`): a fixed seeded board; make the target `sums` times at a fixed difficulty (no level-ups). Tier = every 5 levels (target 9, 10, 12, 14 …); within a tier sums go 3 → 7. Stars: 1★ finishing, 2★ and 3★ at score thresholds from `journeyStars` (2★ ≈ a typical player, 3★ ≈ the careful bot). Level 1 starts from a hand-picked board. Levels 1–4 show coach tips (`tutorial()`): level 1 walks through the first sum with a highlighted tile; 2 = Next, 3 = color combos, 4 = shuffle. `JOURNEY_SEEDS` (levels 1–60) were chosen by `tools/journey.js` so typical players win ~95 % at level 1 down to 40 %; past 60 the seed is unchecked.
+- **Journey** (`journeyLevel(n)`): a fixed seeded board; make the target `sums` times at a fixed difficulty (no level-ups). Special tiles are off until level 6 (`specials`). `setup` (applied by `applySetup` in both the game and the bot) hands out a wild tile on level 6 and a ×2 on level 7, and freezes two tiles on the 1st, 3rd and 5th level of every tier from level 11. Coach tips introduce each one (6, 7, 11) with a highlighted tile. Tier = every 5 levels (target 9, 10, 12, 14 …); within a tier sums go 3 → 7. Stars: 1★ finishing, 2★ and 3★ at score thresholds from `journeyStars` (2★ ≈ a typical player, 3★ ≈ the careful bot). Level 1 starts from a hand-picked board. Levels 1–4 show coach tips (`tutorial()`): level 1 walks through the first sum with a highlighted tile; 2 = Next, 3 = color combos, 4 = shuffle. `JOURNEY_SEEDS` (levels 1–60) were chosen by `tools/journey.js` so typical players win ~95 % at level 1 down to 40 %; past 60 the seed is unchecked.
 - **Daily** (`mode === 'daily'`): same tiles for everyone on a local date (`createRng(hashSeed(todayKey()))`). **All randomness goes through `rng`; never call `Math.random` directly for game draws.** `DAILY_SUMS` (12) sums, one attempt. Progress is saved on every `render()` (`plus9.daily`), so reloading resumes instead of rerolling. **Par** = what the careful bot scores on today's board (`todaysPar()`); shown when the daily starts, in the HUD and in the result and share text. Result: 2×6 emoji grid (🟦 2 tiles, 🟪 3, 🟨 4+, 💥 bust, ⬜ unplayed), streak (`plus9.streak`), countdown, Share (`navigator.share` or clipboard, URL from `platform.shareURL()`). Daily #1 is `DAILY_EPOCH`: **set it to the launch date before publishing**.
 - **Missions** (`meta.MISSIONS`): 3 a day, the same for everyone (seeded by the date). Events from `app.js` (`meta.missionEvent`) advance them; each completed mission adds a star to `plus9.wallet` and shows a toast.
 - **Stars and themes**: total stars = journey stars + mission stars. Themes (`meta.THEMES`: Grape 0, Sunset 10, Ocean 25, Night 45) are cosmetic and set `body[data-theme]`, which defines `--bg`.
@@ -50,7 +52,7 @@ Everything is `localStorage` under `plus9.*` (each access in try/catch): `best.c
 
 ## Balance
 
-`node tools/balance.js` (rules.js + bot.js): normal player's dead-end rate ≈16 % at level 1 rising ~2 points per level; whole Classic games: normal ≈15 sums, careful ≈90, none endless. Run it before and after touching `TARGETS`, `TILE_LAMBDA`, `SUMS_PER_LEVEL`, `MAX_FREE_SHUFFLES`, `SHUFFLE_COST` or `COMBO_MULTIPLIER`. If the journey's rules change, rerun `node tools/journey.js` and update `JOURNEY_SEEDS`.
+`node tools/balance.js` (rules.js + bot.js): normal player's dead-end rate ≈16 % at level 1 rising ~2 points per level; whole Classic games: normal ≈27 sums, careful ≈125, none endless (wild tiles soften bad luck). Run it before and after touching `TARGETS`, `TILE_LAMBDA`, `SUMS_PER_LEVEL`, `MAX_FREE_SHUFFLES`, `SHUFFLE_COST` or `COMBO_MULTIPLIER`. If the journey's rules change, rerun `node tools/journey.js` and update `JOURNEY_SEEDS`.
 
 ## Portals (Poki first, CrazyGames later)
 
@@ -66,6 +68,7 @@ Poki UI rules followed: 16:9 frames (640×360, 836×470, 1031×580) use the land
 
 - **Input** goes through `play(tile)`: `click` for tap/keyboard, Pointer Events with a `.ghost` clone for drag; the click after a drag is suppressed.
 - **Ring**: one SVG segment per unit of the target, coloured by the tile that filled it.
+- **Nine** sits in the actions row (top of the actions column in landscape) and is the "9" of the home title. Moods: hop on every tile, happy on a sum, cheer on combos / ×2 / level-ups / wins / new records (with confetti), worried while stuck, sad on a loss. Confetti also marks the tutorial's first sum. Confetti skips with reduced motion; the mascot's only idle motion is a blink every few seconds.
 - **Motion** only answers the player (pop-in, match, shake, bump, floating points, level-up card, result stars). The only loop is the Shuffle `nudge` while stuck and payable. Tutorial hints are a steady gold ring, not an animation. `prefers-reduced-motion` turns motion off.
 - **Numbers** on tiles, Next and help icons are outlined with 16 unblurred `text-shadow`s (radius `--o`), not `-webkit-text-stroke`.
 - **The target is always prominent**: an empty well shows it big in gold under "Make".

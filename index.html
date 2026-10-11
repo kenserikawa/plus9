@@ -31,7 +31,7 @@
     <section class="screen home" id="home" hidden>
         <header class="home-top">
             <button class="icon-btn help-btn" type="button" aria-label="How to play" aria-keyshortcuts="H">?</button>
-            <h1 class="title outline">Plus 9</h1>
+            <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><span class="mascot mascot-title" aria-hidden="true"></span></h1>
             <button class="icon-btn sound-btn" type="button" aria-label="Sound" aria-pressed="true" aria-keyshortcuts="M">
                 <svg><use href="#i-sound-on" /></svg>
             </button>
@@ -124,6 +124,7 @@
         </div>
 
         <div class="actions">
+            <span class="mascot mascot-game" aria-hidden="true"></span>
             <p class="next">Next <span class="next-tile" id="next" aria-live="polite"></span></p>
             <p class="clock" id="clock" hidden><span id="clock-time">1:00</span></p>
             <button class="shuffle" id="shuffle" type="button" aria-keyshortcuts="S">
@@ -186,6 +187,10 @@
                 <p><strong>Long chains, one color.</strong> A sum is worth the tiles you used times your level. All one color? Double points.</p>
             </li>
             <li>
+                <span class="rule-icon is-gold" aria-hidden="true">★</span>
+                <p><strong>Special tiles.</strong> A ★ wild tile finishes any sum. A ×2 tile doubles the points of its sum. Frozen tiles thaw after 2 sums.</p>
+            </li>
+            <li>
                 <span class="rule-icon" aria-hidden="true"><span class="mini-tile is-next">6</span></span>
                 <p><strong>Plan with Next.</strong> It's the number that replaces the tile you play.</p>
             </li>
@@ -194,7 +199,7 @@
                 <p><strong>Don't go over.</strong> If no tile fits, shuffle: free ones first, then you pay points. You can also bank your points and stop, or watch an ad 🎬 where offered.</p>
             </li>
             <li>
-                <span class="rule-icon is-gold" aria-hidden="true">★</span>
+                <span class="rule-icon is-gold" aria-hidden="true">⚑</span>
                 <p><strong>Journey.</strong> Beat levels for up to 3 stars. Stars and daily missions unlock themes.</p>
             </li>
             <li>
@@ -214,6 +219,7 @@
     <script src="bot.js"></script>
     <script src="meta.js"></script>
     <script src="sound.js"></script>
+    <script src="mascot.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

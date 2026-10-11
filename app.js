@@ -69,7 +69,9 @@ let gen = null
 let rng = Math.random
 
 const target = () => targetFor(level)
-const randomTile = () => drawTile(level, rng)
+const specialsOn = () => mode !== 'journey' || journeyDef.specials
+const randomTile = () => drawTile(level, rng, specialsOn())
+const WILD_COLOR = '#ffd23f' // ring color for the part a wild tile fills
 const shuffleCost = () => shuffleCostFor(level, paidShuffles)
 const canShuffle = () => freeShuffles > 0 || score >= shuffleCost()
 
@@ -111,15 +113,33 @@ function buildTiles() {
     }
 }
 
-function setTile(tile, { value, color }) {
+function setTile(tile, { value, color, special = null, ice = 0 }) {
     tile.value = value
     tile.color = color
-    tile.el.textContent = value
-    tile.el.classList.toggle('is-wide', value >= 10)
-    tile.el.classList.remove('hint')
-    tile.el.style.setProperty('--tile', color)
-    tile.el.setAttribute('aria-label', `Add ${value}`)
+    tile.special = special
+    tile.ice = ice || 0
+    renderTile(tile)
     bump(tile.el, 'pop-in')
+}
+
+// a tile's face: a number, ★ for a wild tile, a ×2 badge, or ice with the sums left to thaw
+function renderTile(tile) {
+    const el = tile.el
+    const wild = tile.special === 'wild'
+    el.textContent = wild ? '★' : tile.value
+    el.classList.toggle('is-wide', !wild && tile.value >= 10)
+    el.classList.toggle('is-wild', wild)
+    el.classList.toggle('is-double', tile.special === 'double')
+    el.classList.toggle('is-frozen', tile.ice > 0)
+    el.classList.remove('hint')
+    el.style.setProperty('--tile', wild ? WILD_COLOR : tile.color)
+    if (tile.special === 'double') el.insertAdjacentHTML('beforeend', '<span class="tile-badge" aria-hidden="true">×2</span>')
+    if (tile.ice > 0) el.insertAdjacentHTML('beforeend', `<span class="tile-ice" aria-hidden="true">${tile.ice}</span>`)
+    el.setAttribute('aria-label',
+        tile.ice > 0 ? `${tile.value}, frozen for ${tile.ice} more ${tile.ice === 1 ? 'sum' : 'sums'}`
+        : wild ? 'Wild tile: finishes the sum'
+        : tile.special === 'double' ? `Add ${tile.value}, doubles the points`
+        : `Add ${tile.value}`)
 }
 
 function takeNext() {
@@ -135,31 +155,40 @@ function play(tile) {
     platform.gameplayStart()
     if (mode === 'timed' && !timer) startClock(TIMED_SECONDS * 1000)
 
+    if (tile.ice) {
+        bump(tile.el, 'shake')
+        sfx.stuck()
+        return
+    }
+
     const goal = target()
-    const total = sum + tile.value
+    const value = tileValue(tile, goal - sum) // a wild tile fills exactly what is missing
+    const total = sum + value
 
     if (total > goal) {
         sum = total
         render()
         bump(well, 'shake')
         sfx.overshoot()
-        return gameOver(`${total - tile.value} + ${tile.value} = ${total}. That's over ${goal}.`)
+        return gameOver(`${total - value} + ${value} = ${total}. That's over ${goal}.`)
     }
 
     sum = total
-    parts.push({ value: tile.value, color: tile.color })
+    parts.push({ value, color: tile.special === 'wild' ? WILD_COLOR : tile.color, special: tile.special })
+    if (tile.special === 'wild') floatText(well, 'Wild!', 'is-combo')
     setTile(tile, takeNext())
 
     if (sum === goal) return completeSum()
 
     sfx.add(sum / goal)
+    mascot.hop()
     render()
     tutorial('added')
     checkStuck()
 }
 
 function completeSum() {
-    const { points, combo } = sumPoints(parts, level)
+    const { points, combo, doubles } = sumPoints(parts, level)
     score += points
     sums++
     chainLog.push(parts.length)
@@ -174,8 +203,16 @@ function completeSum() {
     render()
     bump(well, 'match')
     bump(scoreEl, 'bump')
-    floatText(well, combo ? `+${points} combo!` : `+${points}`, combo ? 'is-combo' : '')
+    const bonus = [combo && 'combo', doubles && `×${2 ** doubles}`].filter(Boolean).join(' ')
+    floatText(well, bonus ? `+${points} ${bonus}!` : `+${points}`, bonus ? 'is-combo' : '')
+    thawIce()
     sfx.complete(parts.length)
+    if (bonus) {
+        mascot.mood('cheer')
+        confettiFrom(well, 24)
+    } else {
+        mascot.mood('happy')
+    }
     tutorial('completed')
     if (mode === 'timed') {
         deadline += TIME_BONUS * 1000
@@ -213,6 +250,8 @@ function levelUp() {
     platform.gameplayStop()
     pauseClock()
     sfx.levelUp()
+    mascot.mood('cheer', { ms: 2200 })
+    confettiFrom(levelUpEl, 36)
     render()
     bump(hud2El, 'bump')
 
@@ -236,9 +275,10 @@ function levelUp() {
 function checkStuck() {
     if (!playing || sum === 0) return
     const need = target() - sum
-    stuck = !tiles.some(t => t.value <= need)
+    stuck = !tiles.some(t => canPlay(t, need))
     if (!stuck) return
     sfx.stuck()
+    mascot.mood('worried', { hold: true })
     tutorial('stuck')
     // with rewarded ads the player can still watch one for a free shuffle, or give up / bank
     if (canShuffle() || platform.hasRewarded) return render()
@@ -280,10 +320,21 @@ function shuffle() {
         freeShuffles--
     }
     sfx.shuffle(paid)
+    if (mascot.current() === 'worried') mascot.mood('idle')
     stuck = false
-    tiles.forEach(t => setTile(t, randomTile()))
+    tiles.forEach(t => { if (!t.ice) setTile(t, randomTile()) }) // frozen tiles stay put
     render()
     checkStuck()
+}
+
+// every completed sum melts the ice a little; a tile that thaws becomes playable again
+function thawIce() {
+    for (const t of tiles) {
+        if (!t.ice) continue
+        t.ice--
+        renderTile(t)
+        bump(t.el, t.ice ? 'shake' : 'pop-in')
+    }
 }
 
 function endGame() {
@@ -301,6 +352,10 @@ function gameOver(reason, banked = false, completed = false) {
     endGame()
     if (banked || completed) sfx.bank()
     else sfx.gameOver()
+    if (completed) {
+        mascot.mood('cheer', { hold: true })
+        confettiFrom(well, 40)
+    } else mascot.mood(banked ? 'happy' : 'sad', { hold: true })
 
     if (mode === 'daily') {
         const result = finishDaily(completed ? 'complete' : banked ? 'banked' : 'bust', reason)
@@ -311,7 +366,13 @@ function gameOver(reason, banked = false, completed = false) {
 
     // the record is the final score, so points spent on shuffles count against it
     const previous = best
-    if (score > best) saveBest(score)
+    if (score > best) {
+        saveBest(score)
+        if (previous > 0) {
+            mascot.mood('cheer', { hold: true })
+            confettiFrom(well, 40)
+        }
+    }
     render()
     showResult({
         title: banked ? 'Banked!' : 'Game over',
@@ -346,8 +407,11 @@ function finishJourney(won, reason) {
         celebrate(meta.missionEvent('journey2', 1))
         if (n === 1) markOnboarded()
         sfx.bank()
+        mascot.mood('cheer', { hold: true })
+        setTimeout(() => confetti(innerWidth / 2, innerHeight * 0.35, 20 + stars * 15), 600)
     } else {
         sfx.gameOver()
+        mascot.mood('sad', { hold: true })
     }
     render()
     showResult({
@@ -399,8 +463,18 @@ function openIntro(n) {
 
 // coach tips: level 1 walks through a first sum, levels 2–4 introduce one idea each
 function tutorial(event) {
-    if (mode !== 'journey' || journeyDef.n > 4) return
+    if (mode !== 'journey') return
     const n = journeyDef.n
+    const later = { 6: '★ is a wild tile: it finishes any sum!', 7: '×2 tiles double the points of their sum.', 11: 'Frozen tiles thaw after 2 sums.' }
+    if (later[n]) {
+        if (event === 'start') {
+            coachSay(later[n], 6000)
+            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 11: t => t.ice > 0 }[n]
+            tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
+        }
+        return
+    }
+    if (n > 4) return
     if (n === 1) {
         if (event === 'start') {
             tutorialStep = 1
@@ -413,8 +487,10 @@ function tutorial(event) {
             hintTile(need)
         } else if (event === 'completed' && tutorialStep === 2) {
             tutorialStep = 3
-            coachSay('More tiles in one sum = more points. Try 3 tiles!', 5000)
+            coachSay('Yes! More tiles in one sum = more points. Try 3 tiles!', 5000)
             hintTile(null)
+            mascot.mood('cheer', { ms: 2000 })
+            confettiFrom(well, 48)
         }
         return
     }
@@ -497,6 +573,7 @@ function newGame() {
     combos = 0
     bestChain = 0
     tutorialStep = 0
+    mascot.mood('idle')
     best = readBest(mode)
     gen = null
     rng = Math.random
@@ -526,6 +603,13 @@ function newGame() {
     }
 
     dealBoard(mode === 'journey' ? journeyDef.initial : null)
+    if (mode === 'journey' && journeyDef.setup.length) {
+        // the level's special tiles and frozen obstacles, exactly as the bot plays them
+        const dealt = tiles.map(t => ({ value: t.value, color: t.color, special: t.special, ice: t.ice }))
+        applySetup(dealt, journeyDef.setup)
+        tiles.forEach((t, i) => setTile(t, dealt[i]))
+        render()
+    }
     tutorial('start')
 }
 
@@ -824,7 +908,7 @@ function saveDailyProgress() {
         done: false,
         state: {
             seedState: gen.state,
-            tiles: tiles.map(t => ({ value: t.value, color: t.color })),
+            tiles: tiles.map(t => ({ value: t.value, color: t.color, special: t.special, ice: t.ice })),
             next,
             sum: done ? 0 : sum,
             parts: done ? [] : parts,
@@ -1235,6 +1319,7 @@ document.addEventListener('keydown', unlock, { once: true })
 // ---------- boot ----------
 
 applyTheme()
+mascot.mount()
 buildTiles()
 renderSound()
 // first visit: straight into the tutorial level instead of a menu

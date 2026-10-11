@@ -7,6 +7,7 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 ### How to play
 
 - **Score**: each sum is worth the tiles you used times your level, so 2 + 3 + 4 beats 8 + 1. If every tile in a sum has the same color, it's a **combo**: double points.
+- **Special tiles**: a ★ wild tile finishes any sum, a ×2 tile doubles its sum's points, and in later Journey levels some tiles start frozen and thaw after 2 sums.
 - **Next** shows the number that will replace the tile you play.
 - **Don't go over** the target. If no tile fits, shuffle: your free shuffles first, then you pay points (each paid one costs more). You can also bank your points and stop, or, on a game portal, watch an ad for a free shuffle 🎬.
 
@@ -17,7 +18,7 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 - **Classic**: play as long as you can; the target grows every 4 sums.
 - **60 seconds**: race the clock; every sum adds 2 seconds.
 
-Three **daily missions** give extra stars, and stars unlock color **themes**.
+Three **daily missions** give extra stars, and stars unlock color **themes**. Nine, the game's mascot, cheers you on.
 
 ### Controls
 
@@ -41,6 +42,7 @@ bot.js          simulated players (daily par, journey star goals)
 meta.js         journey stars, missions, themes
 platform.js     web-portal adapter (Poki, later CrazyGames)
 sound.js        synthesised sound effects and vibration
+mascot.js       Nine the mascot and confetti
 styles.css      look and layout (portrait and 16:9 landscape)
 fonts/          bundled fonts and their licences
 tools/          balance and journey simulators

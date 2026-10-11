@@ -18,7 +18,7 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 - **Classic**: play as long as you can; the target grows every 4 sums.
 - **60 seconds**: race the clock; every sum adds 2 seconds.
 
-Three **daily missions** give extra stars, and stars unlock color **themes**. Nine, the game's mascot, cheers you on.
+Three **daily missions** give extra stars, and stars unlock **themes**, each with its own colors and music: bright chiptune, vaporwave sunset, underwater ambient and a mysterious night. Nine, the game's mascot, cheers you on.
 
 ### Controls
 

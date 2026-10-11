@@ -265,7 +265,7 @@ body {
 .mission-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .mission {
     display: grid;
-    grid-template-columns: 1fr 64px auto;
+    grid-template-columns: 1fr 3.2em 64px; /* text, count (fixed width so every bar lines up), bar */
     align-items: center;
     gap: 10px;
     font-size: 0.95rem;
@@ -274,7 +274,7 @@ body {
 }
 .mission-bar { height: 10px; background: var(--track); border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; }
 .mission-bar span { display: block; height: 100%; background: var(--violet); }
-.mission-count { min-width: 2.6ch; font-family: var(--label-font); font-weight: 400; text-align: right; }
+.mission-count { font-family: var(--label-font); font-weight: 400; text-align: right; white-space: nowrap; }
 .mission.is-done .mission-text { color: var(--muted); text-decoration: line-through; }
 .mission.is-done .mission-bar span { background: var(--gold); }
 .mission.is-done .mission-count { color: #c99700; font-size: 1.2rem; }

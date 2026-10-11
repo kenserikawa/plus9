@@ -1124,8 +1124,8 @@ function renderHome() {
         li.classList.toggle('is-done', m.done)
         const pct = Math.round((100 * m.progress) / m.goal)
         li.innerHTML = `<span class="mission-text"></span>
-            <span class="mission-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
-            <span class="mission-count">${m.done ? '★' : `${m.progress}/${m.goal}`}</span>`
+            <span class="mission-count">${m.done ? '★' : `${m.progress}/${m.goal}`}</span>
+            <span class="mission-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>`
         const text = tr(`mission.${m.id}`)
         li.querySelector('.mission-text').textContent = text
         li.setAttribute('aria-label', `${text}: ${m.done ? tr('mission.doneAria') : tr('mission.progress', { a: m.progress, b: m.goal })}`)
@@ -1240,6 +1240,7 @@ addEventListener('resize', () => { if (screen === 'map') drawRoad() })
 
 function applyTheme() {
     document.body.dataset.theme = meta.theme()
+    sfx.setStyle(meta.theme()) // each theme has its own music
 }
 
 // ---------- persistence ----------

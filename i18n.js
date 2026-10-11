@@ -66,6 +66,7 @@ const i18n = (() => {
             'help.r5.t': "Don't go over.", 'help.r5.b': 'If no tile fits, shuffle: free ones first, then you pay points. You can also bank your points and stop, or watch an ad 🎬 where offered.',
             'help.r6.t': 'Journey.', 'help.r6.b': 'Beat levels for up to 3 stars. Stars and daily missions unlock themes.',
             'help.r7.t': 'Daily, Classic, 60 seconds.', 'help.r7.b': 'The same board for everyone each day; an endless game where the target keeps growing; a race against the clock.',
+            'help.music': 'Music', 'music.on': 'On', 'music.off': 'Off',
             'key.play': 'play a tile', 'key.shuffle': 'shuffle', 'key.bank': 'bank', 'key.sound': 'sound', 'key.pause': 'pause',
         },
 
@@ -125,6 +126,7 @@ const i18n = (() => {
             'help.r5.t': 'No te pases.', 'help.r5.b': 'Si ninguna ficha cabe, baraja: primero las gratis, luego pagas puntos. También puedes cobrar tus puntos y parar, o ver un anuncio 🎬 donde se ofrezca.',
             'help.r6.t': 'Viaje.', 'help.r6.b': 'Supera niveles para ganar hasta 3 estrellas. Las estrellas y las misiones diarias desbloquean temas.',
             'help.r7.t': 'Diario, Clásico, 60 segundos.', 'help.r7.b': 'El mismo tablero para todos cada día; una partida sin fin donde el objetivo no para de crecer; una carrera contra el reloj.',
+            'help.music': 'Música', 'music.on': 'Sí', 'music.off': 'No',
             'key.play': 'jugar ficha', 'key.shuffle': 'barajar', 'key.bank': 'cobrar', 'key.sound': 'sonido', 'key.pause': 'pausa',
         },
 
@@ -184,6 +186,7 @@ const i18n = (() => {
             'help.r5.t': 'Não passe do alvo.', 'help.r5.b': 'Se nenhuma peça couber, misture: primeiro as grátis, depois você paga pontos. Você também pode sacar seus pontos e parar, ou ver um anúncio 🎬 quando houver.',
             'help.r6.t': 'Jornada.', 'help.r6.b': 'Vença fases para ganhar até 3 estrelas. Estrelas e missões diárias desbloqueiam temas.',
             'help.r7.t': 'Diário, Clássico, 60 segundos.', 'help.r7.b': 'O mesmo tabuleiro para todos a cada dia; um jogo sem fim em que o alvo não para de crescer; uma corrida contra o relógio.',
+            'help.music': 'Música', 'music.on': 'Ligada', 'music.off': 'Desligada',
             'key.play': 'jogar peça', 'key.shuffle': 'misturar', 'key.bank': 'sacar', 'key.sound': 'som', 'key.pause': 'pausa',
         },
 
@@ -243,6 +246,7 @@ const i18n = (() => {
             'help.r5.t': 'Ne dépasse pas.', 'help.r5.b': 'Si aucune tuile ne rentre, mélange : d’abord les gratuits, ensuite tu paies des points. Tu peux aussi encaisser tes points et t’arrêter, ou regarder une pub 🎬 si elle est proposée.',
             'help.r6.t': 'Aventure.', 'help.r6.b': 'Réussis des niveaux pour gagner jusqu’à 3 étoiles. Les étoiles et les missions du jour débloquent des thèmes.',
             'help.r7.t': 'Quotidien, Classique, 60 secondes.', 'help.r7.b': 'La même grille pour tout le monde chaque jour ; une partie sans fin où la cible ne cesse de grandir ; une course contre la montre.',
+            'help.music': 'Musique', 'music.on': 'Oui', 'music.off': 'Non',
             'key.play': 'jouer une tuile', 'key.shuffle': 'mélanger', 'key.bank': 'encaisser', 'key.sound': 'son', 'key.pause': 'pause',
         },
 
@@ -302,6 +306,7 @@ const i18n = (() => {
             'help.r5.t': 'Nicht drüber!', 'help.r5.b': 'Passt kein Stein, misch neu: zuerst gratis, danach kostet es Punkte. Du kannst auch deine Punkte sichern und aufhören oder, wo angeboten, Werbung 🎬 ansehen.',
             'help.r6.t': 'Reise.', 'help.r6.b': 'Schaffe Level für bis zu 3 Sterne. Sterne und tägliche Missionen schalten Designs frei.',
             'help.r7.t': 'Täglich, Klassisch, 60 Sekunden.', 'help.r7.b': 'Jeden Tag dasselbe Brett für alle; ein endloses Spiel, bei dem das Ziel immer weiter wächst; ein Wettlauf gegen die Uhr.',
+            'help.music': 'Musik', 'music.on': 'An', 'music.off': 'Aus',
             'key.play': 'Stein spielen', 'key.shuffle': 'mischen', 'key.bank': 'sichern', 'key.sound': 'Ton', 'key.pause': 'Pause',
         },
 
@@ -361,6 +366,7 @@ const i18n = (() => {
             'help.r5.t': 'Hedefi aşma.', 'help.r5.b': 'Hiçbir taş uymazsa karıştır: önce ücretsizler, sonra puan ödersin. Puanlarını alıp bitirebilir ya da sunulduğunda reklam 🎬 izleyebilirsin.',
             'help.r6.t': 'Yolculuk.', 'help.r6.b': 'Seviyeleri geçip 3 yıldıza kadar kazan. Yıldızlar ve günlük görevler tema açar.',
             'help.r7.t': 'Günlük, Klasik, 60 saniye.', 'help.r7.b': 'Her gün herkes için aynı tahta; hedefin sürekli büyüdüğü sonsuz bir oyun; saate karşı bir yarış.',
+            'help.music': 'Müzik', 'music.on': 'Açık', 'music.off': 'Kapalı',
             'key.play': 'taş oyna', 'key.shuffle': 'karıştır', 'key.bank': 'bitir', 'key.sound': 'ses', 'key.pause': 'duraklat',
         },
     }

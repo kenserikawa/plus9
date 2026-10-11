@@ -22,7 +22,7 @@ Three **daily missions** give extra stars, and stars unlock color **themes**. Ni
 
 ### Controls
 
-Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **B** bank, **M** sound, **Esc** pause.
+Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **B** bank, **M** sound, **Esc** pause. Background music can be switched off on its own in the help sheet.
 
 ### Languages
 
@@ -47,7 +47,7 @@ bot.js          simulated players (daily par, journey star goals)
 meta.js         journey stars, missions, themes
 platform.js     web-portal adapter (Poki, later CrazyGames)
 i18n.js         translations
-sound.js        synthesised sound effects and vibration
+sound.js        synthesised sound effects, music and vibration
 mascot.js       Nine the mascot and confetti
 styles.css      look and layout (portrait and 16:9 landscape)
 fonts/          bundled fonts and their licences

@@ -994,13 +994,45 @@ body.is-ad .game { pointer-events: none; }
 .mini-tile { --o: 2px; color: var(--sky); }
 .mini-tile.is-next { color: var(--magenta); }
 
+/* settings row in the help sheet: language and music */
+.settings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 18px;
+    margin: 0 0 18px;
+}
+
+.music-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 4px 14px;
+    font: inherit;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.music-state {
+    min-width: 2.4em;
+    padding: 0 10px;
+    color: var(--paper);
+    background: var(--violet);
+    border-radius: 999px;
+}
+.music-btn[aria-pressed="false"] .music-state { color: var(--ink); background: var(--track); }
+.music-btn:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+
 /* language picker in the help sheet */
 .lang-pick {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin: 0 0 18px;
     font-weight: 700;
     color: var(--muted);
 }

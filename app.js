@@ -1264,6 +1264,18 @@ function toggleSound() {
     sfx.ui()
 }
 
+function toggleMusic() {
+    sfx.setMusic(!sfx.musicOn)
+    renderMusic()
+    sfx.ui()
+}
+
+function renderMusic() {
+    const btn = $('music-btn')
+    btn.setAttribute('aria-pressed', sfx.musicOn)
+    $('music-state').textContent = tr(sfx.musicOn ? 'music.on' : 'music.off')
+}
+
 function renderSound() {
     document.querySelectorAll('.sound-btn').forEach(b => {
         b.setAttribute('aria-pressed', !sfx.muted)
@@ -1307,6 +1319,7 @@ document.querySelectorAll('.home-btn').forEach(b => b.addEventListener('click', 
 }))
 document.querySelectorAll('.help-btn, .pause-btn').forEach(b => b.addEventListener('click', openHelp))
 document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click', toggleSound))
+$('music-btn').addEventListener('click', toggleMusic)
 
 $('help-close').addEventListener('click', () => help.close())
 $('help-home').addEventListener('click', goHome)
@@ -1364,6 +1377,7 @@ document.addEventListener('keydown', unlock, { once: true })
 function relocalize() {
     i18n.apply()
     renderSound()
+    renderMusic()
     if (screen === 'home') renderHome()
     if (screen === 'map') renderMap()
     if (screen === 'game' && next) {
@@ -1392,6 +1406,7 @@ applyTheme()
 mascot.mount()
 buildTiles()
 renderSound()
+renderMusic()
 // first visit: straight into the tutorial level instead of a menu
 if (onboarded()) showScreen('home')
 else {

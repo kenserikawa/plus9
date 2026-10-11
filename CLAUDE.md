@@ -14,7 +14,7 @@ Scripts load in this order (plain globals, no modules):
 | `bot.js` | Simulated players on top of `rules.js`: `simulateRun`, `journeyStars(def)` (star thresholds) and `dailyPar(seed)`. Same draw order as the game, so a seeded run sees the player's board. Also exported for Node. |
 | `meta.js` | Long-term progress, global `meta`: journey stars, daily missions, the star wallet and themes. |
 | `mascot.js` | Nine, the mascot: a gold "9" with a face, global `mascot` (`mount`, `mood(name, { hold, ms })`, `hop`), plus `confetti(x, y)` / `confettiFrom(el)`. Inline SVG so CSS switches the face by `data-mood` (idle, happy, cheer, worried, sad). |
-| `sound.js` | Synthesised Web Audio effects and haptics, global `sfx`. C major pentatonic. Mute (`plus9.muted`) also silences vibration. |
+| `sound.js` | Synthesised Web Audio effects, haptics and background music, global `sfx`. Effects use C major pentatonic. Music: a 100 bpm loop (pad, bass, varying arpeggio, hat; parts A `C Am F G` / B `Am F C G`) scheduled ahead on the audio clock through a low-passed `musicBus` at `MUSIC_VOLUME`; starts on the first gesture (`unlock`), ducks under fanfares (`duck`), stops with mute, pauses with `suspend` (ads, hidden page). `plus9.muted` silences everything; `plus9.music` toggles only the music (button in the help sheet). |
 | `app.js` | Game engine, the three screens (home, journey map, game), modes, dialogs, input. Tiles are created at runtime (`buildTiles`). State lives in top-level `let`s. |
 | `index.html` | Icon `<symbol>`s, the three `.screen`s, the toast, and the dialogs: result `#over` and help/pause `#help` (with the language picker). |
 | `styles.css` | `@font-face`, tokens and themes, screens, board, dialogs, then the landscape layout and reduced-motion overrides at the end. |
@@ -48,7 +48,7 @@ Scripts load in this order (plain globals, no modules):
 
 ## Saving
 
-Everything is `localStorage` under `plus9.*` (each access in try/catch): `best.classic`, `best.timed`, `daily`, `streak`, `journey`, `missions`, `wallet`, `theme`, `muted`, `onboarded`, `lang`. No backend. On Poki, a logged-in player's `localStorage` is synced to their account automatically by the SDK (restored across devices, 1 MB limit); keys starting with `poki_ignore` are excluded. Keep saves small and in `localStorage` so that keeps working.
+Everything is `localStorage` under `plus9.*` (each access in try/catch): `best.classic`, `best.timed`, `daily`, `streak`, `journey`, `missions`, `wallet`, `theme`, `muted`, `music`, `onboarded`, `lang`. No backend. On Poki, a logged-in player's `localStorage` is synced to their account automatically by the SDK (restored across devices, 1 MB limit); keys starting with `poki_ignore` are excluded. Keep saves small and in `localStorage` so that keeps working.
 
 ## Balance
 

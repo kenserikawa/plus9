@@ -208,10 +208,15 @@
             <li><kbd>M</kbd> <span data-i18n="key.sound">sound</span></li>
             <li><kbd>Esc</kbd> <span data-i18n="key.pause">pause</span></li>
         </ul>
-        <label class="lang-pick">
-            <span data-i18n="help.language">Language</span>
-            <select id="lang"></select>
-        </label>
+        <div class="settings">
+            <label class="lang-pick">
+                <span data-i18n="help.language">Language</span>
+                <select id="lang"></select>
+            </label>
+            <button class="music-btn" id="music-btn" type="button" aria-pressed="true">
+                <span data-i18n="help.music">Music</span> <span class="music-state" id="music-state">On</span>
+            </button>
+        </div>
         <div class="sheet-actions">
             <button class="btn" id="help-close" type="button">Resume</button>
             <button class="btn btn-quiet" id="help-home" type="button" hidden data-i18n="nav.home">Home</button>

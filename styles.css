@@ -94,6 +94,14 @@ body {
 [data-theme="chrome"], .theme-chrome { --bg: linear-gradient(180deg, #232a36 0%, #4b5568 45%, #7f8ba1 80%, #a9b4c6 100%); }
 /* gears: copper and bronze */
 [data-theme="gears"], .theme-gears { --bg: linear-gradient(180deg, #2e1a10 0%, #6a3618 45%, #a5642a 80%, #d39552 100%); }
+/* lo-fi: a city dusk, mauve and muted orange over a darker skyline band */
+[data-theme="lofi"], .theme-lofi { --bg: linear-gradient(180deg, #2b2240 0%, #5e3f63 40%, #b06a6a 72%, #d99a6c 86%, #3a2a3f 86.5%, #2a1f33 100%); }
+/* jazz: a deep blue club with a warm spotlight at the top */
+[data-theme="jazz"], .theme-jazz { --bg: radial-gradient(ellipse 60% 35% at 50% 0%, rgba(255, 196, 120, 0.45), transparent 70%), linear-gradient(180deg, #0f1a3a 0%, #142554 55%, #0b1230 100%); }
+/* arcade: a neon perspective grid on blue-black */
+[data-theme="arcade"], .theme-arcade { --bg: repeating-linear-gradient(90deg, transparent 0 46px, rgba(255, 49, 204, 0.35) 46px 48px), repeating-linear-gradient(180deg, transparent 0 46px, rgba(55, 175, 255, 0.35) 46px 48px), linear-gradient(180deg, #05051a 0%, #120a3a 60%, #2a0d4f 100%); }
+/* fiesta: bright colors with fixed confetti */
+[data-theme="fiesta"], .theme-fiesta { --bg: radial-gradient(circle at 12% 18%, #ffd23f 0 6px, transparent 7px), radial-gradient(circle at 78% 12%, #37afff 0 5px, transparent 6px), radial-gradient(circle at 62% 70%, #5fe08a 0 6px, transparent 7px), radial-gradient(circle at 25% 82%, #ff31cc 0 5px, transparent 6px), radial-gradient(circle at 90% 55%, #ff623a 0 6px, transparent 7px), linear-gradient(160deg, #ff623a 0%, #ff31cc 45%, #8746ff 100%); }
 
 /* cartoon ink outline used on display type */
 .outline {

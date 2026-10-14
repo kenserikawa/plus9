@@ -158,6 +158,7 @@ const sfx = (() => {
         C: [60, 64, 67], Am: [57, 60, 64], F: [53, 57, 60], G: [55, 59, 62], Em: [52, 55, 59], Dm: [50, 53, 57],
         Fmaj7: [53, 57, 60, 64], Em7: [52, 55, 59, 62], Dm7: [50, 53, 57, 60], Cmaj7: [48, 52, 55, 59],
         Cadd9: [48, 55, 62, 64], Am9: [45, 52, 59, 60], Fmaj9: [41, 48, 55, 57, 64], Gsus: [43, 50, 55, 62],
+        G7: [55, 59, 62, 65], Am7: [57, 60, 64, 67],
     }
     const chordAt = (parts, bar) => CHORDS[parts[Math.floor(bar / 4) % parts.length][bar % 4]]
 
@@ -373,6 +374,71 @@ const sfx = (() => {
                 if (pos === 0) tone(midi(chord[0] - 24), { type: 'sine', dur: e * 3, vol: 0.11, attack: 0.02, at, dest: out })
                 if (pos % 2 === 0) tone(2100, { type: 'sine', dur: 0.025, vol: 0.05, attack: 0.001, at, dest: out })
                 else tone(1400, { type: 'sine', dur: 0.025, vol: 0.035, attack: 0.001, at: at + swing, dest: out })
+            },
+        },
+
+        // Lo-fi: a dusty evening. Electric-piano seventh chords, a soft swung beat and a quiet
+        // vinyl crackle.
+        lofi: {
+            bpm: 78, cutoff: 1900, level: 1,
+            parts: [['Fmaj7', 'Em7', 'Dm7', 'Cmaj7']],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                const swing = pos % 2 ? e * 0.22 : 0
+                if (pos === 0 || pos === 5) for (const n of chord) tone(midi(n), { type: 'sine', dur: e * (pos ? 2.5 : 4.5), vol: 0.03, attack: 0.02, at: at + swing, dest: out })
+                if (pos === 0 || pos === 3) tone(midi(chord[0] - 24), { type: 'sine', dur: e * 2, vol: 0.12, attack: 0.02, at: at + swing, dest: out })
+                if (pos === 0 || pos === 5) kick(at + swing, 0.16, out)
+                if (pos === 2 || pos === 6) hiss({ dur: 0.09, vol: 0.045, at, from: 1800, to: 2600, dest: out })
+                if (pos % 2 === 1) hiss({ dur: 0.03, vol: 0.015, at: at + swing, from: 7000, to: 8000, dest: out })
+                if (Math.random() < 0.35) hiss({ dur: 0.01, vol: 0.012, at: at + Math.random() * e, from: 3000, to: 6000, dest: out }) // vinyl crackle
+            },
+        },
+
+        // Jazz: a late club. A walking bass on every beat, a swinging ride cymbal, and piano
+        // comping a ii-V-I.
+        jazz: {
+            bpm: 120, cutoff: 2600, level: 1,
+            parts: [['Dm7', 'G7', 'Cmaj7', 'Am7']],
+            walk: [0, 1, 2, 1], // chord tones, one per beat
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                const swing = pos % 2 ? e * 0.33 : 0 // triplet feel
+                if (pos % 2 === 0) tone(midi(chord[this.walk[pos / 2]] - 12), { type: 'triangle', dur: e * 1.8, vol: 0.11, attack: 0.01, at, dest: out })
+                if (pos % 2 === 0 || pos === 3 || pos === 7) hiss({ dur: 0.12, vol: 0.03, at: at + swing, from: 6000, to: 9000, dest: out })
+                if (pos === 1 || pos === 4) for (const n of chord) tone(midi(n + 12), { type: 'triangle', dur: e * 0.9, vol: 0.022, attack: 0.005, at: at + swing, dest: out })
+            },
+        },
+
+        // Arcade: fast chiptune. A square-wave lead, a triangle bass jumping octaves and noise drums.
+        arcade: {
+            bpm: 144, cutoff: 4200, level: 0.85,
+            parts: [['Am', 'F', 'C', 'G'], ['Am', 'G', 'F', 'G']],
+            lead: [4, 2, 0, 2, 4, 4, 4, null],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                tone(midi(chord[0] - (pos % 2 ? 12 : 24)), { type: 'triangle', dur: e * 0.8, vol: 0.09, attack: 0.002, at, dest: out })
+                const i = this.lead[(pos + bar) % 8]
+                if (i !== null) tone(midi(chord[i % 3] + 12 * Math.floor(i / 3) + 12), { type: 'square', dur: e * 0.6, vol: 0.02, attack: 0.002, at, dest: out })
+                if (pos === 0 || pos === 4) hiss({ dur: 0.05, vol: 0.08, at, from: 200, to: 900, dest: out })
+                if (pos === 2 || pos === 6) hiss({ dur: 0.08, vol: 0.07, at, from: 2500, to: 5000, dest: out })
+                hiss({ dur: 0.015, vol: 0.02, at, from: 9000, to: 11000, dest: out })
+            },
+        },
+
+        // Fiesta: a Latin party. A 3-2 clave, congas, a montuno piano and bright brass stabs.
+        fiesta: {
+            bpm: 108, cutoff: 3600, level: 0.95,
+            parts: [['C', 'F', 'G', 'C'], ['Am', 'Dm', 'G', 'C']],
+            clave: [[0, 3, 6], [2, 4]], // the 3 side, then the 2 side
+            montuno: [0, 2, 1, 2, 0, 2, 1, 2],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                if (this.clave[bar % 2].includes(pos)) tone(2500, { type: 'sine', dur: 0.04, vol: 0.06, attack: 0.001, at, dest: out })
+                if (pos === 3 || pos === 7) tone(190, { type: 'sine', dur: 0.12, vol: 0.09, attack: 0.002, at, dest: out })
+                if (pos === 2 || pos === 6) tone(330, { type: 'sine', dur: 0.06, vol: 0.06, attack: 0.002, at, dest: out })
+                tone(midi(chord[this.montuno[pos]] + 12), { type: 'triangle', dur: e * 0.6, vol: 0.025, attack: 0.003, at, dest: out })
+                if (pos === 0 || pos === 4) tone(midi(chord[0] - 24), { type: 'sine', dur: e * 2.5, vol: 0.12, attack: 0.01, at, dest: out })
+                if (pos === 6 || pos === 7) for (const m of chord) tone(midi(m + 12), { type: 'sawtooth', dur: e * 0.45, vol: 0.008, attack: 0.01, at, dest: out })
             },
         },
     }

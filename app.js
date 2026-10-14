@@ -83,6 +83,10 @@ const target = () => targetFor(level)
 const specialsOn = () => mode !== 'journey' || journeyDef.specials
 const randomTile = () => drawTile(level, rng, specialsOn())
 const WILD_COLOR = '#ffd23f' // ring color for the part a wild tile fills
+// names of rules.js COLORS, in order: each color's shape (#mark-…) and its spoken name (color.…)
+const COLOR_IDS = ['orange', 'blue', 'purple', 'pink']
+const colorId = color => COLOR_IDS[COLORS.indexOf(color)]
+const markSvg = id => `<svg class="tile-mark" aria-hidden="true"><use href="#mark-${id}" /></svg>`
 const shuffleCost = () => shuffleCostFor(level, paidShuffles)
 const canShuffle = () => freeShuffles > 0 || score >= shuffleCost()
 // the daily is one attempt for everyone, so it never offers a take-back
@@ -155,12 +159,17 @@ function renderTile(tile) {
     el.style.setProperty('--tile', wild ? WILD_COLOR : tile.color)
     if (tile.special === 'double') el.insertAdjacentHTML('beforeend', '<span class="tile-badge" aria-hidden="true">×2</span>')
     if (tile.ice > 0) el.insertAdjacentHTML('beforeend', `<span class="tile-ice" aria-hidden="true">${tile.ice}</span>`)
+    // its color's shape; not on wild or rainbow tiles (they fit any color) or frozen ones (the ice hides it)
+    const id = colorId(tile.color)
+    const colored = id && !wild && tile.special !== 'rainbow' && !(tile.ice > 0)
+    if (colored) el.insertAdjacentHTML('beforeend', markSvg(id))
+    const color = colored ? `, ${tr(`color.${id}`)}` : ''
     el.setAttribute('aria-label',
         tile.ice > 0 ? tr('tile.frozen', { n: tile.value, k: tile.ice })
         : wild ? tr('tile.wild')
-        : tile.special === 'double' ? tr('tile.double', { n: tile.value })
+        : tile.special === 'double' ? tr('tile.double', { n: tile.value }) + color
         : tile.special === 'rainbow' ? tr('tile.rainbow', { n: tile.value })
-        : tr('tile.add', { n: tile.value }))
+        : tr('tile.add', { n: tile.value }) + color)
 }
 
 function takeNext() {
@@ -829,6 +838,18 @@ function renderClock(ms) {
 
 // ---------- rendering ----------
 
+// Next and the tiles queued after it: the number (★ when wild) in its color, with the color's shape
+function paintNext(el, t) {
+    const wild = t.special === 'wild'
+    el.textContent = wild ? '★' : t.value
+    el.dataset.n = el.textContent
+    el.classList.toggle('is-wild', wild)
+    el.classList.toggle('is-rainbow', t.special === 'rainbow')
+    el.style.setProperty('--tile', wild ? WILD_COLOR : t.color)
+    const id = colorId(t.color)
+    if (id && !wild && t.special !== 'rainbow') el.insertAdjacentHTML('beforeend', markSvg(id))
+}
+
 function render() {
     if (!next) return
     const goal = target()
@@ -854,20 +875,12 @@ function render() {
         seg.classList.toggle('on', i < sum)
     })
 
-    nextEl.textContent = next.special === 'wild' ? '★' : next.value
-    nextEl.dataset.n = nextEl.textContent
-    nextEl.classList.toggle('is-wild', next.special === 'wild')
-    nextEl.classList.toggle('is-rainbow', next.special === 'rainbow')
-    nextEl.style.setProperty('--tile', next.special === 'wild' ? WILD_COLOR : next.color)
+    paintNext(nextEl, next)
     queueEl.hidden = !queue.length
     queueEl.replaceChildren(...queue.map(t => {
         const el = document.createElement('span')
         el.className = 'next-tile is-later'
-        el.textContent = t.special === 'wild' ? '★' : t.value
-        el.dataset.n = el.textContent
-        el.classList.toggle('is-wild', t.special === 'wild')
-        el.classList.toggle('is-rainbow', t.special === 'rainbow')
-        el.style.setProperty('--tile', t.special === 'wild' ? WILD_COLOR : t.color)
+        paintNext(el, t)
         return el
     }))
     queueEl.setAttribute('aria-label', tr('aria.queue', { list: queue.map(t => (t.special === 'wild' ? '★' : t.value)).join(', ') }))
@@ -1654,6 +1667,24 @@ function toggleMusic() {
     sfx.ui()
 }
 
+// Color shapes (settings): every tile also shows its color's shape, for players who can't tell
+// the colors apart. The shapes are always in the tiles; this only shows them.
+let shapesOn = false
+try { shapesOn = localStorage.getItem('plus9.shapes') === '1' } catch { /* storage unavailable */ }
+
+function toggleShapes() {
+    shapesOn = !shapesOn
+    try { localStorage.setItem('plus9.shapes', shapesOn ? '1' : '0') } catch { /* storage unavailable */ }
+    renderShapes()
+    sfx.ui()
+}
+
+function renderShapes() {
+    document.body.classList.toggle('show-shapes', shapesOn)
+    $('shapes-btn').setAttribute('aria-pressed', shapesOn)
+    $('shapes-state').textContent = tr(shapesOn ? 'help.shapesOn' : 'help.shapesOff')
+}
+
 // the effects and music switches in settings, and the speaker icons (crossed when both are off)
 function renderSound() {
     $('effects-btn').setAttribute('aria-pressed', sfx.effectsOn)
@@ -1710,6 +1741,7 @@ document.querySelectorAll('.pause-btn, .settings-btn').forEach(b => b.addEventLi
 document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click', toggleSound))
 $('effects-btn').addEventListener('click', toggleEffects)
 $('music-btn').addEventListener('click', toggleMusic)
+$('shapes-btn').addEventListener('click', toggleShapes)
 
 $('help-close').addEventListener('click', () => help.close())
 $('settings-close').addEventListener('click', () => settingsSheet.close())
@@ -1833,6 +1865,7 @@ addEventListener('blur', () => mascot.look(null))
 function relocalize() {
     i18n.apply()
     renderSound()
+    renderShapes()
     if (screen === 'home') renderHome()
     if (screen === 'map') renderMap()
     if (styleSheet.open) renderStyle()
@@ -1862,6 +1895,7 @@ mascot.dress(meta.outfit())
 knownItems = unlockedItems()
 buildTiles()
 renderSound()
+renderShapes()
 // first visit: straight into the tutorial level instead of a menu
 if (onboarded()) showScreen('home')
 else {

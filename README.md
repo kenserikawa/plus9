@@ -22,7 +22,7 @@ Three **daily missions** give extra stars. In **Customize** you pick the theme (
 
 ### Controls
 
-Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **C** cash in (Classic), **B** bank, **M** sound, **H** or **?** how to play, **Esc** pause. Sound effects and music can be switched off separately in Settings (the gear on the home screen, or the pause menu).
+Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **C** cash in (Classic), **B** bank, **M** sound, **H** or **?** how to play, **Esc** pause. Sound effects and music can be switched off separately in Settings (the gear on the home screen, or the pause menu). **Color shapes**, also in Settings, adds a shape to each tile color for players who can't tell the colors apart.
 
 ### Languages
 

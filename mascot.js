@@ -91,14 +91,14 @@ const mascot = (() => {
         if (!hold && name !== 'idle') revertTimer = setTimeout(() => mood('idle'), ms)
     }
 
-    // One mascot reacts on its own (a poke on the home screen): a face and a motion, then idle.
-    // Kinds: love, spin, wink, boing, dizzy.
+    // One mascot reacts on its own (a poke on the home screen, the loading screen): a face and
+    // a motion, then idle. Kinds: love, spin, wink, boing, dizzy, cheer.
     function emote(el, kind) {
-        const face = { love: 'happy', spin: 'cheer', wink: 'wink', boing: 'cheer', dizzy: 'dizzy' }[kind]
-        const motion = { love: 'm-hop', spin: 'm-spin', wink: 'm-tilt', boing: 'm-boing', dizzy: 'm-wobble' }[kind]
+        const face = { love: 'happy', spin: 'cheer', wink: 'wink', boing: 'cheer', dizzy: 'dizzy', cheer: 'cheer' }[kind]
+        const motion = { love: 'm-hop', spin: 'm-spin', wink: 'm-tilt', boing: 'm-boing', dizzy: 'm-wobble', cheer: 'm-cheer' }[kind]
         clearTimeout(solo.get(el))
         el.dataset.mood = face
-        el.classList.remove('m-hop', 'm-spin', 'm-tilt', 'm-boing', 'm-wobble')
+        el.classList.remove('m-hop', 'm-spin', 'm-tilt', 'm-boing', 'm-wobble', 'm-cheer')
         void el.offsetWidth
         el.classList.add(motion)
         solo.set(el, setTimeout(() => { el.dataset.mood = 'idle' }, kind === 'dizzy' ? 1800 : 1200))
@@ -143,7 +143,11 @@ const mascot = (() => {
         }, 3000 + Math.random() * 3000)
     }
 
-    const current = () => (els[0] ? els[0].dataset.mood : 'idle')
+    // the shared mood (the loading screen's Nine, first on the page, leaves it once loaded)
+    const current = () => {
+        const el = els.find(x => x.isConnected)
+        return el ? el.dataset.mood : 'idle'
+    }
 
     // dress every mascot on the page
     function dress(outfit) {

@@ -1656,7 +1656,7 @@ function maybeStartTour() {
     if (!onboarded() || tourSeen()) return
     // after the screen has settled; never over a sheet or an ad
     setTimeout(() => {
-        if (screen !== 'home' || tourEl.open || paused() || dialog.open || styleSheet.open || platform.adShowing) return
+        if (screen !== 'home' || loader.active || tourEl.open || paused() || dialog.open || styleSheet.open || platform.adShowing) return
         tourStep = 0
         tourEl.showModal()
         showTourStep()
@@ -1893,7 +1893,7 @@ settingsSheet.addEventListener('close', async () => {
 })
 
 document.addEventListener('keydown', ev => {
-    if (ev.metaKey || ev.ctrlKey || ev.altKey) return
+    if (ev.metaKey || ev.ctrlKey || ev.altKey || loader.active) return
     // keep the host page from scrolling when the game runs inside a portal iframe;
     // an open sheet and the journey map still scroll with the arrow keys
     const scrollable = paused() || dialog.open || styleSheet.open || screen !== 'game'
@@ -1982,7 +1982,7 @@ document.querySelectorAll('.nine-poke').forEach(b => b.addEventListener('click',
 // eyes follow the pointer (or the last touch) on the home screen and in Customize
 let lookFrame = 0
 function followPointer(ev) {
-    if (screen !== 'home' && !styleSheet.open) return
+    if (loader.active || (screen !== 'home' && !styleSheet.open)) return // the loading screen's Nine watches its ring
     cancelAnimationFrame(lookFrame)
     lookFrame = requestAnimationFrame(() => mascot.look(ev.clientX, ev.clientY))
 }
@@ -2039,7 +2039,7 @@ else {
     newGame()
 }
 
-platform.init({
+const loaded = platform.init({
     // during an ad: silence the game, freeze the clock and block input (platform.adShowing)
     onAdStarted() {
         sfx.suspend()
@@ -2060,3 +2060,9 @@ platform.init({
     }
     return document.fonts.ready
 }).then(() => platform.loadingFinished())
+
+// the loading screen gives way to the first screen once everything is in, or after a few seconds
+// if the portal's SDK is slow to answer (the game plays without it); the tour waits for it
+Promise.race([loaded, new Promise(resolve => setTimeout(resolve, 8000))])
+    .then(() => loader.finish(screens[screen].querySelector('.mascot')))
+    .then(maybeStartTour)

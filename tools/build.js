@@ -18,7 +18,7 @@ const PORTALS = {
     web: null,
 }
 // everything the page loads (index.html adds the SDK on top)
-const FILES = ['index.html', 'styles.css', 'icon.svg', 'apple-touch-icon.png', 'platform.js', 'i18n.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'mascot.js', 'app.js']
+const FILES = ['index.html', 'styles.css', 'icon.svg', 'apple-touch-icon.png', 'platform.js', 'i18n.js', 'rules.js', 'bot.js', 'meta.js', 'sound.js', 'mascot.js', 'loader.js', 'app.js']
 const DIRS = ['fonts']
 
 const portal = process.argv[2]
@@ -34,18 +34,30 @@ fs.mkdirSync(out, { recursive: true })
 for (const file of FILES) fs.copyFileSync(path.join(ROOT, file), path.join(out, file))
 for (const dir of DIRS) fs.cpSync(path.join(ROOT, dir), path.join(out, dir), { recursive: true })
 
-// Cache busting: every script and stylesheet in index.html gets ?v=<hash of its content>.
+// Cache busting: every script and stylesheet gets ?v=<hash of its content>.
 // Hosts cache files for a while, and a browser that mixes a new index.html with an old
 // app.js or styles.css breaks (new markup, old code). A changed file now has a new URL.
+// loader.js loads the game's scripts itself (its SCRIPTS list), so they are versioned there
+// first; loader.js's own hash then covers those names, and index.html names loader.js.
 function bustCache(indexPath) {
-    let html = fs.readFileSync(indexPath, 'utf8')
-    for (const file of FILES.filter(f => /\.(js|css)$/.test(f))) {
-        const hash = crypto.createHash('sha1').update(fs.readFileSync(path.join(out, file))).digest('hex').slice(0, 8)
-        const before = html
-        html = html.replace(new RegExp(`(src|href)="${file.replace('.', '\\.')}"`, 'g'), `$1="${file}?v=${hash}"`)
-        if (html === before) throw new Error(`index.html: no reference to ${file}, update tools/build.js`)
+    const hash = file => crypto.createHash('sha1').update(fs.readFileSync(path.join(out, file))).digest('hex').slice(0, 8)
+    const version = (target, files) => {
+        let text = fs.readFileSync(target, 'utf8')
+        for (const file of files) {
+            const before = text
+            text = text.replace(new RegExp(`(["'])${file.replace('.', '\\.')}\\1`, 'g'), `$1${file}?v=${hash(file)}$1`)
+            if (text === before) throw new Error(`${path.basename(target)}: no reference to ${file}, update tools/build.js`)
+        }
+        fs.writeFileSync(target, text)
     }
-    fs.writeFileSync(indexPath, html)
+    const loaderPath = path.join(out, 'loader.js')
+    const list = fs.readFileSync(loaderPath, 'utf8').match(/const SCRIPTS = \[([^\]]*)\]/)
+    if (!list) throw new Error('loader.js: SCRIPTS list not found, update tools/build.js')
+    const loaded = [...list[1].matchAll(/'([^']+)'/g)].map(m => m[1])
+    const missing = loaded.filter(f => !FILES.includes(f))
+    if (missing.length) throw new Error(`loader.js loads ${missing.join(', ')}: add to FILES in tools/build.js`)
+    version(loaderPath, loaded)
+    version(indexPath, FILES.filter(f => /\.(js|css)$/.test(f) && !loaded.includes(f)))
 }
 
 if (portal === 'web') {

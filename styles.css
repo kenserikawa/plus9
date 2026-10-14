@@ -1639,6 +1639,52 @@ kbd {
     to { transform: translate(var(--dx), calc(var(--dy) + 120px)) rotate(var(--rot)); opacity: 0; }
 }
 
+/* ---------- loading screen (loader.js) ---------- */
+
+/* Nine stands in the well while the game loads; the ring lights a segment per finished step.
+   On leaving, the background and the well fade while Nine flies to its place on the first
+   screen, so the page underneath appears around it. */
+.loader {
+    --size: min(56vw, 42vh, 220px);
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+}
+.loader::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg) fixed;
+    transition: opacity 450ms ease;
+}
+.loader-well, .mascot-loader { grid-area: 1 / 1; position: relative; }
+.loader-well {
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: var(--ink);
+    transition: opacity 300ms ease, transform 300ms ease;
+}
+.loader .seg.is-on:nth-child(4n + 1) { stroke: var(--tangerine); }
+.loader .seg.is-on:nth-child(4n + 2) { stroke: var(--sky); }
+.loader .seg.is-on:nth-child(4n + 3) { stroke: var(--violet); }
+.loader .seg.is-on:nth-child(4n + 4) { stroke: var(--magenta); }
+/* the same drop shadow as the title's Nine, where it lands on the home screen */
+.mascot-loader {
+    width: calc(var(--size) * 0.4);
+    height: calc(var(--size) * 0.496);
+    filter: drop-shadow(calc(var(--size) * -0.021) calc(var(--size) * 0.03) 0 var(--ink));
+    will-change: transform;
+}
+/* only the background until loader.js has drawn the ring and Nine, then both pop in */
+.loader:not(.is-ready) > * { visibility: hidden; }
+.loader.is-ready > * { animation: pop-in 260ms cubic-bezier(.3, 1.6, .5, 1); }
+.loader.is-leaving { pointer-events: none; }
+.loader.is-leaving::before { opacity: 0; }
+.loader.is-leaving .loader-well { opacity: 0; transform: scale(1.25); }
+
 /* Landscape and short (portal frames are 16:9, e.g. 640×360 to 1031×580, and phones held
    sideways). Game: three columns, the board in the middle as big as the height allows.
    Home: two columns. */

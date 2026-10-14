@@ -29,8 +29,21 @@
     <meta name="twitter:image" content="https://kenserikawa.github.io/plus9/og-image.jpeg">
     <!-- /share-meta -->
     <link rel="stylesheet" href="styles.css">
+    <!-- the loading screen: Nine and the loader, run as soon as the page is parsed. loader.js then
+         loads the game's scripts itself, after its own, so the loading screen shows first on a slow link -->
+    <script src="mascot.js" defer fetchpriority="high"></script>
+    <script src="loader.js" defer fetchpriority="high"></script>
 </head>
 <body data-theme="grape">
+    <!-- the saved theme before the first paint, so the loading screen shows it (applyTheme checks it again) -->
+    <script>try { document.body.dataset.theme = JSON.parse(localStorage.getItem('plus9.theme')) || 'grape' } catch { /* storage unavailable */ }</script>
+
+    <!-- loading screen (loader.js): Nine in the well while the game loads, then it flies to its place -->
+    <div class="loader" id="loader" role="progressbar" aria-label="Plus 9" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0">
+        <div class="loader-well"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
+        <span class="mascot mascot-loader" aria-hidden="true"></span>
+    </div>
+
     <!-- reusable icons -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
         <symbol id="i-sound-on" viewBox="0 0 24 24">
@@ -310,14 +323,5 @@
             <button class="btn" id="tour-next" type="button">Next</button>
         </div>
     </dialog>
-
-    <script src="platform.js"></script>
-    <script src="i18n.js"></script>
-    <script src="rules.js"></script>
-    <script src="bot.js"></script>
-    <script src="meta.js"></script>
-    <script src="sound.js"></script>
-    <script src="mascot.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>

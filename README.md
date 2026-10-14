@@ -50,6 +50,7 @@ platform.js     web-portal adapter (Poki, later CrazyGames)
 i18n.js         translations
 sound.js        synthesised sound effects, music and vibration
 mascot.js       Nine the mascot and confetti
+loader.js       loading screen: Nine fills the ring while the game loads
 styles.css      look and layout (portrait and 16:9 landscape)
 fonts/          bundled fonts and their licences
 tools/          balance and journey simulators, portal build

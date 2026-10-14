@@ -1360,6 +1360,22 @@ kbd {
 .daily-par.is-beaten { color: #b88600; }
 
 .sheet-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+/* result sheet: two choices take half the row each; when one label doesn't fit in half
+   (de: Wiederholen + Karte) they stack, each the whole row, so they always match. 🎬 sits on
+   its own row below at its own size: Poki asks that it is never larger than the standard choices */
+.over .sheet-actions .btn { flex: 1 1 calc(50% - 6px); white-space: nowrap; }
+#over-reward { width: fit-content; margin: 12px auto 0; }
+/* short landscape frames: a wider sheet, compact buttons and 🎬 beside them (still after them),
+   so the result fits without scrolling and 🎬 is never below the fold */
+@media (min-aspect-ratio: 4/3) and (max-height: 640px) {
+    .over { width: min(560px, calc(100vw - 32px)); padding: 18px 20px 20px; }
+    .over .sheet-title { font-size: 2.2rem; }
+    .over .btn { font-size: 1.3rem; padding: 6px 22px; }
+    #over[open] { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; }
+    #over > * { grid-column: 1 / -1; }
+    #over > .sheet-actions { grid-column: 1; }
+    #over > #over-reward { grid-column: 2; align-self: center; margin: 0; }
+}
 .btn.btn-quiet { color: var(--ink); background: var(--paper); }
 .btn[hidden] { display: none; }
 

@@ -557,8 +557,8 @@ function finishJourney(won, reason) {
             ? { label: tr('res.next'), action: () => startGame('journey', n + 1) }
             : { label: tr('res.retry'), action: () => startGame('journey', n) },
         secondary: won
-            ? { label: tr(stars < 3 ? 'res.retry' : 'res.map'), action: stars < 3 ? () => startGame('journey', n) : openMap }
-            : { label: tr('res.map'), action: openMap },
+            ? { label: tr(stars < 3 ? 'res.retry' : 'res.map'), action: stars < 3 ? () => startGame('journey', n) : () => openMap(n) }
+            : { label: tr('res.map'), action: () => openMap(n) },
         // 🎬 doubles only stars that are new, so replaying a finished level can't farm them
         reward: gained > 0 && platform.hasRewarded ? { label: tr('res.doubleStars', { n: gained }), aria: tr('aria.doubleStars', { n: gained }), action: () => doubleStars(gained) } : null,
     })
@@ -614,8 +614,11 @@ function starReason(stars) {
     return tr('res.scoreFor', { n: journeyGoals[stars], stars: '★'.repeat(stars + 1) })
 }
 
-function openMap() {
+// centred on level n when coming back from it, else (renderMap) on the next level to play
+function openMap(n = null) {
     showScreen('map')
+    const node = n && $('route').querySelectorAll('.node')[n - 1]
+    if (node) node.scrollIntoView({ block: 'center' })
 }
 
 
@@ -692,12 +695,13 @@ async function startGame(m, n = 1) {
     }
     // the player chose to play: a natural moment for the portal to show an ad first
     await platform.commercialBreak()
+    renderBackButton()
     showScreen('game')
     newGame()
 }
 
-function goHome() {
-    // leaving abandons the game: keep a Classic/60 s record, the daily keeps its own progress
+// leaving abandons the game: keep a Classic/60 s record, the daily keeps its own progress
+function leaveGame() {
     if (playing && mode !== 'daily' && mode !== 'journey' && score > best) saveBest(score)
     platform.gameplayStop()
     stopClock()
@@ -706,7 +710,28 @@ function goHome() {
     hideCoach()
     helpFromSettings = false // closing help here must not reopen the pause menu
     for (const d of [dialog, help, settingsSheet]) if (d.open) d.close()
+}
+
+function goHome() {
+    leaveGame()
     showScreen('home')
+}
+
+// the journey's way back: the map, at the level being left
+function goMap() {
+    const n = journeyDef.n
+    leaveGame()
+    openMap(n)
+}
+
+// the game bar's first button and the pause menu's last one lead home, or in the journey back to the map
+const goBack = () => (mode === 'journey' ? goMap() : goHome())
+
+function renderBackButton() {
+    const toMap = mode === 'journey'
+    const b = $('game-home')
+    b.setAttribute('aria-label', tr(toMap ? 'nav.map' : 'nav.home'))
+    b.querySelector('use').setAttribute('href', toMap ? '#i-back' : '#i-home')
 }
 
 function newGame() {
@@ -1737,6 +1762,7 @@ function renderSheetLabels() {
     $('settings-title').textContent = tr(inGame ? 'nav.pause' : 'nav.settings')
     $('settings-close').textContent = tr(inGame ? 'help.resume' : 'help.done')
     $('settings-home').hidden = !inGame
+    $('settings-home').textContent = tr(mode === 'journey' ? 'res.map' : 'nav.home')
     $('help-close').textContent = tr(helpFromSettings ? 'help.back' : 'help.gotIt')
 }
 
@@ -1826,7 +1852,8 @@ $('go-journey').addEventListener('click', () => {
 document.querySelectorAll('[data-start]').forEach(b => b.addEventListener('click', () => startGame(b.dataset.start)))
 document.querySelectorAll('.home-btn').forEach(b => b.addEventListener('click', () => {
     sfx.ui()
-    goHome()
+    if (screen === 'game') goBack()
+    else goHome()
 }))
 document.querySelectorAll('.help-btn').forEach(b => b.addEventListener('click', openHelp))
 document.querySelectorAll('.pause-btn, .settings-btn').forEach(b => b.addEventListener('click', openSettings))
@@ -1851,7 +1878,7 @@ addEventListener('resize', () => { if (tourEl.open) placeTour() })
 $('help-close').addEventListener('click', () => help.close())
 $('settings-close').addEventListener('click', () => settingsSheet.close())
 $('settings-help').addEventListener('click', openHelp)
-$('settings-home').addEventListener('click', goHome)
+$('settings-home').addEventListener('click', goBack)
 help.addEventListener('close', () => {
     if (!helpFromSettings) return
     helpFromSettings = false
@@ -1975,6 +2002,7 @@ function relocalize() {
     if (screen === 'map') renderMap()
     if (styleSheet.open) renderStyle()
     if (screen === 'game' && next) {
+        renderBackButton()
         $('game-title').textContent = gameTitle()
         tiles.forEach(renderTile)
         render()

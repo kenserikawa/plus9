@@ -1,5 +1,6 @@
 // Picks a board seed for every journey level so difficulty follows a smooth curve.
-// Run with: node tools/journey.js   (prints JOURNEY_SEEDS for rules.js)
+// Run with: node tools/journey.js [levels]   (prints JOURNEY_SEEDS for rules.js; default 80)
+// It is deterministic: a longer run prints the same seeds for the levels it shares.
 //
 // Fixed boards vary a lot: two seeds of the same level can be won by 90% or 10% of typical
 // players. For each level this tries candidate seeds, estimates how many "normal" simulated
@@ -8,7 +9,7 @@
 const R = require('../rules.js')
 const B = require('../bot.js')
 
-const LEVELS = 80
+const LEVELS = +process.argv[2] || 80
 const CANDIDATES = 40
 const RUNS = 150
 // share of typical players who should finish level n; a world's boss is a notch harder

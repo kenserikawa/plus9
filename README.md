@@ -18,7 +18,7 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 - **Classic**: play as long as you can; the target grows every 4 sums. Sums in a row go into a **pot**, the k-th worth k times its points (up to ×5): cash it in to keep it, or push your luck, because getting stuck loses the pot.
 - **60 seconds**: race the clock; every sum adds 2 seconds.
 
-Three **daily missions** give extra stars. In **Customize** you pick the theme (colors and music) of any world you have reached and dress Nine: one outfit per world, plus a cap, a scarf and a crown bought with stars.
+Three **daily missions** give extra stars. In **Customize** you pick the theme (colors and music) of any world you have reached and dress Nine: one outfit per world, plus a cap, a scarf and a crown bought with stars. Stars also unlock six colors for Nine (mint, sky, coral, lilac, chrome and rainbow) and four themes with their own music: Lo-fi, Jazz, Arcade and Fiesta. The home screen shows the next reward.
 
 ### Controls
 

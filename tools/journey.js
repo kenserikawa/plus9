@@ -10,7 +10,9 @@ const R = require('../rules.js')
 const B = require('../bot.js')
 
 const LEVELS = +process.argv[2] || 80
-const CANDIDATES = 40
+// levels 81+ (one difficulty, see JOURNEY_PEAK_TIER) try more boards: their long levels and bosses
+// are rarely close to the goal; 1–80 keep 40 so their seeds never change
+const candidatesFor = n => (n <= 80 ? 40 : 160)
 const RUNS = 150
 // share of typical players who should finish level n; a world's boss is a notch harder
 const winGoal = n => (R.isBoss(n)
@@ -32,7 +34,7 @@ for (let n = 1; n <= LEVELS; n++) {
     const def = R.journeyLevel(n)
     const goal = winGoal(n)
     let best = null
-    for (let k = 0; k < CANDIDATES; k++) {
+    for (let k = 0; k < candidatesFor(n); k++) {
         const seed = R.hashSeed(`journey:${n}:${k}`)
         const rate = winRate(def, seed)
         const miss = Math.abs(rate - goal)

@@ -115,9 +115,10 @@ function createRng(seed) {
 
 // ---------- journey ----------
 
-// Board seeds for journey levels 1–80, chosen by tools/journey.js so the share of typical
+// Board seeds for journey levels 1–200, chosen by tools/journey.js so the share of typical
 // players who finish falls smoothly from 95% (level 1) to 40% (bosses a notch lower, down to
-// 33%). Past 80, seeds are unchecked.
+// 33%), then stays there (levels 81+ share one difficulty, see JOURNEY_PEAK_TIER).
+// Past the last one, levels reuse the seeds from 81 on in a cycle (journeySeedIndex).
 const JOURNEY_SEEDS = [
     -379896306, 180182684, -2121801329, 573878263, -1846710963, -534442939,
     1321658012, 505803635, -1763492830, 595326767, 1884198763, -745356091,
@@ -132,8 +133,37 @@ const JOURNEY_SEEDS = [
     -24605530, 105828790, 652400382, 1069961922, -1675282448, -1495353914,
     546800346, -1540375965, -1791665936, -1347920353, -1252477915, -1148025569,
     -470205028, -2068712347, -1918348772, 285086755, -1391042929, -672549404,
-    1415370038, 1861286507,
+    1415370038, 1861286507, 1589360650, 1775404800, -273702781, -53268090,
+    1678163747, -1573197640, 254886390, 1171393206, -878661379, -2145248061,
+    2084111347, -383246234, 124797594, 986689724, -1019458697, -462534904,
+    516208599, 1822984359, 1654721814, 1738273266, 126655468, -19864923,
+    2052147119, 1881815843, 1741701132, -1822673245, 1136947407, 1136429116,
+    1727816586, 607234011, 58222820, -1464426180, 1255619634, -1970869198,
+    1524291208, 320177500, 48006076, 1181939246, -695324131, 119043506,
+    -2104041190, 879086691, -1621233959, -1915395671, -1451056813, 1787597864,
+    -1882132534, 420797867, -2044597918, -125482081, -502084385, 2093864683,
+    -668374744, 1836230764, -1007274752, -1464580683, -339837073, 2034920754,
+    1802530653, 1257918469, 1444999032, -1859782108, -1754013868, -1841158768,
+    -1115403251, -2060673823, -1047178850, -1166298246, -277842561, 841291144,
+    1379818879, 649103135, -1350632928, 1807221555, 1831933594, -1342155471,
+    492453587, 1321013534, -1626882934, 663401218, 2116695492, -535089204,
+    -814913154, -1418675098, 956292498, 1327934008, -1406816944, -468054434,
+    15738384, -1104548250, -62229316, -1570930440, 975152286, -1903120732,
+    -263629328, -1939946282, 441120123, 1093811, 1012021317, 485856307,
+    913034850, 1135622077, -139460121, 1321529716, 258167170, 1324942325,
+    2037598032, -289966632, 1463266215, 1970012173, 1011439570, 584622549,
+    447202758, -1216853902, -1129957948, 900396404, -1686836179, -1181830510,
+    561035276, 888529427,
 ]
+
+// Past the last seed, level n reuses one from 81 on: the cycle is a multiple of 10 levels, so
+// the reused level sits at the same place in its world (same sums, boss and frozen tiles).
+const JOURNEY_CYCLE_START = 81
+function journeySeedIndex(n) {
+    if (n <= JOURNEY_SEEDS.length) return n - 1
+    const cycle = Math.floor((JOURNEY_SEEDS.length - JOURNEY_CYCLE_START + 1) / 10) * 10
+    return JOURNEY_CYCLE_START - 1 + ((n - JOURNEY_CYCLE_START) % cycle)
+}
 
 // The journey is split into worlds of WORLD_SIZE levels. Reaching a world unlocks its theme
 // (background and music); finishing it (its last level is a boss) gives Nine an accessory.
@@ -153,21 +183,27 @@ const WORLDS = [
 const worldOf = n => Math.min(Math.floor((n - 1) / WORLD_SIZE), WORLDS.length - 1)
 const isBoss = n => n % WORLD_SIZE === 0
 
+// The journey's numbers stop growing after level 80 (tier 15, target 38): to finish a sum a
+// tile must be exactly what is missing, and the bigger the target the less likely that is, so
+// past here a bigger target only adds luck. The rest keeps cycling (sums, bosses, ice).
+const JOURNEY_PEAK_TIER = 15
+
 // Level n (1-based) is a fixed, seeded board: make the target `sums` times at a fixed
-// difficulty. Difficulty rises every 5 levels; within a tier the number of sums grows.
+// difficulty. Difficulty rises every 5 levels up to JOURNEY_PEAK_TIER; within a tier the
+// number of sums grows.
 // Levels 1–4 teach the basics (level 1 starts from a hand-picked board). Special tiles
 // appear from level 6, which hands out a wild tile; level 7 hands out a ×2 tile and level 8
 // a rainbow tile. From level 11, some levels start with frozen tiles; level 11 introduces
 // them. The last level of each world is a boss: 8 sums, and three frozen tiles from level 20.
 // `setup` changes tiles after the deal: { index, special } or { index, ice }.
 function journeyLevel(n) {
-    const tier = Math.floor((n - 1) / 5)
+    const tier = Math.min(Math.floor((n - 1) / 5), JOURNEY_PEAK_TIER)
     const level = {
         n,
         lv: tier,
         target: targetFor(tier),
         sums: isBoss(n) ? 8 : 3 + ((n - 1) % 5),
-        seed: n <= JOURNEY_SEEDS.length ? JOURNEY_SEEDS[n - 1] : hashSeed(`journey:${n}`),
+        seed: JOURNEY_SEEDS[journeySeedIndex(n)],
         initial: null,
         specials: n >= 6,
         setup: [],

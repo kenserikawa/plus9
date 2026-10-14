@@ -1617,7 +1617,7 @@ function renderStyle() {
         const b = document.createElement('button')
         b.type = 'button'
         b.className = `theme-chip theme-${t.id}`
-        const locked = !meta.worldReached(t.world)
+        const locked = !meta.themeUnlocked(t)
         b.disabled = locked
         b.setAttribute('aria-pressed', t.id === current)
         b.innerHTML = `<span class="theme-swatch" aria-hidden="true"></span><span class="theme-name"></span>`

@@ -1,5 +1,5 @@
-// Progress that lives outside a single game: journey stars, daily missions, the star wallet
-// and the color themes they unlock. Plain data on top of localStorage (always try/catch).
+// Progress that lives outside a single game: journey stars, daily missions, the star wallet,
+// and what it unlocks: themes, Nine's wardrobe and colors. Plain data on top of localStorage (always try/catch).
 
 const meta = (() => {
     const load = (key, fallback) => {
@@ -103,19 +103,28 @@ const meta = (() => {
     }
 
     // ---------- worlds, themes and Nine's wardrobe ----------
-    // Themes are the journey's worlds (WORLDS in rules.js): a world's theme (background and
-    // music) unlocks when the player reaches it. Names are in i18n.js as theme.<id>.
-    const THEMES = WORLDS.map((w, i) => ({ id: w.id, world: i }))
+    // Themes: one per journey world (WORLDS in rules.js), unlocked when the player reaches it,
+    // then four bought with total stars, each with its own background and music.
+    // Names are in i18n.js as theme.<id>.
+    const THEMES = [
+        ...WORLDS.map((w, i) => ({ id: w.id, world: i })),
+        { id: 'lofi', stars: 20 },
+        { id: 'jazz', stars: 50 },
+        { id: 'arcade', stars: 90 },
+        { id: 'fiesta', stars: 130 },
+    ]
 
     // a world is reached once the previous world's boss has a star
     const worldReached = w => journeyFrontier() > w * WORLD_SIZE
     // a world is complete once its boss has a star
     const worldComplete = w => journeyStarsOf((w + 1) * WORLD_SIZE) > 0
 
+    const themeUnlocked = t => (t.world !== undefined ? worldReached(t.world) : totalStars() >= t.stars)
+
     function theme() {
         const id = load('plus9.theme', 'grape')
         const t = THEMES.find(x => x.id === id)
-        return t && worldReached(t.world) ? t.id : 'grape'
+        return t && themeUnlocked(t) ? t.id : 'grape'
     }
 
     const setTheme = id => save('plus9.theme', id)
@@ -165,9 +174,65 @@ const meta = (() => {
         save('plus9.outfit', { ...outfit(), [item.slot]: id })
     }
 
+    // ---------- Nine's colors and the star ladder ----------
+    // Rewards for total stars are thresholds: stars are never spent. Nine's colors: gold is
+    // the default, the rest unlock with stars (names in i18n.js as nine.<id>); chrome and
+    // rainbow are gradients (styles.css [data-nine]).
+    const NINE_COLORS = [
+        { id: 'gold', stars: 0 },
+        { id: 'mint', stars: 10 },
+        { id: 'sky', stars: 25 },
+        { id: 'coral', stars: 45 },
+        { id: 'violet', stars: 70 },
+        { id: 'chrome', stars: 110 },
+        { id: 'rainbow', stars: 150 },
+    ]
+    const colorUnlocked = c => totalStars() >= c.stars
+
+    function nineColor() {
+        const id = load('plus9.nineColor', 'gold')
+        const c = NINE_COLORS.find(x => x.id === id)
+        return c && colorUnlocked(c) ? c.id : 'gold'
+    }
+
+    const setNineColor = id => save('plus9.nineColor', id)
+
+    // every star-priced reward: wardrobe star items, colors and star themes
+    const starRewards = () => [
+        ...WARDROBE.filter(i => i.stars !== undefined).map(i => ({ kind: 'item', id: i.id, stars: i.stars })),
+        ...NINE_COLORS.filter(c => c.stars > 0).map(c => ({ kind: 'color', id: c.id, stars: c.stars })),
+        ...THEMES.filter(t => t.stars !== undefined).map(t => ({ kind: 'theme', id: t.id, stars: t.stars })),
+    ]
+
+    // the cheapest one still locked, for the home card; null when all are unlocked
+    function nextReward() {
+        const have = totalStars()
+        return starRewards().filter(r => r.stars > have).sort((a, b) => a.stars - b.stars)[0] || null
+    }
+
+    // everything unlocked now, as 'kind:id' (wardrobe items, colors past gold, themes)
+    const unlockedRewards = () => [
+        ...WARDROBE.filter(itemUnlocked).map(i => `item:${i.id}`),
+        ...NINE_COLORS.filter(c => c.stars > 0 && colorUnlocked(c)).map(c => `color:${c.id}`),
+        ...THEMES.filter(themeUnlocked).map(t => `theme:${t.id}`),
+    ]
+
+    // what the player has seen in Customize (null before the first record: app.js records the
+    // current unlocks at boot, so an old save doesn't show New! for things it already had)
+    const seenUnlocks = () => load('plus9.seenUnlocks', null)
+    const markUnlocksSeen = () => save('plus9.seenUnlocks', unlockedRewards())
+    const hasUnseenUnlocks = () => {
+        const seen = seenUnlocks() || []
+        return unlockedRewards().some(id => !seen.includes(id))
+    }
+
     return {
         dayKey, journeyRecord, journeyStarsOf, journeyStarTotal, journeyFrontier,
         todaysMissions, missionEvent, missionList, addBonusStars, totalStars, THEMES, theme, setTheme,
         worldReached, worldComplete, WARDROBE, itemUnlocked, outfit, toggleItem, wear,
+        themeUnlocked, NINE_COLORS, colorUnlocked, nineColor, setNineColor, nextReward, unlockedRewards,
+        seenUnlocks, markUnlocksSeen, hasUnseenUnlocks,
     }
 })()
+
+if (typeof module !== 'undefined') module.exports = { meta }

@@ -1142,15 +1142,46 @@ function floatText(anchor, text, cls = '') {
     el.addEventListener('animationend', () => el.remove())
 }
 
-let toastTimer = null
+// Toasts queue up, so two in a row (a mission and an unlock) are both read, and each shows as a
+// popover in the top layer: above any sheet open at the time, and raised again when one opens
+// (a journey win's unlock toast comes just before its result sheet). Without popover support
+// it is a plain fixed element, as before.
+const toastQueue = []
+let toastShowing = false
+
 function toast(text) {
+    toastQueue.push(text)
+    if (!toastShowing) nextToast()
+}
+
+function nextToast() {
     const el = $('toast')
+    const text = toastQueue.shift()
+    if (text === undefined) {
+        toastShowing = false
+        return
+    }
+    toastShowing = true
     el.textContent = text
     el.hidden = false
+    raiseToast()
     bump(el, 'pop-in')
-    clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => { el.hidden = true }, 2800)
+    setTimeout(() => {
+        el.hidden = true
+        if (el.hidePopover && el.matches(':popover-open')) el.hidePopover()
+        setTimeout(nextToast, 250)
+    }, 2800)
 }
+
+function raiseToast() {
+    const el = $('toast')
+    if (!el.showPopover || el.hidden) return
+    if (el.matches(':popover-open')) el.hidePopover()
+    el.showPopover()
+}
+
+// a sheet opening while a toast shows would cover it
+new MutationObserver(raiseToast).observe(document.body, { subtree: true, attributeFilter: ['open'] })
 
 // completed missions earn a star
 function celebrate(completed) {

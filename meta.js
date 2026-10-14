@@ -221,9 +221,11 @@ const meta = (() => {
     // current unlocks at boot, so an old save doesn't show New! for things it already had)
     const seenUnlocks = () => load('plus9.seenUnlocks', null)
     const markUnlocksSeen = () => save('plus9.seenUnlocks', unlockedRewards())
+    // no usable record (storage failing, or edited) means nothing is shown as new: the dot
+    // could never be cleared
     const hasUnseenUnlocks = () => {
-        const seen = seenUnlocks() || []
-        return unlockedRewards().some(id => !seen.includes(id))
+        const seen = seenUnlocks()
+        return Array.isArray(seen) && unlockedRewards().some(id => !seen.includes(id))
     }
 
     return {

@@ -420,7 +420,7 @@ body {
 .color-chip:disabled { cursor: default; }
 .color-chip:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; border-radius: 12px; }
 .nine-swatch { width: 38px; height: 38px; border: 3px solid var(--ink); border-radius: 50%; box-shadow: -2px 3px 0 var(--ink); }
-.color-chip[aria-pressed="true"] .nine-swatch { outline: 4px solid var(--gold); outline-offset: 2px; }
+.color-chip[aria-pressed="true"] .nine-swatch { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 3px var(--gold), -2px 3px 0 var(--ink); }
 .color-chip:disabled .nine-swatch { filter: grayscale(1); opacity: 0.5; }
 .nine-gold { background: var(--gold); }
 .nine-mint { background: #5fe08a; }
@@ -611,8 +611,8 @@ body {
 
 .toast {
     position: fixed;
-    top: 12px;
-    left: 50%;
+    inset: 12px auto auto 50%; /* also undoes the popover's centring */
+    overflow: visible;
     z-index: 30;
     width: max-content;
     max-width: calc(100vw - 32px);

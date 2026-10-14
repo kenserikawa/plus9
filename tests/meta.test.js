@@ -68,3 +68,16 @@ test('old saves see nothing new until something unlocks after the update', () =>
     meta.markUnlocksSeen()
     assert.equal(meta.hasUnseenUnlocks(), false)
 })
+
+test('the New! dot never sticks when storage fails or holds something odd', () => {
+    store.set('plus9.seenUnlocks', JSON.stringify({ not: 'an array' }))
+    assert.doesNotThrow(() => meta.hasUnseenUnlocks())
+    assert.equal(meta.hasUnseenUnlocks(), false)
+    const real = globalThis.localStorage
+    globalThis.localStorage = { getItem: () => { throw new Error('blocked') }, setItem: () => { throw new Error('blocked') } }
+    try {
+        assert.equal(meta.hasUnseenUnlocks(), false, 'no record can be kept, so nothing is shown as new')
+    } finally {
+        globalThis.localStorage = real
+    }
+})

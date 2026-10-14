@@ -12,12 +12,12 @@ Drag number tiles into the centre to hit the target exactly. Chain sums, build a
 **Description:**
 Plus 9 is a bright, quick number puzzle. Drag or tap tiles into the centre until they add up to the target, exactly. Use more tiles in one sum for more points, match colors for double points, and plan ahead: every tile you play is replaced by the next one.
 
-- **Journey:** 80 hand-tuned levels across 8 worlds, each with a boss. Earn up to 3 stars per level and win outfits for Nine, the mascot.
+- **Journey:** 100 hand-tuned levels across 10 worlds, each with a boss. Earn up to 3 stars per level and win outfits for Nine, the mascot.
 - **Classic:** an endless game where the target keeps growing. Sums in a row multiply, up to ×5, into a pot. Cash it in, or push your luck: get stuck and the pot is gone!
 - **Daily:** the same board for everyone each day. Beat the par and keep your streak.
 - **60 seconds:** a race against the clock.
 
-Special tiles shake things up: ★ wild tiles finish any sum, ×2 tiles double the points, rainbow tiles match every color and frozen tiles block your way.
+Special tiles shake things up: ★ wild tiles finish any sum, ×2 tiles double the points, rainbow tiles match every color, frozen tiles block your way, and in the last worlds minus tiles take away and couplers add onto other tiles.
 
 **Controls:**
 - Mouse / touch: drag a tile into the centre, or tap it.
@@ -33,12 +33,12 @@ Arrastra fichas de números al centro hasta dar con el número exacto. Encadena 
 **Descripción:**
 Plus 9 es un puzle de números rápido y colorido. Arrastra o toca fichas hacia el centro hasta que sumen el objetivo, ni uno más ni uno menos. Cuantas más fichas uses en una suma, más puntos; si son todas del mismo color, el doble. Y planea: cada ficha que juegas se sustituye por la siguiente.
 
-- **Viaje:** 80 niveles en 8 mundos, cada uno con su jefe. Gana hasta 3 estrellas por nivel y ropa para Nine, la mascota.
+- **Viaje:** 100 niveles en 10 mundos, cada uno con su jefe. Gana hasta 3 estrellas por nivel y ropa para Nine, la mascota.
 - **Clásico:** una partida sin fin en la que el objetivo no para de crecer. Las sumas seguidas se multiplican, hasta ×5, en un bote. Cóbralo o arriésgate: si te atascas, ¡lo pierdes!
 - **Diario:** el mismo tablero para todos cada día. Supera el par y mantén tu racha.
 - **60 segundos:** una carrera contra el reloj.
 
-Las fichas especiales lo cambian todo: el comodín ★ cierra cualquier suma, la ficha ×2 duplica los puntos, la ficha arcoíris vale para cualquier color y las fichas congeladas te cortan el paso.
+Las fichas especiales lo cambian todo: el comodín ★ cierra cualquier suma, la ficha ×2 duplica los puntos, la ficha arcoíris vale para cualquier color, las fichas congeladas te cortan el paso y, en los últimos mundos, las fichas que restan quitan y las fichas acople se suman a otras fichas.
 
 **Controles:**
 - Ratón / táctil: arrastra una ficha al centro o tócala.

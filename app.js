@@ -628,7 +628,7 @@ function finishJourney(won, reason) {
         mascot.mood('sad', { hold: true })
     }
     render()
-    announceNewItems(prize && prize.item)
+    announceUnlocks(prize && prize.item)
     showResult({
         title: tr(prize ? 'res.worldDone' : won ? (stars === 3 ? 'res.perfect' : 'res.complete') : 'res.tryAgain'),
         prize,
@@ -664,17 +664,20 @@ function completeWorld(w) {
     return { item, next: next && next.id }
 }
 
-const unlockedItems = () => meta.WARDROBE.filter(meta.itemUnlocked).map(i => i.id)
-let knownItems = null // items already unlocked when last checked; set at boot
+let knownRewards = null // rewards already unlocked when last checked ('kind:id'); set at boot
 
-// toast items unlocked since the last check (`except` is announced by the result sheet)
-function announceNewItems(except = null) {
-    const now = unlockedItems()
-    for (const id of now) {
-        if (knownItems.includes(id) || id === except) continue
-        toast(tr('toast.item', { item: tr(`item.${id}`) }))
+// toast what unlocked since the last check: wardrobe items, colors, star themes (a world's
+// theme comes with its prize card); `except` is the item the result sheet announces itself
+function announceUnlocks(except = null) {
+    const now = meta.unlockedRewards()
+    for (const key of now) {
+        if (knownRewards.includes(key) || key === `item:${except}`) continue
+        const [kind, id] = key.split(':')
+        if (kind === 'item') toast(tr('toast.item', { item: tr(`item.${id}`) }))
+        if (kind === 'color') toast(tr('toast.color', { name: tr(`nine.${id}`) }))
+        if (kind === 'theme' && meta.THEMES.find(t => t.id === id).stars) toast(tr('toast.theme', { name: tr(`theme.${id}`) }))
     }
-    knownItems = now
+    knownRewards = now
 }
 
 async function doubleStars(n) {
@@ -686,7 +689,7 @@ async function doubleStars(n) {
     if (watched) {
         meta.addBonusStars(n)
         toast(tr('toast.bonusStars', { n }))
-        announceNewItems()
+        announceUnlocks()
         sfx.bank()
         mascot.mood('cheer', { hold: true })
         confetti(innerWidth / 2, innerHeight * 0.35, 20 + n * 15)
@@ -1156,7 +1159,7 @@ function celebrate(completed) {
         sfx.bank()
     }
     // a mission star can push the total past a wardrobe item's price
-    if (completed.length) setTimeout(() => announceNewItems(), 1500)
+    if (completed.length) setTimeout(() => announceUnlocks(), 1500)
 }
 
 // ---------- result sheet ----------
@@ -1544,6 +1547,9 @@ function showScreen(name) {
     if (hadFocus) screens[name].querySelector('h1').focus({ preventScroll: true })
 }
 
+// a reward's name: a wardrobe item, a color for Nine or a theme
+const rewardName = r => tr(`${r.kind === 'color' ? 'nine' : r.kind}.${r.id}`)
+
 function renderHome() {
     const frontier = meta.journeyFrontier()
     $('journey-sub').textContent = frontier === 1 ? tr('home.start')
@@ -1576,6 +1582,10 @@ function renderHome() {
         return li
     }))
 
+    // the Customize card: the next star reward, and a dot while something new is unseen
+    const next = meta.nextReward()
+    $('customize-sub').textContent = next ? tr('style.next', { name: rewardName(next), n: next.stars }) : tr('style.sub')
+    $('go-style').classList.toggle('is-new', meta.hasUnseenUnlocks())
 }
 
 // ---------- customize: Nine's wardrobe and the themes ----------
@@ -1583,6 +1593,7 @@ function renderHome() {
 const styleSheet = $('style')
 
 function openStyle() {
+    meta.markUnlocksSeen()
     sfx.ui()
     renderStyle()
     styleSheet.showModal()
@@ -1644,8 +1655,10 @@ function renderStyle() {
         b.setAttribute('aria-pressed', t.id === current)
         b.innerHTML = `<span class="theme-swatch" aria-hidden="true"></span><span class="theme-name"></span>`
         const name = tr(`theme.${t.id}`)
-        b.querySelector('.theme-name').textContent = locked ? tr('world.short', { n: t.world + 1 }) : name
-        b.setAttribute('aria-label', locked ? tr('theme.lockedWorld', { name, n: t.world + 1 }) : tr('theme.aria', { name }))
+        const lockText = t.world !== undefined ? tr('world.short', { n: t.world + 1 }) : tr('item.lockStars', { n: t.stars })
+        const lockAria = t.world !== undefined ? tr('theme.lockedWorld', { name, n: t.world + 1 }) : tr('reward.locked', { name, n: t.stars })
+        b.querySelector('.theme-name').textContent = locked ? lockText : name
+        b.setAttribute('aria-label', locked ? lockAria : tr('theme.aria', { name }))
         b.addEventListener('click', () => {
             meta.setTheme(t.id)
             applyTheme()
@@ -2203,7 +2216,8 @@ applyTheme()
 applyNineColor()
 mascot.mount()
 mascot.dress(meta.outfit())
-knownItems = unlockedItems()
+knownRewards = meta.unlockedRewards()
+if (!meta.seenUnlocks()) meta.markUnlocksSeen() // an old save: what it already has isn't news
 buildTiles()
 renderSound()
 renderShapes()

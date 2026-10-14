@@ -82,6 +82,8 @@ const i18n = (() => {
             'style.wardrobe': "Nine's wardrobe",
             'nine.gold': "Gold", 'nine.mint': "Mint", 'nine.sky': "Sky", 'nine.coral': "Coral", 'nine.violet': "Lilac", 'nine.chrome': "Chrome", 'nine.rainbow': "Rainbow",
             'style.colors': "Nine's color", 'reward.locked': "{name}, unlocks at {n} stars",
+            'style.next': "Next: {name} · {n} ★", 'toast.color': "New color for Nine: {name}!", 'toast.theme': "New theme: {name}!",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Themes",
             'item.party': "Party hat",
             'item.shades': "Sunglasses",
@@ -133,7 +135,7 @@ const i18n = (() => {
             'help.back': "Back",
             'help.effects': "Effects",
             'help.effectsOn': "On",
-            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off", 'tour.title': "Tips", 'tour.journey': "Your journey: 100 levels in 10 worlds. Carry on from here.", 'tour.modes': "More ways to play: a new board every day, Classic with streaks up to ×5, and a 60-second race.", 'tour.missions': "Three missions a day give stars. Spend them on outfits for Nine in Customize.", 'tour.next': "Next", 'tour.skip': "Skip", 'tour.done': "Let’s play!",
+            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off", 'tour.title': "Tips", 'tour.journey': "Your journey: 100 levels in 10 worlds. Carry on from here.", 'tour.modes': "More ways to play: a new board every day, Classic with streaks up to ×5, and a 60-second race.", 'tour.missions': "Three missions a day give stars. Stars unlock outfits, colors and themes for Nine in Customize.", 'tour.next': "Next", 'tour.skip': "Skip", 'tour.done': "Let’s play!",
         },
 
         es: {
@@ -208,6 +210,8 @@ const i18n = (() => {
             'style.wardrobe': "El armario de Nine",
             'nine.gold': "Oro", 'nine.mint': "Menta", 'nine.sky': "Cielo", 'nine.coral': "Coral", 'nine.violet': "Lila", 'nine.chrome': "Cromo", 'nine.rainbow': "Arcoíris",
             'style.colors': "Color de Nine", 'reward.locked': "{name}, se desbloquea con {n} estrellas",
+            'style.next': "Siguiente: {name} · {n} ★", 'toast.color': "¡Nuevo color para Nine: {name}!", 'toast.theme': "¡Nuevo tema: {name}!",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Temas",
             'item.party': "Gorro de fiesta",
             'item.shades': "Gafas de sol",
@@ -259,7 +263,7 @@ const i18n = (() => {
             'help.back': "Volver",
             'help.effects': "Efectos",
             'help.effectsOn': "Sí",
-            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No", 'tour.title': "Consejos", 'tour.journey': "Tu viaje: 100 niveles en 10 mundos. Sigue desde aquí.", 'tour.modes': "Más formas de jugar: un tablero nuevo cada día, Clásico con rachas de hasta ×5 y una carrera de 60 segundos.", 'tour.missions': "Tres misiones al día dan estrellas. Gástalas en ropa para Nine en Personalizar.", 'tour.next': "Siguiente", 'tour.skip': "Saltar", 'tour.done': "¡A jugar!",
+            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No", 'tour.title': "Consejos", 'tour.journey': "Tu viaje: 100 niveles en 10 mundos. Sigue desde aquí.", 'tour.modes': "Más formas de jugar: un tablero nuevo cada día, Clásico con rachas de hasta ×5 y una carrera de 60 segundos.", 'tour.missions': "Tres misiones al día dan estrellas. Las estrellas desbloquean ropa, colores y temas para Nine en Personalizar.", 'tour.next': "Siguiente", 'tour.skip': "Saltar", 'tour.done': "¡A jugar!",
         },
 
         pt: {
@@ -334,6 +338,8 @@ const i18n = (() => {
             'style.wardrobe': "O guarda-roupa do Nine",
             'nine.gold': "Ouro", 'nine.mint': "Menta", 'nine.sky': "Céu", 'nine.coral': "Coral", 'nine.violet': "Lilás", 'nine.chrome': "Cromo", 'nine.rainbow': "Arco-íris",
             'style.colors': "Cor do Nine", 'reward.locked': "{name}, desbloqueia com {n} estrelas",
+            'style.next': "Próximo: {name} · {n} ★", 'toast.color': "Nova cor para o Nine: {name}!", 'toast.theme': "Novo tema: {name}!",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Temas",
             'item.party': "Chapéu de festa",
             'item.shades': "Óculos de sol",
@@ -385,7 +391,7 @@ const i18n = (() => {
             'help.back': "Voltar",
             'help.effects': "Efeitos",
             'help.effectsOn': "Ligados",
-            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas", 'tour.title': "Dicas", 'tour.journey': "Sua jornada: 100 níveis em 10 mundos. Continue daqui.", 'tour.modes': "Mais jeitos de jogar: um tabuleiro novo todo dia, Clássico com sequências de até ×5 e uma corrida de 60 segundos.", 'tour.missions': "Três missões por dia dão estrelas. Use-as em roupas para o Nine em Personalizar.", 'tour.next': "Próximo", 'tour.skip': "Pular", 'tour.done': "Vamos jogar!",
+            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas", 'tour.title': "Dicas", 'tour.journey': "Sua jornada: 100 níveis em 10 mundos. Continue daqui.", 'tour.modes': "Mais jeitos de jogar: um tabuleiro novo todo dia, Clássico com sequências de até ×5 e uma corrida de 60 segundos.", 'tour.missions': "Três missões por dia dão estrelas. As estrelas desbloqueiam roupas, cores e temas para o Nine em Personalizar.", 'tour.next': "Próximo", 'tour.skip': "Pular", 'tour.done': "Vamos jogar!",
         },
 
         fr: {
@@ -460,6 +466,8 @@ const i18n = (() => {
             'style.wardrobe': "La garde-robe de Nine",
             'nine.gold': "Or", 'nine.mint': "Menthe", 'nine.sky': "Ciel", 'nine.coral': "Corail", 'nine.violet': "Lilas", 'nine.chrome': "Chrome", 'nine.rainbow': "Arc-en-ciel",
             'style.colors': "Couleur de Nine", 'reward.locked': "{name}, se débloque à {n} étoiles",
+            'style.next': "Prochain : {name} · {n} ★", 'toast.color': "Nouvelle couleur pour Nine : {name} !", 'toast.theme': "Nouveau thème : {name} !",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Thèmes",
             'item.party': "Chapeau de fête",
             'item.shades': "Lunettes de soleil",
@@ -511,7 +519,7 @@ const i18n = (() => {
             'help.back': "Retour",
             'help.effects': "Effets",
             'help.effectsOn': "Oui",
-            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non", 'tour.title': "Astuces", 'tour.journey': "Ton aventure : 100 niveaux dans 10 mondes. Reprends ici.", 'tour.modes': "D’autres façons de jouer : un plateau nouveau chaque jour, Classique avec des séries jusqu’à ×5 et une course de 60 secondes.", 'tour.missions': "Trois missions par jour rapportent des étoiles. Dépense-les en tenues pour Nine dans Personnaliser.", 'tour.next': "Suivant", 'tour.skip': "Passer", 'tour.done': "On joue !",
+            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non", 'tour.title': "Astuces", 'tour.journey': "Ton aventure : 100 niveaux dans 10 mondes. Reprends ici.", 'tour.modes': "D’autres façons de jouer : un plateau nouveau chaque jour, Classique avec des séries jusqu’à ×5 et une course de 60 secondes.", 'tour.missions': "Trois missions par jour rapportent des étoiles. Les étoiles débloquent tenues, couleurs et thèmes pour Nine dans Personnaliser.", 'tour.next': "Suivant", 'tour.skip': "Passer", 'tour.done': "On joue !",
         },
 
         de: {
@@ -586,6 +594,8 @@ const i18n = (() => {
             'style.wardrobe': "Nines Kleiderschrank",
             'nine.gold': "Gold", 'nine.mint': "Minze", 'nine.sky': "Himmel", 'nine.coral': "Koralle", 'nine.violet': "Flieder", 'nine.chrome': "Chrom", 'nine.rainbow': "Regenbogen",
             'style.colors': "Nines Farbe", 'reward.locked': "{name}, freigeschaltet ab {n} Sternen",
+            'style.next': "Nächstes: {name} · {n} ★", 'toast.color': "Neue Farbe für Nine: {name}!", 'toast.theme': "Neues Design: {name}!",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Designs",
             'item.party': "Partyhut",
             'item.shades': "Sonnenbrille",
@@ -637,7 +647,7 @@ const i18n = (() => {
             'help.back': "Zurück",
             'help.effects': "Effekte",
             'help.effectsOn': "An",
-            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus", 'tour.title': "Tipps", 'tour.journey': "Deine Reise: 100 Level in 10 Welten. Hier geht es weiter.", 'tour.modes': "Mehr Spielarten: jeden Tag ein neues Brett, Klassisch mit Serien bis ×5 und ein 60-Sekunden-Rennen.", 'tour.missions': "Drei Missionen am Tag bringen Sterne. Gib sie unter Anpassen für Outfits für Nine aus.", 'tour.next': "Weiter", 'tour.skip': "Überspringen", 'tour.done': "Los geht’s!",
+            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus", 'tour.title': "Tipps", 'tour.journey': "Deine Reise: 100 Level in 10 Welten. Hier geht es weiter.", 'tour.modes': "Mehr Spielarten: jeden Tag ein neues Brett, Klassisch mit Serien bis ×5 und ein 60-Sekunden-Rennen.", 'tour.missions': "Drei Missionen am Tag bringen Sterne. Sterne schalten unter Anpassen Outfits, Farben und Designs für Nine frei.", 'tour.next': "Weiter", 'tour.skip': "Überspringen", 'tour.done': "Los geht’s!",
         },
 
         tr: {
@@ -712,6 +722,8 @@ const i18n = (() => {
             'style.wardrobe': "Nine’ın gardırobu",
             'nine.gold': "Altın", 'nine.mint': "Nane", 'nine.sky': "Gök", 'nine.coral': "Mercan", 'nine.violet': "Leylak", 'nine.chrome': "Krom", 'nine.rainbow': "Gökkuşağı",
             'style.colors': "Nine’ın rengi", 'reward.locked': "{name}, {n} yıldızla açılır",
+            'style.next': "Sıradaki: {name} · {n} ★", 'toast.color': "Nine için yeni renk: {name}!", 'toast.theme': "Yeni tema: {name}!",
+            'theme.lofi': "Lo-fi", 'theme.jazz': "Jazz", 'theme.arcade': "Arcade", 'theme.fiesta': "Fiesta",
             'style.themes': "Temalar",
             'item.party': "Parti şapkası",
             'item.shades': "Güneş gözlüğü",
@@ -763,7 +775,7 @@ const i18n = (() => {
             'help.back': "Geri",
             'help.effects': "Efektler",
             'help.effectsOn': "Açık",
-            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı", 'tour.title': "İpuçları", 'tour.journey': "Yolculuğun: 10 dünyada 100 seviye. Buradan devam et.", 'tour.modes': "Daha fazla oyun yolu: her gün yeni bir tahta, ×5’e kadar serili Klasik ve 60 saniyelik bir yarış.", 'tour.missions': "Günde üç görev yıldız kazandırır. Onları Özelleştir’de Nine’ın kıyafetlerine harca.", 'tour.next': "İleri", 'tour.skip': "Geç", 'tour.done': "Hadi oynayalım!",
+            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı", 'tour.title': "İpuçları", 'tour.journey': "Yolculuğun: 10 dünyada 100 seviye. Buradan devam et.", 'tour.modes': "Daha fazla oyun yolu: her gün yeni bir tahta, ×5’e kadar serili Klasik ve 60 saniyelik bir yarış.", 'tour.missions': "Günde üç görev yıldız kazandırır. Yıldızlar Özelleştir’de Nine için kıyafet, renk ve tema açar.", 'tour.next': "İleri", 'tour.skip': "Geç", 'tour.done': "Hadi oynayalım!",
         },
     }
 

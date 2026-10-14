@@ -274,6 +274,19 @@ body {
     border-radius: 50%;
 }
 
+/* gold dot: something unlocked since Customize was last opened */
+.customize-card.is-new::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+}
+
 .panel {
     width: 100%;
     padding: 10px 16px 12px;
@@ -323,6 +336,7 @@ body {
 /* customize card on home: Nine as dressed, and the current theme */
 .customize-card {
     display: grid;
+    position: relative;
     grid-template-columns: 48px 1fr 34px;
     align-items: center;
     gap: 12px;

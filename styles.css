@@ -372,6 +372,42 @@ body {
 .wear-name { font-size: 0.8rem; font-weight: 700; line-height: 1.15; text-align: center; }
 .wear-chip:disabled .wear-name { color: var(--muted); }
 
+/* Nine's colors (meta.NINE_COLORS): body[data-nine] sets --nine, which every Nine fills with;
+   chrome and rainbow are SVG gradients (#nine-chrome, #nine-rainbow in index.html). A swatch
+   (.nine-<id>) shows the same color. */
+[data-nine="mint"] { --nine: #5fe08a; }
+[data-nine="sky"] { --nine: #6ec6ff; }
+[data-nine="coral"] { --nine: #ff8a73; }
+[data-nine="violet"] { --nine: #b48cff; }
+[data-nine="chrome"] { --nine: url(#nine-chrome); }
+[data-nine="rainbow"] { --nine: url(#nine-rainbow); }
+.nine-colors { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 12px; margin-bottom: 14px; }
+.color-chip {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    min-width: 52px;
+    padding: 2px;
+    font-family: var(--label-font);
+    font-size: 0.85rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.color-chip:disabled { cursor: default; }
+.color-chip:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; border-radius: 12px; }
+.nine-swatch { width: 38px; height: 38px; border: 3px solid var(--ink); border-radius: 50%; box-shadow: -2px 3px 0 var(--ink); }
+.color-chip[aria-pressed="true"] .nine-swatch { outline: 4px solid var(--gold); outline-offset: 2px; }
+.color-chip:disabled .nine-swatch { filter: grayscale(1); opacity: 0.5; }
+.nine-gold { background: var(--gold); }
+.nine-mint { background: #5fe08a; }
+.nine-sky { background: #6ec6ff; }
+.nine-coral { background: #ff8a73; }
+.nine-violet { background: #b48cff; }
+.nine-chrome { background: linear-gradient(135deg, #f6f8fb 0%, #c8cfda 42%, #eef2f6 52%, #a9b2c1 100%); }
+.nine-rainbow { background: linear-gradient(135deg, #ff623a, #ffd23f, #5fe08a, #37afff, #8746ff, #ff31cc); }
+
 /* world complete: Nine in its new item, and what comes next */
 .over-prize { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 12px; margin: 0 0 16px; padding: 10px 14px; text-align: left; background: #fff1c2; border-radius: 16px; }
 .over-prize[hidden] { display: none; }
@@ -1557,7 +1593,7 @@ kbd {
 
 /* ---------- Nine, the mascot ---------- */
 
-.mascot { --m-fill: var(--gold); display: inline-block; flex: none; line-height: 0; }
+.mascot { --m-fill: var(--nine, var(--gold)); display: inline-block; flex: none; line-height: 0; }
 .mascot-art { width: 100%; height: 100%; overflow: visible; }
 .mascot-game { position: relative; z-index: 2; width: 52px; height: 64px; }
 /* a hat rises up to ~40% of Nine's height above its box: keep that space free so it never

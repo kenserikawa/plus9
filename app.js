@@ -1612,6 +1612,28 @@ function renderStyle() {
         return b
     }))
 
+    const chosen = meta.nineColor()
+    $('nine-colors').replaceChildren(...meta.NINE_COLORS.map(c => {
+        const b = document.createElement('button')
+        b.type = 'button'
+        b.className = 'color-chip'
+        const unlocked = meta.colorUnlocked(c)
+        const name = tr(`nine.${c.id}`)
+        b.disabled = !unlocked
+        b.setAttribute('aria-pressed', c.id === chosen)
+        b.setAttribute('aria-label', unlocked ? name : tr('reward.locked', { name, n: c.stars }))
+        b.innerHTML = `<span class="nine-swatch nine-${c.id}" aria-hidden="true"></span><span class="color-name"></span>`
+        b.querySelector('.color-name').textContent = unlocked ? name : tr('item.lockStars', { n: c.stars })
+        b.addEventListener('click', () => {
+            meta.setNineColor(c.id)
+            applyNineColor()
+            mascot.mood('happy')
+            sfx.ui()
+            renderStyle()
+        })
+        return b
+    }))
+
     const current = meta.theme()
     $('themes').replaceChildren(...meta.THEMES.map(t => {
         const b = document.createElement('button')
@@ -1732,6 +1754,11 @@ addEventListener('resize', () => { if (screen === 'map') drawRoad() })
 function applyTheme() {
     document.body.dataset.theme = meta.theme()
     sfx.setStyle(meta.theme()) // each theme has its own music
+}
+
+// Nine's color (meta.nineColor): every Nine reads it from the body through --m-fill
+function applyNineColor() {
+    document.body.dataset.nine = meta.nineColor()
 }
 
 // ---------- persistence ----------
@@ -2173,6 +2200,7 @@ langSelect.addEventListener('change', () => {
 i18n.set(i18n.detect(platform.language()))
 langSelect.value = i18n.lang
 applyTheme()
+applyNineColor()
 mascot.mount()
 mascot.dress(meta.outfit())
 knownItems = unlockedItems()

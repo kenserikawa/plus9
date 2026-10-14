@@ -48,10 +48,10 @@
     </svg>
 
     <!-- ===== Home ===== -->
-    <section class="screen home" id="home" hidden>
+    <main class="screen home" id="home" hidden>
         <header class="home-top">
             <button class="icon-btn help-btn" type="button" aria-label="How to play" data-i18n-aria="nav.help" aria-keyshortcuts="H">?</button>
-            <h1 class="title outline" aria-label="Plus 9"><span aria-hidden="true">Plus</span><button class="nine-poke" type="button" aria-label="Poke Nine" data-i18n-aria="nine.poke"><span class="mascot mascot-title" aria-hidden="true"></span></button></h1>
+            <h1 class="title outline" aria-label="Plus 9" tabindex="-1"><span aria-hidden="true">Plus</span><button class="nine-poke" type="button" aria-label="Poke Nine" data-i18n-aria="nine.poke"><span class="mascot mascot-title" aria-hidden="true"></span></button></h1>
             <button class="icon-btn settings-btn" type="button" aria-label="Settings" data-i18n-aria="nav.settings">
                 <svg><use href="#i-gear" /></svg>
             </button>
@@ -91,19 +91,19 @@
             </span>
             <span class="theme-swatch customize-swatch" aria-hidden="true"></span>
         </button>
-    </section>
+    </main>
 
     <!-- ===== Journey map ===== -->
-    <section class="screen map" id="map" hidden>
+    <main class="screen map" id="map" hidden>
         <header class="bar">
             <button class="icon-btn home-btn" type="button" aria-label="Home" data-i18n-aria="nav.home">
                 <svg><use href="#i-home" /></svg>
             </button>
-            <h2 class="bar-title outline" data-i18n="mode.journey">Journey</h2>
+            <h1 class="bar-title outline" data-i18n="mode.journey" tabindex="-1">Journey</h1>
             <p class="stars-pill"><span aria-hidden="true">★</span> <span id="map-stars">0</span></p>
         </header>
         <ol class="route scroll" id="route"></ol>
-    </section>
+    </main>
 
     <!-- ===== Game ===== -->
     <main class="screen game" id="game" hidden>
@@ -111,7 +111,7 @@
             <button class="icon-btn home-btn" type="button" aria-label="Home" data-i18n-aria="nav.home">
                 <svg><use href="#i-home" /></svg>
             </button>
-            <h2 class="bar-title outline" id="game-title">Classic</h2>
+            <h1 class="bar-title outline" id="game-title" tabindex="-1">Classic</h1>
             <button class="icon-btn pause-btn" type="button" aria-label="Pause" data-i18n-aria="nav.pause" aria-keyshortcuts="Escape">
                 <svg><use href="#i-pause" /></svg>
             </button>
@@ -173,7 +173,7 @@
     <p class="toast" id="toast" role="status" hidden></p>
 
     <!-- ===== Dialogs ===== -->
-    <dialog class="sheet over" id="over">
+    <dialog class="sheet over" id="over" aria-labelledby="over-title" aria-describedby="over-reason">
         <h2 class="sheet-title over-title outline" id="over-title">Game over</h2>
         <p class="result-stars" id="over-stars" hidden></p>
         <p class="over-reason" id="over-reason"></p>

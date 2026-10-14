@@ -53,6 +53,9 @@
 
 * { box-sizing: border-box; }
 
+/* screen titles take focus when the screen changes (showScreen); they are not controls, so no ring */
+h1[tabindex="-1"]:focus { outline: none; }
+
 html { height: 100%; }
 
 body {

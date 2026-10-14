@@ -1350,11 +1350,15 @@ async function shareDaily() {
 let screen = 'home'
 
 function showScreen(name) {
+    // focus on the screen being left would fall to <body>: move it to the new screen's title,
+    // so keyboard players keep their place and screen readers announce where they are
+    const hadFocus = screens[screen].contains(document.activeElement)
     screen = name
     for (const [key, el] of Object.entries(screens)) el.hidden = key !== name
     document.body.dataset.screen = name
     if (name === 'home') renderHome()
     if (name === 'map') renderMap()
+    if (hadFocus) screens[name].querySelector('h1').focus({ preventScroll: true })
 }
 
 function renderHome() {
@@ -1732,7 +1736,12 @@ document.addEventListener('keydown', ev => {
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
     if (platform.adShowing) return
     const key = ev.key.toLowerCase()
-    if (key === 'escape' && screen === 'game' && !paused() && !dialog.open) return openSettings() // open dialogs close themselves on ESC
+    // open dialogs close themselves on ESC; this one is consumed, or the browser would close the
+    // pause menu it just opened (Esc is a close request for the topmost dialog after keydown)
+    if (key === 'escape' && screen === 'game' && !paused() && !dialog.open) {
+        ev.preventDefault()
+        return openSettings()
+    }
     if (key === 'h' || key === '?') return help.open ? help.close() : openHelp()
     if (key === 'm') return toggleSound()
     if (screen !== 'game' || dialog.open || paused()) return

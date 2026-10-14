@@ -233,6 +233,7 @@ function play(tile) {
     const minus = tile.special === 'minus'
     if (minus) floatText(well, faceOf(tile))
     setTile(tile, takeNext())
+    meetMechanics()
 
     if (sum === goal) return completeSum()
 
@@ -403,6 +404,7 @@ function fuseInto(coupler, tile) {
     setTile(tile, fuse(tile, coupler))
     setTile(coupler, takeNext())
     coachSay(`${a} + ${b} = ${a + b}`, 1500) // the coach is a status region: read out too
+    meetMechanics()
     sfx.fuse()
     mascot.hop()
     render()
@@ -525,6 +527,7 @@ function shuffle() {
     stuck = false
     tiles.forEach(t => { if (!t.ice) setTile(t, randomTile()) }) // frozen tiles stay put
     render()
+    meetMechanics()
     checkStuck()
 }
 
@@ -536,6 +539,7 @@ function thawIce() {
         renderTile(t)
         bump(t.el, t.ice ? 'shake' : 'pop-in')
     }
+    meetMechanics()
 }
 
 function endGame() {
@@ -707,11 +711,11 @@ function openMap(n = null) {
 function tutorial(event) {
     if (mode !== 'journey') return
     const n = journeyDef.n
-    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice', 81: 'tut.minus', 91: 'tut.coupler' }
+    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice' }
     if (later[n]) {
         if (event === 'start') {
             coachSay(tr(later[n]), 6000)
-            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0, 81: t => t.special === 'minus' && !t.ice, 91: t => t.special === 'coupler' && !t.ice }[n]
+            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0 }[n]
             tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
         }
         return
@@ -743,6 +747,26 @@ function tutorial(event) {
     if (event !== 'start' && !(n === 4 && event === 'stuck')) return
     const tips = { 2: 'tut.next', 3: 'tut.combo', 4: 'tut.shuffle' }
     coachSay(tr(tips[n]), 6000)
+}
+
+// Minus tiles and couplers are taught the first time one is on the board and usable, wherever
+// the player meets it: levels 81 and 91 hand one out, but a save already past them still gets
+// the lesson. Each shows once (plus9.metMinus, plus9.metCoupler), with the gold ring on it.
+const LESSONS = { minus: ['tut.minus', 'plus9.metMinus'], coupler: ['tut.coupler', 'plus9.metCoupler'] }
+
+function meetMechanics() {
+    if (mode !== 'journey' || !playing) return
+    for (const [kind, [text, key]] of Object.entries(LESSONS)) {
+        const usable = tiles.filter(t => t.special === kind && !t.ice)
+        if (!usable.length) continue
+        try {
+            if (localStorage.getItem(key) === '1') continue
+            localStorage.setItem(key, '1')
+        } catch { continue } // storage unavailable: no lessons, like the other once-only tips
+        coachSay(tr(text), 7000)
+        tiles.forEach(t => t.el.classList.toggle('hint', usable.includes(t)))
+        return // one lesson at a time
+    }
 }
 
 function hintTile(value) {
@@ -885,6 +909,7 @@ function newGame() {
         render()
     }
     tutorial('start')
+    meetMechanics() // after the level's own tip, so a lesson wins
 }
 
 function gameTitle() {

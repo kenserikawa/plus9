@@ -73,6 +73,7 @@ let tutorialStep = 0
 let pot = 0           // Classic: points from the current streak, not yet in the score
 let chain = 0         // Classic: sums in a row since the last cash-in or bust
 let bestCash = 0      // Classic: biggest cash-in this game
+let holding = null    // the coupler picked up by tap or keyboard, waiting for a tile to fuse onto
 
 // every random draw goes through rng: Math.random normally, a seeded generator in the
 // daily and the journey so the board is the same for everyone
@@ -164,6 +165,7 @@ function renderTile(tile) {
     el.classList.remove('hint')
     el.style.setProperty('--tile', wild ? WILD_COLOR : tile.color)
     if (tile.special === 'double') el.insertAdjacentHTML('beforeend', '<span class="tile-badge" aria-hidden="true">×2</span>')
+    if (tile.special === 'coupler') el.insertAdjacentHTML('beforeend', '<span class="tile-badge is-plug" aria-hidden="true"><svg><use href="#i-plug" /></svg></span>')
     if (tile.ice > 0) el.insertAdjacentHTML('beforeend', `<span class="tile-ice" aria-hidden="true">${tile.ice}</span>`)
     // its color's shape; not on wild or rainbow tiles (they fit any color) or frozen ones (the ice hides it)
     const id = colorId(tile.color)
@@ -193,6 +195,7 @@ function takeNext() {
 
 function play(tile) {
     if (!playing || resolving || stuck || platform.adShowing) return
+    if (holding) return tile === holding ? dropHold() : fuseInto(holding, tile)
     platform.gameplayStart()
     if (mode === 'timed' && !timer) startClock(TIMED_SECONDS * 1000)
 
@@ -201,11 +204,7 @@ function play(tile) {
         sfx.stuck()
         return
     }
-    // couplers never go to the centre (Task 6 replaces this with picking them up)
-    if (tile.special === 'coupler') {
-        bump(tile.el, 'shake')
-        return
-    }
+    if (tile.special === 'coupler') return holdCoupler(tile) // never to the centre: picked up to fuse
     // a minus tile needs a sum that can afford it
     if (tile.special === 'minus' && tile.value > sum) {
         bump(tile.el, 'shake')
@@ -246,6 +245,7 @@ function play(tile) {
 }
 
 function completeSum() {
+    dropHold()
     const { points: base, combo, doubles } = sumPoints(parts, level)
     const used = tilesUsed(parts) // minus tiles don't count
     // Classic: the sum goes into the pot at the streak's multiplier; elsewhere straight to the score
@@ -344,6 +344,7 @@ function checkStuck() {
     const need = target() - sum
     stuck = isStuck(tiles, sum, target())
     if (!stuck) return
+    dropHold()
     if (chain > 0) bust() // has its own sound
     else sfx.stuck()
     mascot.mood('worried', { hold: true })
@@ -351,6 +352,61 @@ function checkStuck() {
     // with rewarded ads the player can still watch one for a free shuffle, or give up / bank
     if (canShuffle() || platform.hasRewarded) return render()
     gameOver({ k: 'reason.stuck', v: { need, cost: shuffleCost() } })
+}
+
+// ---------- couplers ----------
+
+const fusionTargets = coupler => tiles.filter(t => t !== coupler && canFuse(coupler, t, target()))
+
+function markFusion(coupler, on) {
+    const targets = on ? fusionTargets(coupler) : []
+    for (const t of tiles) {
+        t.el.classList.toggle('is-held', on && t === coupler)
+        t.el.classList.toggle('is-fuse-target', targets.includes(t))
+        t.el.classList.toggle('is-dimmed', on && t !== coupler && !targets.includes(t))
+    }
+    return targets
+}
+
+// tap or Enter on a coupler picks it up; the tiles it can fuse onto are ringed
+function holdCoupler(tile) {
+    if (holding === tile) return dropHold()
+    dropHold()
+    if (!markFusion(tile, true).length) {
+        markFusion(tile, false)
+        bump(tile.el, 'shake')
+        sfx.stuck()
+        coachSay(tr('coach.couplerNone', { n: tile.value, target: target() }), 3500)
+        return
+    }
+    holding = tile
+    sfx.lift()
+    coachSay(tr('coach.couplerPick'), 4000)
+}
+
+function dropHold() {
+    if (!holding) return
+    markFusion(holding, false)
+    holding = null
+}
+
+// the coupler fuses onto the tile; its slot takes Next, like playing a tile
+function fuseInto(coupler, tile) {
+    if (!canFuse(coupler, tile, target())) {
+        bump(tile.el, 'shake')
+        sfx.stuck()
+        return
+    }
+    dropHold()
+    platform.gameplayStart()
+    const a = tile.value, b = coupler.value
+    setTile(tile, fuse(tile, coupler))
+    setTile(coupler, takeNext())
+    coachSay(`${a} + ${b} = ${a + b}`, 1500) // the coach is a status region: read out too
+    sfx.fuse()
+    mascot.hop()
+    render()
+    checkStuck()
 }
 
 // 🎬 watch an ad for a free shuffle; offered only when stuck with no free shuffle
@@ -452,6 +508,7 @@ function bust() {
 
 function shuffle() {
     if (!playing || resolving || !canShuffle() || platform.adShowing) return
+    dropHold()
     platform.gameplayStart()
     const paid = freeShuffles === 0
     if (paid) {
@@ -650,11 +707,11 @@ function openMap(n = null) {
 function tutorial(event) {
     if (mode !== 'journey') return
     const n = journeyDef.n
-    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice', 81: 'tut.minus' }
+    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice', 81: 'tut.minus', 91: 'tut.coupler' }
     if (later[n]) {
         if (event === 'start') {
             coachSay(tr(later[n]), 6000)
-            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0, 81: t => t.special === 'minus' }[n]
+            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0, 81: t => t.special === 'minus' && !t.ice, 91: t => t.special === 'coupler' && !t.ice }[n]
             tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
         }
         return
@@ -726,6 +783,7 @@ async function startGame(m, n = 1) {
 
 // leaving abandons the game: keep a Classic/60 s record, the daily keeps its own progress
 function leaveGame() {
+    dropHold()
     if (playing && mode !== 'daily' && mode !== 'journey' && score > best) saveBest(score)
     platform.gameplayStop()
     stopClock()
@@ -759,6 +817,7 @@ function renderBackButton() {
 }
 
 function newGame() {
+    dropHold()
     stopClock()
     gameId++
     levelUpEl.hidden = true
@@ -1148,7 +1207,7 @@ function attachInput(tile) {
 
     el.addEventListener('pointerdown', ev => {
         suppressClick = false
-        if (!playing || ev.button !== 0 || drag) return
+        if (!playing || resolving || stuck || ev.button !== 0 || drag) return
         drag = { startX: ev.clientX, startY: ev.clientY, x: ev.clientX, y: ev.clientY, ghost: null }
         el.setPointerCapture(ev.pointerId)
     })
@@ -1165,10 +1224,11 @@ function attachInput(tile) {
     })
 
     function lift() {
+        dropHold() // a coupler picked up by tap gives way to the tile being dragged
         const rect = el.getBoundingClientRect()
         const ghost = el.cloneNode(true)
         ghost.classList.add('ghost')
-        ghost.classList.remove('pop-in', 'hint')
+        ghost.classList.remove('pop-in', 'hint', 'is-held')
         ghost.removeAttribute('aria-label')
         ghost.setAttribute('aria-hidden', 'true')
         Object.assign(ghost.style, { width: `${rect.width}px`, height: `${rect.height}px`, left: `${rect.left}px`, top: `${rect.top}px` })
@@ -1176,18 +1236,25 @@ function attachInput(tile) {
         drag.tilt = 0
         drag.lastX = drag.x
         drag.zone = dropZone()
+        // a coupler goes onto a tile: measure the ones it can fuse onto, at drag start
+        drag.targets = tile.special === 'coupler' ? markFusion(tile, true).map(t => ({ tile: t, zone: zoneOf(t.el) })) : null
         place() // born under the pointer, not one frame late at the tile's spot
         document.body.appendChild(ghost)
         el.classList.add('lifted')
         sfx.lift()
     }
 
+    // the fusion target under the pointer, if any
+    const targetAt = (d, x, y) => (d.targets || []).find(o => inZone(o.zone, x, y)) || null
+
     // put the floating tile under the pointer, tilted towards the motion
     function place() {
         const dx = drag.x - drag.startX, dy = drag.y - drag.startY
-        const over = inZone(drag.zone, drag.x, drag.y)
+        const hit = drag.targets ? targetAt(drag, drag.x, drag.y) : null
+        const over = drag.targets ? !!hit : inZone(drag.zone, drag.x, drag.y)
         drag.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${drag.tilt.toFixed(2)}deg) scale(${over ? 0.92 : 1.08})`
-        well.classList.toggle('is-target', over)
+        if (drag.targets) for (const o of drag.targets) o.tile.el.classList.toggle('is-target', o === hit)
+        else well.classList.toggle('is-target', over)
     }
 
     function frame() {
@@ -1209,8 +1276,21 @@ function attachInput(tile) {
         if (!d.ghost) return
         suppressClick = true // the click that follows a drag is not a tap
         if (ev.type === 'pointerup') { d.x = ev.clientX; d.y = ev.clientY }
-        const dropped = ev.type === 'pointerup' && inZone(d.zone, d.x, d.y)
         well.classList.remove('is-target')
+        if (d.targets) {
+            const hit = ev.type === 'pointerup' ? targetAt(d, d.x, d.y) : null
+            for (const o of d.targets) o.tile.el.classList.remove('is-target')
+            markFusion(tile, false)
+            if (hit) d.zone = hit.zone // slide onto the tile
+            land(d, !!hit)
+            if (hit) fuseInto(tile, hit.tile)
+            else if (ev.type === 'pointerup' && inZone(d.zone, d.x, d.y)) {
+                bump(el, 'shake')
+                coachSay(tr('coach.couplerWhere'), 3500)
+            }
+            return
+        }
+        const dropped = ev.type === 'pointerup' && inZone(d.zone, d.x, d.y)
         land(d, dropped)
         if (dropped) play(tile)
     }
@@ -1240,7 +1320,7 @@ function attachInput(tile) {
             if (settled) return
             settled = true
             ghost.remove()
-            if (!dropped) el.classList.remove('lifted')
+            el.classList.remove('lifted') // also when reduced motion skips the slide (it used to stay hidden)
         }
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return done()
         ghost.style.transform = to
@@ -1255,6 +1335,12 @@ function dropZone() {
     const r = well.getBoundingClientRect()
     const scale = well.classList.contains('is-target') ? 1.08 : 1
     return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: (r.width / scale / 2) * 1.15 }
+}
+
+// a tile's drop area for a coupler: the tile's own circle, measured at drag start
+function zoneOf(el) {
+    const r = el.getBoundingClientRect()
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 }
 }
 
 const inZone = (zone, x, y) => Math.hypot(x - zone.x, y - zone.y) <= zone.r
@@ -1767,6 +1853,7 @@ function pauseGame() {
 
 function openSettings() {
     if (paused() || dialog.open || platform.adShowing) return
+    dropHold()
     pauseGame()
     renderSheetLabels()
     sfx.ui()
@@ -1931,6 +2018,10 @@ document.addEventListener('keydown', ev => {
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
     if (platform.adShowing || tourEl.open) return // the tour has its own buttons; Esc closes it
     const key = ev.key.toLowerCase()
+    if (key === 'escape' && holding) {
+        ev.preventDefault()
+        return dropHold()
+    }
     // open dialogs close themselves on ESC; this one is consumed, or the browser would close the
     // pause menu it just opened (Esc is a close request for the topmost dialog after keydown)
     if (key === 'escape' && screen === 'game' && !paused() && !dialog.open) {

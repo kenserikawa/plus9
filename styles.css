@@ -1494,6 +1494,19 @@ kbd {
     background: linear-gradient(155deg, #f6f8fb 0%, #c8cfda 42%, #eef2f6 52%, #a9b2c1 100%);
 }
 .tile.is-minus { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px rgba(255, 255, 255, 0.55); }
+/* coupler: bronze with a fixed sheen and a plug badge; it never goes to the centre */
+.tile.is-coupler, .next-tile.is-coupler {
+    color: #6e3f16; /* not --tile: renderTile sets that inline from the tile's (unused) color */
+    background: linear-gradient(155deg, #ffe6c2 0%, #dca061 42%, #ffdcab 52%, #b9752f 100%);
+}
+.tile.is-coupler { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px rgba(255, 236, 205, 0.6); }
+.tile-badge.is-plug { display: grid; place-items: center; padding: 0.15em; background: #b9752f; transform: none; }
+.tile-badge.is-plug svg { width: 1em; height: 1em; fill: none; stroke: var(--paper); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+/* fusing: the picked-up coupler lifts, the tiles it can fuse onto are ringed, the rest dim */
+.tile.is-held { transform: translate(1px, -6px) scale(1.06); box-shadow: -6px 12px 0 var(--ink); }
+.tile.is-fuse-target { box-shadow: 0 0 0 6px var(--gold), -4px 6px 0 6px var(--ink); }
+.tile.is-fuse-target.is-target { transform: scale(1.08); }
+.tile.is-dimmed { opacity: 0.45; }
 @keyframes shimmer { to { background-position: 0.9em 0; } }
 
 /* frozen: an icy glaze over the number, and the sums left to thaw */

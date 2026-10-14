@@ -450,6 +450,13 @@ const sfx = (() => {
             buzz(8)
         }),
 
+        // a coupler snaps onto a tile: a metallic click and a bright ping
+        fuse: effect(() => {
+            tone(note(12), { type: 'square', dur: 0.03, vol: 0.12 })
+            tone(note(14) * 2, { type: 'sine', dur: 0.18, vol: 0.14, at: 0.03 })
+            buzz([10, 20, 10])
+        }),
+
         // target reached; longer chains get a longer arpeggio, and each step of a Classic
         // streak (`lift` = multiplier − 1) starts it higher, so the streak is heard climbing
         complete: effect((chain, lift = 0) => {

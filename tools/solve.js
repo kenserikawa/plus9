@@ -6,15 +6,8 @@
 const R = require('../rules.js')
 Object.assign(globalThis, R)
 
-const [from, to] = (process.argv[2] || '').split('-').map(Number)
-const budget = +(process.argv[3] || 300000)
-if (!from) {
-    console.log('usage: node tools/solve.js <level | from-to> [nodes]')
-    process.exit(2)
-}
-
-function solve(n) {
-    const def = journeyLevel(n)
+// `def` defaults to the level's own definition (tests pass a modified one)
+function solve(n, def = journeyLevel(n), budget = 300000) {
     const lv = def.lv
     const target = targetFor(lv)
     const rnd = createRng(def.seed).random
@@ -85,10 +78,23 @@ function solve(n) {
         : `${n}: NO WIN (exhaustive)`
 }
 
-let failed = false
-for (let n = from; n <= (to || from); n++) {
-    const out = solve(n)
-    if (!out.includes('WIN (')) failed = true
-    console.log(out)
+// a solve() line that found a win ("83: WIN (…"), not "83: NO WIN (…" or "unknown"
+const won = out => out.includes(': WIN (')
+
+if (require.main === module) {
+    const [from, to] = (process.argv[2] || '').split('-').map(Number)
+    const budget = +(process.argv[3] || 300000)
+    if (!from) {
+        console.log('usage: node tools/solve.js <level | from-to> [nodes]')
+        process.exit(2)
+    }
+    let failed = false
+    for (let n = from; n <= (to || from); n++) {
+        const out = solve(n, journeyLevel(n), budget)
+        if (!won(out)) failed = true
+        console.log(out)
+    }
+    process.exit(failed ? 1 : 0)
 }
-process.exit(failed ? 1 : 0)
+
+module.exports = { solve, won }

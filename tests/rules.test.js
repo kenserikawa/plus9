@@ -76,11 +76,14 @@ test('couplers fuse onto number, ×2 and rainbow tiles within the target', () =>
     assert.deepEqual(R.fuse(tile(5, { special: 'double', color: blue }), c), { value: 8, color: blue, special: 'double' })
 })
 
-test('stuck: something in the centre and no tile can go in; couplers never rescue', () => {
+test('stuck: something in the centre, no tile can go in and no fusion is possible', () => {
     const target = 38
-    // sum 30, need 8: tiles too big → stuck, with or without a coupler on the board
+    // sum 30, need 8: tiles too big, nothing to fuse → stuck
     assert.equal(R.isStuck([tile(9), tile(12)], 30, target), true)
-    assert.equal(R.isStuck([tile(9), tile(12), tile(3, { special: 'coupler' })], 30, target), true)
+    // a legal fusion is a move: the coupler's slot takes Next, which may fit → not stuck
+    assert.equal(R.isStuck([tile(9), tile(12), tile(3, { special: 'coupler' })], 30, target), false)
+    // a coupler with nowhere to go (the other tiles frozen, or pushed past the target) → stuck
+    assert.equal(R.isStuck([tile(5, { ice: 2 }), tile(36), tile(3, { special: 'coupler' })], 37, target), true)
     // a tile that fits → not stuck
     assert.equal(R.isStuck([tile(9), tile(5), tile(3, { special: 'coupler' })], 30, target), false)
     // a minus tile the sum can afford → not stuck

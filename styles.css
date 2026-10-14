@@ -1224,6 +1224,8 @@ body.is-ad .game { pointer-events: none; }
     gap: 12px;
     align-items: start;
 }
+/* the later worlds' lines wait until the player gets there: `display` above beats the UA [hidden] rule */
+.rules li[hidden] { display: none; }
 
 .rules p { margin: 0; font-size: 0.98rem; line-height: 1.4; }
 .rules strong { display: block; font-size: 1.05rem; line-height: 1.3; }

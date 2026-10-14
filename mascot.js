@@ -23,6 +23,8 @@ const mascot = (() => {
         goggles: `<g ${W}><path d="M10 40 H18 M82 40 H90" stroke-width="6"/><rect x="18" y="26" width="64" height="28" rx="12" fill="#bfe3ff" fill-opacity="0.75"/><path d="M50 26 V54" stroke-width="3"/><path d="M90 42 V-2 C90 -10 98 -10 98 -2" fill="none" stroke="#ff623a" stroke-width="7" stroke-linecap="round"/></g>`,
         bowtie: `<g ${W}><path d="M50 84 L30 72 L30 96 Z M50 84 L70 72 L70 96 Z" fill="#ff31cc"/><circle cx="50" cy="84" r="6" fill="#ff8fd8"/></g>`,
         scarf: `<g ${W}><path d="M16 66 Q50 92 84 66 L86 78 Q50 106 14 78 Z" fill="#37afff"/><path d="M58 90 L56 118 L70 116 L68 88 Z" fill="#37afff"/><path d="M22 74 Q50 96 78 74" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 6"/></g>`,
+        welder: `<g ${W}><path d="M8 40 H20 M80 40 H92" stroke-width="6"/><circle cx="34" cy="40" r="14" fill="#3d5a4a"/><circle cx="66" cy="40" r="14" fill="#3d5a4a"/><path d="M48 40 H52" stroke-width="6"/><circle cx="34" cy="40" r="8" fill="#5fe08a" fill-opacity="0.35" stroke-width="2"/><circle cx="66" cy="40" r="8" fill="#5fe08a" fill-opacity="0.35" stroke-width="2"/><path d="M27 34 L32 31 M59 34 L64 31" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>`,
+        tophat: `<g ${W}><rect x="30" y="-36" width="40" height="46" rx="4" fill="#2b1a50"/><path d="M31 -2 H69" stroke="#dca061" stroke-width="8"/><ellipse cx="50" cy="12" rx="40" ry="8" fill="#2b1a50"/></g>`,
     }
 
     // the SVG for one outfit, layered neck, face, head so hats sit on top

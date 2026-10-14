@@ -211,6 +211,8 @@ const WORLDS = [
     { id: 'forest', reward: 'explorer' },
     { id: 'space', reward: 'antennae' },
     { id: 'neon', reward: 'headphones' },
+    { id: 'chrome', reward: 'welder' },
+    { id: 'gears', reward: 'tophat' },
 ]
 // world index (0-based) of journey level n
 const worldOf = n => Math.min(Math.floor((n - 1) / WORLD_SIZE), WORLDS.length - 1)

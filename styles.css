@@ -90,6 +90,10 @@ body {
 }
 /* neon: a synthwave sunset */
 [data-theme="neon"], .theme-neon { --bg: linear-gradient(180deg, #1b0b3d 0%, #5b1a8f 50%, #ff3d8b 85%, #ff9e3d 100%); }
+/* chrome: brushed steel, dark at the top */
+[data-theme="chrome"], .theme-chrome { --bg: linear-gradient(180deg, #232a36 0%, #4b5568 45%, #7f8ba1 80%, #a9b4c6 100%); }
+/* gears: copper and bronze */
+[data-theme="gears"], .theme-gears { --bg: linear-gradient(180deg, #2e1a10 0%, #6a3618 45%, #a5642a 80%, #d39552 100%); }
 
 /* cartoon ink outline used on display type */
 .outline {
@@ -1242,6 +1246,11 @@ body.is-ad .game { pointer-events: none; }
 
 .mini-tile { --o: 2px; color: var(--sky); }
 .mini-tile.is-next { color: var(--magenta); }
+/* help icons for the later worlds' tiles: the round icon takes the tile's metal */
+.rule-icon:has(.mini-tile.is-minus) { background: linear-gradient(155deg, #f6f8fb 0%, #c8cfda 42%, #eef2f6 52%, #a9b2c1 100%); }
+.rule-icon:has(.mini-tile.is-coupler) { background: linear-gradient(155deg, #ffe6c2 0%, #dca061 42%, #ffdcab 52%, #b9752f 100%); }
+.mini-tile.is-minus { color: #4f5a6e; }
+.mini-tile.is-coupler { color: #6e3f16; }
 
 /* settings sheet (the pause menu in a game): sound, music and language, one per row */
 .settings {

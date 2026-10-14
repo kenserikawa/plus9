@@ -129,8 +129,8 @@ const meta = (() => {
         { id: 'crown', stars: 60 },
     ]
     const SLOTS = {
-        party: 'head', wizard: 'head', explorer: 'head', antennae: 'head', headphones: 'head', cap: 'head', crown: 'head',
-        shades: 'face', goggles: 'face',
+        party: 'head', wizard: 'head', explorer: 'head', antennae: 'head', headphones: 'head', tophat: 'head', cap: 'head', crown: 'head',
+        shades: 'face', goggles: 'face', welder: 'face',
         bowtie: 'neck', scarf: 'neck',
     }
     WARDROBE.forEach(item => { item.slot = SLOTS[item.id] })

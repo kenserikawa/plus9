@@ -24,6 +24,8 @@ const i18n = (() => {
             'well.make': 'Make', 'well.needs': 'needs {n}', 'well.over': 'Too much', 'well.done': 'Got it!', 'well.stuck': 'No moves',
             'tile.add': 'Add {n}', 'tile.wild': 'Wild tile: finishes the sum', 'tile.double': 'Add {n}, doubles the points',
             'tile.minus': "Subtract {n}", 'tut.minus': "Minus tiles take away from the sum: use one to make room when nothing fits.", 'coach.minusEmpty': "A minus tile needs at least {n} in the middle.", 'tile.coupler': "Coupler +{n}: drop it on a tile",
+            'theme.chrome': "Chrome", 'theme.gears': "Gears", 'item.welder': "Welding goggles", 'item.tophat': "Top hat",
+            'help.r9.t': "Minus tiles.", 'help.r9.b': "Worth −1 to −5: they take away from the sum, never below 0. They don't count as tiles or colors.", 'help.r10.t': "Couplers.", 'help.r10.b': "Worth +1 to +5: drop one on a tile to add to it (never past the target). The tile keeps its color.",
             'tut.coupler': "Couplers never go in the middle: drop one on a tile to add to it.", 'coach.couplerWhere': "Couplers go onto a tile, not in the middle.", 'coach.couplerPick': "Now tap the tile to add it to.", 'coach.couplerNone': "No tile can take +{n} without going over {target}.",
             'color.orange': 'orange', 'color.blue': 'blue', 'color.purple': 'purple', 'color.pink': 'pink',
             'tile.frozen': v => `${v.n}, frozen for ${v.k} more ${plural(v.k, 'sum', 'sums')}`,
@@ -129,7 +131,7 @@ const i18n = (() => {
             'help.back': "Back",
             'help.effects': "Effects",
             'help.effectsOn': "On",
-            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off", 'tour.title': "Tips", 'tour.journey': "Your journey: 80 levels in 8 worlds. Carry on from here.", 'tour.modes': "More ways to play: a new board every day, Classic with streaks up to ×5, and a 60-second race.", 'tour.missions': "Three missions a day give stars. Spend them on outfits for Nine in Customize.", 'tour.next': "Next", 'tour.skip': "Skip", 'tour.done': "Let’s play!",
+            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off", 'tour.title': "Tips", 'tour.journey': "Your journey: 100 levels in 10 worlds. Carry on from here.", 'tour.modes': "More ways to play: a new board every day, Classic with streaks up to ×5, and a 60-second race.", 'tour.missions': "Three missions a day give stars. Spend them on outfits for Nine in Customize.", 'tour.next': "Next", 'tour.skip': "Skip", 'tour.done': "Let’s play!",
         },
 
         es: {
@@ -146,6 +148,8 @@ const i18n = (() => {
             'well.make': 'Haz', 'well.needs': 'faltan {n}', 'well.over': 'Te pasaste', 'well.done': '¡Hecho!', 'well.stuck': 'Sin jugadas',
             'tile.add': 'Sumar {n}', 'tile.wild': 'Comodín: cierra la suma', 'tile.double': 'Sumar {n}, duplica los puntos',
             'tile.minus': "Restar {n}", 'tut.minus': "Las fichas que restan quitan de la suma: úsalas para hacer hueco cuando nada encaja.", 'coach.minusEmpty': "Una ficha que resta necesita al menos {n} en el centro.", 'tile.coupler': "Acople +{n}: suéltalo sobre una ficha",
+            'theme.chrome': "Cromo", 'theme.gears': "Engranajes", 'item.welder': "Gafas de soldador", 'item.tophat': "Sombrero de copa",
+            'help.r9.t': "Fichas que restan.", 'help.r9.b': "Valen de −1 a −5: quitan de la suma, nunca por debajo de 0. No cuentan como ficha ni como color.", 'help.r10.t': "Fichas acople.", 'help.r10.b': "Valen de +1 a +5: suelta una sobre otra ficha para sumársela (nunca por encima del objetivo). La ficha conserva su color.",
             'tut.coupler': "Las fichas acople nunca van al centro: suelta una sobre otra ficha para sumársela.", 'coach.couplerWhere': "Las fichas acople van sobre una ficha, no al centro.", 'coach.couplerPick': "Ahora toca la ficha a la que sumarla.", 'coach.couplerNone': "Ninguna ficha admite +{n} sin pasar de {target}.",
             'color.orange': 'naranja', 'color.blue': 'azul', 'color.purple': 'morado', 'color.pink': 'rosa',
             'tile.frozen': v => `${v.n}, congelada ${v.k} ${plural(v.k, 'suma', 'sumas')} más`,
@@ -251,7 +255,7 @@ const i18n = (() => {
             'help.back': "Volver",
             'help.effects': "Efectos",
             'help.effectsOn': "Sí",
-            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No", 'tour.title': "Consejos", 'tour.journey': "Tu viaje: 80 niveles en 8 mundos. Sigue desde aquí.", 'tour.modes': "Más formas de jugar: un tablero nuevo cada día, Clásico con rachas de hasta ×5 y una carrera de 60 segundos.", 'tour.missions': "Tres misiones al día dan estrellas. Gástalas en ropa para Nine en Personalizar.", 'tour.next': "Siguiente", 'tour.skip': "Saltar", 'tour.done': "¡A jugar!",
+            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No", 'tour.title': "Consejos", 'tour.journey': "Tu viaje: 100 niveles en 10 mundos. Sigue desde aquí.", 'tour.modes': "Más formas de jugar: un tablero nuevo cada día, Clásico con rachas de hasta ×5 y una carrera de 60 segundos.", 'tour.missions': "Tres misiones al día dan estrellas. Gástalas en ropa para Nine en Personalizar.", 'tour.next': "Siguiente", 'tour.skip': "Saltar", 'tour.done': "¡A jugar!",
         },
 
         pt: {
@@ -268,6 +272,8 @@ const i18n = (() => {
             'well.make': 'Faça', 'well.needs': 'faltam {n}', 'well.over': 'Passou!', 'well.done': 'Feito!', 'well.stuck': 'Sem jogadas',
             'tile.add': 'Somar {n}', 'tile.wild': 'Curinga: fecha a soma', 'tile.double': 'Somar {n}, dobra os pontos',
             'tile.minus': "Subtrair {n}", 'tut.minus': "As peças que subtraem tiram da soma: use uma para abrir espaço quando nada encaixa.", 'coach.minusEmpty': "Uma peça que subtrai precisa de pelo menos {n} no centro.", 'tile.coupler': "Acoplador +{n}: solte sobre uma peça",
+            'theme.chrome': "Cromo", 'theme.gears': "Engrenagens", 'item.welder': "Óculos de solda", 'item.tophat': "Cartola",
+            'help.r9.t': "Peças que subtraem.", 'help.r9.b': "Valem de −1 a −5: tiram da soma, nunca abaixo de 0. Não contam como peça nem como cor.", 'help.r10.t': "Peças acopladoras.", 'help.r10.b': "Valem de +1 a +5: solte uma sobre outra peça para somar (nunca acima do alvo). A peça mantém a cor.",
             'tut.coupler': "As peças acopladoras nunca vão para o centro: solte uma sobre outra peça para somar.", 'coach.couplerWhere': "As peças acopladoras vão sobre uma peça, não no centro.", 'coach.couplerPick': "Agora toque na peça para somar.", 'coach.couplerNone': "Nenhuma peça aceita +{n} sem passar de {target}.",
             'color.orange': 'laranja', 'color.blue': 'azul', 'color.purple': 'roxo', 'color.pink': 'rosa',
             'tile.frozen': v => `${v.n}, congelada por mais ${v.k} ${plural(v.k, 'soma', 'somas')}`,
@@ -373,7 +379,7 @@ const i18n = (() => {
             'help.back': "Voltar",
             'help.effects': "Efeitos",
             'help.effectsOn': "Ligados",
-            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas", 'tour.title': "Dicas", 'tour.journey': "Sua jornada: 80 níveis em 8 mundos. Continue daqui.", 'tour.modes': "Mais jeitos de jogar: um tabuleiro novo todo dia, Clássico com sequências de até ×5 e uma corrida de 60 segundos.", 'tour.missions': "Três missões por dia dão estrelas. Use-as em roupas para o Nine em Personalizar.", 'tour.next': "Próximo", 'tour.skip': "Pular", 'tour.done': "Vamos jogar!",
+            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas", 'tour.title': "Dicas", 'tour.journey': "Sua jornada: 100 níveis em 10 mundos. Continue daqui.", 'tour.modes': "Mais jeitos de jogar: um tabuleiro novo todo dia, Clássico com sequências de até ×5 e uma corrida de 60 segundos.", 'tour.missions': "Três missões por dia dão estrelas. Use-as em roupas para o Nine em Personalizar.", 'tour.next': "Próximo", 'tour.skip': "Pular", 'tour.done': "Vamos jogar!",
         },
 
         fr: {
@@ -390,6 +396,8 @@ const i18n = (() => {
             'well.make': 'Fais', 'well.needs': 'encore {n}', 'well.over': 'Trop !', 'well.done': 'Bravo !', 'well.stuck': 'Bloqué',
             'tile.add': 'Ajouter {n}', 'tile.wild': 'Joker : termine la somme', 'tile.double': 'Ajouter {n}, double les points',
             'tile.minus': "Retirer {n}", 'tut.minus': "Les tuiles qui retirent enlèvent de la somme : sers-t’en pour faire de la place quand rien ne va.", 'coach.minusEmpty': "Une tuile qui retire a besoin d’au moins {n} au centre.", 'tile.coupler': "Raccord +{n} : pose-le sur une tuile",
+            'theme.chrome': "Chrome", 'theme.gears': "Engrenages", 'item.welder': "Lunettes de soudeur", 'item.tophat': "Haut-de-forme",
+            'help.r9.t': "Tuiles qui retirent.", 'help.r9.b': "De −1 à −5 : elles retirent de la somme, jamais sous 0. Elles ne comptent ni comme tuile ni comme couleur.", 'help.r10.t': "Raccords.", 'help.r10.b': "De +1 à +5 : pose-en un sur une tuile pour l’ajouter (jamais au-delà du but). La tuile garde sa couleur.",
             'tut.coupler': "Les raccords ne vont jamais au centre : pose-en un sur une tuile pour l’ajouter.", 'coach.couplerWhere': "Un raccord se pose sur une tuile, pas au centre.", 'coach.couplerPick': "Touche maintenant la tuile à laquelle l’ajouter.", 'coach.couplerNone': "Aucune tuile ne peut prendre +{n} sans dépasser {target}.",
             'color.orange': 'orange', 'color.blue': 'bleu', 'color.purple': 'violet', 'color.pink': 'rose',
             'tile.frozen': v => `${v.n}, gelée encore ${v.k} ${plural(v.k, 'somme', 'sommes')}`,
@@ -495,7 +503,7 @@ const i18n = (() => {
             'help.back': "Retour",
             'help.effects': "Effets",
             'help.effectsOn': "Oui",
-            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non", 'tour.title': "Astuces", 'tour.journey': "Ton aventure : 80 niveaux dans 8 mondes. Reprends ici.", 'tour.modes': "D’autres façons de jouer : un plateau nouveau chaque jour, Classique avec des séries jusqu’à ×5 et une course de 60 secondes.", 'tour.missions': "Trois missions par jour rapportent des étoiles. Dépense-les en tenues pour Nine dans Personnaliser.", 'tour.next': "Suivant", 'tour.skip': "Passer", 'tour.done': "On joue !",
+            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non", 'tour.title': "Astuces", 'tour.journey': "Ton aventure : 100 niveaux dans 10 mondes. Reprends ici.", 'tour.modes': "D’autres façons de jouer : un plateau nouveau chaque jour, Classique avec des séries jusqu’à ×5 et une course de 60 secondes.", 'tour.missions': "Trois missions par jour rapportent des étoiles. Dépense-les en tenues pour Nine dans Personnaliser.", 'tour.next': "Suivant", 'tour.skip': "Passer", 'tour.done': "On joue !",
         },
 
         de: {
@@ -512,6 +520,8 @@ const i18n = (() => {
             'well.make': 'Mach', 'well.needs': 'noch {n}', 'well.over': 'Zu viel', 'well.done': 'Geschafft!', 'well.stuck': 'Kein Zug',
             'tile.add': '{n} hinzufügen', 'tile.wild': 'Joker: schließt die Summe ab', 'tile.double': '{n} hinzufügen, verdoppelt die Punkte',
             'tile.minus': "{n} abziehen", 'tut.minus': "Minus-Steine ziehen von der Summe ab: Nutze sie, um Platz zu schaffen, wenn nichts passt.", 'coach.minusEmpty': "Ein Minus-Stein braucht mindestens {n} in der Mitte.", 'tile.coupler': "Kupplung +{n}: auf einen Stein legen",
+            'theme.chrome': "Chrom", 'theme.gears': "Zahnräder", 'item.welder': "Schweißer­brille", 'item.tophat': "Zylinder",
+            'help.r9.t': "Minus-Steine.", 'help.r9.b': "−1 bis −5: Sie ziehen von der Summe ab, nie unter 0. Sie zählen weder als Stein noch als Farbe.", 'help.r10.t': "Kupplungen.", 'help.r10.b': "+1 bis +5: Leg eine auf einen Stein, um sie dazuzuzählen (nie über das Ziel). Der Stein behält seine Farbe.",
             'tut.coupler': "Kupplungen kommen nie in die Mitte: Leg eine auf einen Stein, um sie dazuzuzählen.", 'coach.couplerWhere': "Kupplungen gehören auf einen Stein, nicht in die Mitte.", 'coach.couplerPick': "Tippe jetzt den Stein an, zu dem sie dazukommt.", 'coach.couplerNone': "Kein Stein verträgt +{n}, ohne über {target} zu kommen.",
             'color.orange': 'orange', 'color.blue': 'blau', 'color.purple': 'lila', 'color.pink': 'pink',
             'tile.frozen': v => `${v.n}, noch ${v.k} ${plural(v.k, 'Summe', 'Summen')} gefroren`,
@@ -617,7 +627,7 @@ const i18n = (() => {
             'help.back': "Zurück",
             'help.effects': "Effekte",
             'help.effectsOn': "An",
-            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus", 'tour.title': "Tipps", 'tour.journey': "Deine Reise: 80 Level in 8 Welten. Hier geht es weiter.", 'tour.modes': "Mehr Spielarten: jeden Tag ein neues Brett, Klassisch mit Serien bis ×5 und ein 60-Sekunden-Rennen.", 'tour.missions': "Drei Missionen am Tag bringen Sterne. Gib sie unter Anpassen für Outfits für Nine aus.", 'tour.next': "Weiter", 'tour.skip': "Überspringen", 'tour.done': "Los geht’s!",
+            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus", 'tour.title': "Tipps", 'tour.journey': "Deine Reise: 100 Level in 10 Welten. Hier geht es weiter.", 'tour.modes': "Mehr Spielarten: jeden Tag ein neues Brett, Klassisch mit Serien bis ×5 und ein 60-Sekunden-Rennen.", 'tour.missions': "Drei Missionen am Tag bringen Sterne. Gib sie unter Anpassen für Outfits für Nine aus.", 'tour.next': "Weiter", 'tour.skip': "Überspringen", 'tour.done': "Los geht’s!",
         },
 
         tr: {
@@ -634,6 +644,8 @@ const i18n = (() => {
             'well.make': 'Hedef', 'well.needs': '{n} kaldı', 'well.over': 'Fazla', 'well.done': 'Tamam!', 'well.stuck': 'Hamle yok',
             'tile.add': '{n} ekle', 'tile.wild': 'Joker: toplamı tamamlar', 'tile.double': '{n} ekle, puanı ikiye katlar',
             'tile.minus': "{n} çıkar", 'tut.minus': "Eksi taşlar toplamdan düşer: hiçbir taş uymadığında yer açmak için kullan.", 'coach.minusEmpty': "Eksi taş için ortada en az {n} olmalı.", 'tile.coupler': "Bağlantı +{n}: bir taşın üstüne bırak",
+            'theme.chrome': "Krom", 'theme.gears': "Dişliler", 'item.welder': "Kaynakçı gözlüğü", 'item.tophat': "Silindir şapka",
+            'help.r9.t': "Eksi taşlar.", 'help.r9.b': "−1 ile −5 arası: toplamdan düşer, asla 0’ın altına inmez. Taş ya da renk sayılmaz.", 'help.r10.t': "Bağlantılar.", 'help.r10.b': "+1 ile +5 arası: eklemek için birini bir taşın üstüne bırak (hedefi asla aşmaz). Taş rengini korur.",
             'tut.coupler': "Bağlantılar asla ortaya gitmez: eklemek için birini bir taşın üstüne bırak.", 'coach.couplerWhere': "Bağlantılar ortaya değil, bir taşın üstüne gider.", 'coach.couplerPick': "Şimdi ekleyeceğin taşa dokun.", 'coach.couplerNone': "Hiçbir taş {target} sayısını aşmadan +{n} alamaz.",
             'color.orange': 'turuncu', 'color.blue': 'mavi', 'color.purple': 'mor', 'color.pink': 'pembe',
             'tile.frozen': v => `${v.n}, ${v.k} toplam daha donmuş`,
@@ -739,7 +751,7 @@ const i18n = (() => {
             'help.back': "Geri",
             'help.effects': "Efektler",
             'help.effectsOn': "Açık",
-            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı", 'tour.title': "İpuçları", 'tour.journey': "Yolculuğun: 8 dünyada 80 seviye. Buradan devam et.", 'tour.modes': "Daha fazla oyun yolu: her gün yeni bir tahta, ×5’e kadar serili Klasik ve 60 saniyelik bir yarış.", 'tour.missions': "Günde üç görev yıldız kazandırır. Onları Özelleştir’de Nine’ın kıyafetlerine harca.", 'tour.next': "İleri", 'tour.skip': "Geç", 'tour.done': "Hadi oynayalım!",
+            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı", 'tour.title': "İpuçları", 'tour.journey': "Yolculuğun: 10 dünyada 100 seviye. Buradan devam et.", 'tour.modes': "Daha fazla oyun yolu: her gün yeni bir tahta, ×5’e kadar serili Klasik ve 60 saniyelik bir yarış.", 'tour.missions': "Günde üç görev yıldız kazandırır. Onları Özelleştir’de Nine’ın kıyafetlerine harca.", 'tour.next': "İleri", 'tour.skip': "Geç", 'tour.done': "Hadi oynayalım!",
         },
     }
 

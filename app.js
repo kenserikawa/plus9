@@ -1871,6 +1871,9 @@ function openHelp() {
     }
     renderSheetLabels()
     sfx.ui()
+    // the later worlds' tiles are explained once the player gets there, not before
+    $('rule-minus').hidden = !meta.worldReached(8)
+    $('rule-coupler').hidden = !meta.worldReached(9)
     help.showModal()
     help.scrollTop = 0 // showModal focuses the button at the bottom and scrolls to it; read from the top
 }

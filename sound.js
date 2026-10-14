@@ -334,6 +334,47 @@ const sfx = (() => {
                 tone(midi(chord[i % 3] + 12 * Math.floor(i / 3) + 12), { type: 'square', dur: e * 0.7, vol: 0.016, attack: 0.004, at, dest: out })
             },
         },
+
+        // Chrome: robotic synth-pop. Clipped square arpeggios, a dry octave bass, kick and a
+        // metallic clap.
+        chrome: {
+            bpm: 112, cutoff: 3200, level: 0.9,
+            parts: [['Am', 'F', 'C', 'G'], ['F', 'G', 'Em', 'Am']],
+            arp: [0, 2, 1, 3, 0, 2, 4, 2],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                const i = this.arp[pos]
+                tone(midi(chord[i % 3] + 12 * Math.floor(i / 3) + 12), { type: 'square', dur: e * 0.45, vol: 0.02, attack: 0.002, at, dest: out })
+                if (pos % 2 === 0) tone(midi(chord[0] - (pos % 4 ? 12 : 24)), { type: 'square', dur: e * 0.5, vol: 0.045, attack: 0.003, at, dest: out })
+                if (pos === 0 || pos === 4) kick(at, 0.2, out)
+                if (pos === 2 || pos === 6) {
+                    hiss({ dur: 0.08, vol: 0.06, at, from: 2600, to: 3400, dest: out })
+                    tone(1800, { type: 'square', dur: 0.03, vol: 0.025, at, dest: out })
+                }
+                hiss({ dur: 0.02, vol: 0.025, at, from: 9000, to: 10000, dest: out })
+            },
+        },
+
+        // Gears: a clockwork music box. Bell notes with a lilt, a tick-tock woodblock clock and a
+        // soft low bass.
+        gears: {
+            bpm: 96, cutoff: 2800, level: 1,
+            parts: [['C', 'G', 'Am', 'F'], ['F', 'C', 'Dm', 'G']],
+            melody: [0, 2, 4, 2, 3, 2, 1, null],
+            step(at, bar, pos, out, e) {
+                const chord = chordAt(this.parts, bar)
+                const swing = pos % 2 ? e * 0.18 : 0 // late off-beats
+                const i = this.melody[pos]
+                if (i !== null) {
+                    const n = chord[i % 3] + 12 * Math.floor(i / 3) + 12
+                    tone(midi(n), { type: 'sine', dur: e * 1.4, vol: 0.032, attack: 0.003, at: at + swing, dest: out })
+                    tone(midi(n) * 3, { type: 'sine', dur: e * 0.25, vol: 0.005, attack: 0.002, at: at + swing, dest: out })
+                }
+                if (pos === 0) tone(midi(chord[0] - 24), { type: 'sine', dur: e * 3, vol: 0.11, attack: 0.02, at, dest: out })
+                if (pos % 2 === 0) tone(2100, { type: 'sine', dur: 0.025, vol: 0.05, attack: 0.001, at, dest: out })
+                else tone(1400, { type: 'sine', dur: 0.025, vol: 0.035, attack: 0.001, at: at + swing, dest: out })
+            },
+        },
     }
 
     function musicTick() {

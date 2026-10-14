@@ -58,11 +58,13 @@
         <symbol id="i-back" viewBox="0 0 24 24"><path d="M10.5 5 3.5 12l7 7M4 12h16.5" /></symbol>
         <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" /></symbol>
         <defs>
-            <!-- Nine's metallic and rainbow colors (styles.css [data-nine]) -->
-            <linearGradient id="nine-chrome" x1="0" y1="0" x2="1" y2="1">
+            <!-- Nine's metallic and rainbow colors (styles.css [data-nine]). In Nine's own coordinates
+                 (viewBox 0 0 100 124), so the loop and the tail share one gradient: per-shape boxes
+                 (the default) gave each its own and showed a seam where the tail meets the loop -->
+            <linearGradient id="nine-chrome" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="124">
                 <stop offset="0" stop-color="#f6f8fb" /><stop offset="0.42" stop-color="#c8cfda" /><stop offset="0.52" stop-color="#eef2f6" /><stop offset="1" stop-color="#a9b2c1" />
             </linearGradient>
-            <linearGradient id="nine-rainbow" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="nine-rainbow" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="124">
                 <stop offset="0" stop-color="#ff623a" /><stop offset="0.2" stop-color="#ffd23f" /><stop offset="0.4" stop-color="#5fe08a" /><stop offset="0.6" stop-color="#37afff" /><stop offset="0.8" stop-color="#8746ff" /><stop offset="1" stop-color="#ff31cc" />
             </linearGradient>
         </defs>

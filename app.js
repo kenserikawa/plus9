@@ -81,7 +81,8 @@ let rng = Math.random
 
 const target = () => targetFor(level)
 const specialsOn = () => mode !== 'journey' || journeyDef.specials
-const randomTile = () => drawTile(level, rng, specialsOn())
+const mechanicsOn = () => (mode === 'journey' ? journeyDef.mechanics : 0)
+const randomTile = () => drawTile(level, rng, specialsOn(), mechanicsOn())
 const WILD_COLOR = '#ffd23f' // ring color for the part a wild tile fills
 // names of rules.js COLORS, in order: each color's shape (#mark-…) and its spoken name (color.…)
 const COLOR_IDS = ['orange', 'blue', 'purple', 'pink']
@@ -144,15 +145,20 @@ function setTile(tile, { value, color, special = null, ice = 0 }) {
     bump(tile.el, 'pop-in')
 }
 
+// what a tile shows: its number, ★ for a wild tile, −n / +n for minus and coupler tiles
+const faceOf = t => (t.special === 'wild' ? '★' : t.special === 'minus' ? `−${t.value}` : t.special === 'coupler' ? `+${t.value}` : String(t.value))
+
 // a tile's face: a number, ★ for a wild tile, a ×2 badge, or ice with the sums left to thaw
 function renderTile(tile) {
     const el = tile.el
     const wild = tile.special === 'wild'
-    el.textContent = wild ? '★' : tile.value
+    el.textContent = faceOf(tile)
     el.classList.toggle('is-wide', !wild && tile.value >= 10)
     el.classList.toggle('is-wild', wild)
     el.classList.toggle('is-double', tile.special === 'double')
     el.classList.toggle('is-rainbow', tile.special === 'rainbow')
+    el.classList.toggle('is-minus', tile.special === 'minus')
+    el.classList.toggle('is-coupler', tile.special === 'coupler')
     el.dataset.n = tile.value // the rainbow fill is drawn over the outlined number from this
     el.classList.toggle('is-frozen', tile.ice > 0)
     el.classList.remove('hint')
@@ -161,12 +167,14 @@ function renderTile(tile) {
     if (tile.ice > 0) el.insertAdjacentHTML('beforeend', `<span class="tile-ice" aria-hidden="true">${tile.ice}</span>`)
     // its color's shape; not on wild or rainbow tiles (they fit any color) or frozen ones (the ice hides it)
     const id = colorId(tile.color)
-    const colored = id && !wild && tile.special !== 'rainbow' && !(tile.ice > 0)
+    const colored = id && !wild && !['rainbow', 'minus', 'coupler'].includes(tile.special) && !(tile.ice > 0)
     if (colored) el.insertAdjacentHTML('beforeend', markSvg(id))
     const color = colored ? `, ${tr(`color.${id}`)}` : ''
     el.setAttribute('aria-label',
         tile.ice > 0 ? tr('tile.frozen', { n: tile.value, k: tile.ice })
         : wild ? tr('tile.wild')
+        : tile.special === 'minus' ? tr('tile.minus', { n: tile.value })
+        : tile.special === 'coupler' ? tr('tile.coupler', { n: tile.value })
         : tile.special === 'double' ? tr('tile.double', { n: tile.value }) + color
         : tile.special === 'rainbow' ? tr('tile.rainbow', { n: tile.value })
         : tr('tile.add', { n: tile.value }) + color)
@@ -193,6 +201,18 @@ function play(tile) {
         sfx.stuck()
         return
     }
+    // couplers never go to the centre (Task 6 replaces this with picking them up)
+    if (tile.special === 'coupler') {
+        bump(tile.el, 'shake')
+        return
+    }
+    // a minus tile needs a sum that can afford it
+    if (tile.special === 'minus' && tile.value > sum) {
+        bump(tile.el, 'shake')
+        sfx.stuck()
+        coachSay(tr('coach.minusEmpty', { n: tile.value }), 3500)
+        return
+    }
 
     const goal = target()
     const value = tileValue(tile, goal - sum) // a wild tile fills exactly what is missing
@@ -211,11 +231,14 @@ function play(tile) {
     parts.push({ value, color: tile.special === 'wild' ? WILD_COLOR : tile.color, special: tile.special })
     if (tile.special === 'rainbow' && parts.length > 1 && keepsCombo(parts.slice(0, -1), tile)) bump(well, 'match')
     if (tile.special === 'wild') floatText(well, tr('float.wild'), 'is-combo')
+    const minus = tile.special === 'minus'
+    if (minus) floatText(well, faceOf(tile))
     setTile(tile, takeNext())
 
     if (sum === goal) return completeSum()
 
-    sfx.add(sum / goal)
+    if (minus) sfx.minus()
+    else sfx.add(sum / goal)
     mascot.hop()
     render()
     tutorial('added')
@@ -224,6 +247,7 @@ function play(tile) {
 
 function completeSum() {
     const { points: base, combo, doubles } = sumPoints(parts, level)
+    const used = tilesUsed(parts) // minus tiles don't count
     // Classic: the sum goes into the pot at the streak's multiplier; elsewhere straight to the score
     let points = base, mult = 1
     if (streakOn()) {
@@ -233,12 +257,12 @@ function completeSum() {
         pot += points
     } else score += points
     sums++
-    chainLog.push(parts.length)
-    bestChain = Math.max(bestChain, parts.length)
+    chainLog.push(used)
+    bestChain = Math.max(bestChain, used)
     if (combo) combos++
 
     celebrate(meta.missionEvent('sums15', 1))
-    if (parts.length >= 4) celebrate(meta.missionEvent('chains4', 1))
+    if (used >= 4) celebrate(meta.missionEvent('chains4', 1))
     if (combo) celebrate(meta.missionEvent('combos', 1))
 
     resolving = true
@@ -248,7 +272,7 @@ function completeSum() {
     const bonus = [combo && tr('float.combo'), doubles && `×${2 ** doubles}`, mult > 1 && tr('float.streak', { n: mult })].filter(Boolean).join(' ')
     floatText(well, bonus ? `+${points} ${bonus}!` : `+${points}`, bonus ? 'is-combo' : '')
     thawIce()
-    sfx.complete(parts.length, mult - 1)
+    sfx.complete(used, mult - 1)
     if (bonus) {
         mascot.mood('cheer')
         confettiFrom(well, 24)
@@ -318,7 +342,7 @@ function levelUp() {
 function checkStuck() {
     if (!playing || sum === 0) return
     const need = target() - sum
-    stuck = !tiles.some(t => canPlay(t, need))
+    stuck = isStuck(tiles, sum, target())
     if (!stuck) return
     if (chain > 0) bust() // has its own sound
     else sfx.stuck()
@@ -626,11 +650,11 @@ function openMap(n = null) {
 function tutorial(event) {
     if (mode !== 'journey') return
     const n = journeyDef.n
-    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice' }
+    const later = { 6: 'tut.wild', 7: 'tut.double', 8: 'tut.rainbow', 11: 'tut.ice', 81: 'tut.minus' }
     if (later[n]) {
         if (event === 'start') {
             coachSay(tr(later[n]), 6000)
-            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0 }[n]
+            const special = { 6: t => t.special === 'wild', 7: t => t.special === 'double', 8: t => t.special === 'rainbow', 11: t => t.ice > 0, 81: t => t.special === 'minus' }[n]
             tiles.forEach(t => t.el.classList.toggle('hint', special(t)))
         }
         return
@@ -866,13 +890,15 @@ function renderClock(ms) {
 // Next and the tiles queued after it: the number (★ when wild) in its color, with the color's shape
 function paintNext(el, t) {
     const wild = t.special === 'wild'
-    el.textContent = wild ? '★' : t.value
+    el.textContent = faceOf(t)
     el.dataset.n = el.textContent
     el.classList.toggle('is-wild', wild)
     el.classList.toggle('is-rainbow', t.special === 'rainbow')
+    el.classList.toggle('is-minus', t.special === 'minus')
+    el.classList.toggle('is-coupler', t.special === 'coupler')
     el.style.setProperty('--tile', wild ? WILD_COLOR : t.color)
     const id = colorId(t.color)
-    if (id && !wild && t.special !== 'rainbow') el.insertAdjacentHTML('beforeend', markSvg(id))
+    if (id && !wild && !['rainbow', 'minus', 'coupler'].includes(t.special)) el.insertAdjacentHTML('beforeend', markSvg(id))
 }
 
 function render() {
@@ -893,8 +919,13 @@ function render() {
     well.classList.toggle('is-empty', empty)
     well.setAttribute('aria-label', tr(empty ? 'aria.wellEmpty' : 'aria.wellSum', { goal, sum }))
 
-    // fill one ring segment per point, coloured by the tile that supplied it (a rainbow tile cycles colours)
-    const colors = parts.flatMap(p => Array.from({ length: p.value }, (_, i) => (p.special === 'rainbow' ? COLORS[i % COLORS.length] : p.color)))
+    // one ring segment per point, coloured by the tile that supplied it (a rainbow tile cycles
+    // colours); a minus tile takes its points back off the end
+    const colors = []
+    for (const p of parts) {
+        if (p.special === 'minus') colors.length = Math.max(0, colors.length + p.value)
+        else for (let i = 0; i < p.value; i++) colors.push(p.special === 'rainbow' ? COLORS[i % COLORS.length] : p.color)
+    }
     ring.querySelectorAll('.seg').forEach((seg, i) => {
         seg.style.stroke = i < Math.min(sum, goal) ? (colors[i] || '') : ''
         seg.classList.toggle('on', i < sum)
@@ -908,7 +939,7 @@ function render() {
         paintNext(el, t)
         return el
     }))
-    queueEl.setAttribute('aria-label', tr('aria.queue', { list: queue.map(t => (t.special === 'wild' ? '★' : t.value)).join(', ') }))
+    queueEl.setAttribute('aria-label', tr('aria.queue', { list: queue.map(faceOf).join(', ') }))
     renderStreak()
 
     const cost = shuffleCost()

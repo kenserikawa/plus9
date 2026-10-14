@@ -443,6 +443,13 @@ const sfx = (() => {
             buzz(8)
         }),
 
+        // a minus tile takes from the sum: a short falling step
+        minus: effect(() => {
+            tone(note(6), { type: 'triangle', dur: 0.1, vol: 0.25 })
+            tone(note(4), { type: 'triangle', dur: 0.14, vol: 0.22, at: 0.07 })
+            buzz(8)
+        }),
+
         // target reached; longer chains get a longer arpeggio, and each step of a Classic
         // streak (`lift` = multiplier − 1) starts it higher, so the streak is heard climbing
         complete: effect((chain, lift = 0) => {

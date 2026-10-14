@@ -1487,6 +1487,13 @@ kbd {
     pointer-events: none;
 }
 .tile.is-rainbow { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px #fff2b8; }
+
+/* minus: muted silver with a fixed metallic sheen (no motion), the number in dark steel */
+.tile.is-minus, .next-tile.is-minus {
+    color: #4f5a6e; /* not --tile: renderTile sets that inline from the tile's (unused) color */
+    background: linear-gradient(155deg, #f6f8fb 0%, #c8cfda 42%, #eef2f6 52%, #a9b2c1 100%);
+}
+.tile.is-minus { box-shadow: -4px 6px 0 var(--ink), inset 0 0 0 5px rgba(255, 255, 255, 0.55); }
 @keyframes shimmer { to { background-position: 0.9em 0; } }
 
 /* frozen: an icy glaze over the number, and the sums left to thaw */

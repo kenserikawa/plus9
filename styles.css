@@ -1206,7 +1206,8 @@ body.is-ad .game { pointer-events: none; }
     margin: 16px 0 22px;
 }
 .settings .music-btn { min-width: 200px; justify-content: space-between; }
-.settings-sheet .sheet-actions { flex-direction: column; align-items: center; }
+/* one column as wide as the widest button, so a long label (de: So wird gespielt) keeps the stack aligned */
+.settings-sheet .sheet-actions { display: grid; justify-content: center; }
 .settings-sheet .sheet-actions .btn { min-width: 200px; }
 /* short landscape frames: toggles and buttons side by side so the sheet fits without scrolling */
 @media (min-aspect-ratio: 4/3) and (max-height: 640px) {
@@ -1214,7 +1215,7 @@ body.is-ad .game { pointer-events: none; }
     .settings-sheet .sheet-title { font-size: 2.2rem; margin-bottom: 0; }
     .settings { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 12px 0 18px; }
     .settings .music-btn, .settings-sheet .sheet-actions .btn { min-width: 0; }
-    .settings-sheet .sheet-actions { flex-direction: row; }
+    .settings-sheet .sheet-actions { display: flex; }
     .settings-sheet .btn { font-size: 1.3rem; padding: 6px 22px; }
 }
 

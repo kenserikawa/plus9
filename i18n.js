@@ -490,7 +490,7 @@ const i18n = (() => {
             'mode.journey': 'Reise', 'mode.daily': 'Täglich', 'mode.classic': 'Klassisch', 'mode.timed': '60 Sekunden',
             'home.missions': 'Heutige Missionen', 'home.themes': 'Designs', 'home.start': 'Hier starten', 'home.level': 'Level {n}',
             'home.done': v => (v.streak ? `Erledigt, Serie ${v.streak}` : 'Erledigt'), 'home.new': 'Neu! Par {par}', 'home.best': 'Rekord {n}',
-            'nav.home': 'Start', 'nav.pause': 'Pause', 'nav.help': 'So wird gespielt',
+            'nav.home': 'Menü', 'nav.pause': 'Pause', 'nav.help': 'So wird gespielt',
             'hud.score': 'Punkte', 'hud.level': 'Level', 'hud.best': 'Rekord', 'hud.stars': 'Sterne', 'hud.sums': 'Summen', 'hud.par': 'Par',
             'act.next': 'Danach', 'act.shuffle': 'Mischen', 'act.bank': 'Sichern', 'act.giveUp': 'Aufgeben', 'act.freeShuffle': 'Gratis mischen',
             'aria.reward': 'Werbung ansehen und gratis mischen', 'aria.shuffleFree': 'Alle Steine mischen, noch {n} gratis',

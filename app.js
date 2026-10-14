@@ -1620,6 +1620,7 @@ function openHelp() {
     renderSheetLabels()
     sfx.ui()
     help.showModal()
+    help.scrollTop = 0 // showModal focuses the button at the bottom and scrolls to it; read from the top
 }
 
 function renderSheetLabels() {

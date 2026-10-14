@@ -15,18 +15,18 @@ Drag or tap numbers into the middle circle until they add up to exactly the targ
 
 - **Journey**: eight worlds of ten levels (Grape, Sunset, Ocean, Night, Candy, Forest, Space, Neon), each a fixed board with a goal and up to 3 stars. The first levels teach the game as you play. Each world ends with a boss; beat it to reach the next world, with its own look and music, and to win an outfit for Nine.
 - **Daily**: the same tiles for everyone each day. 12 sums, one try, a par to beat, a result grid to share and a streak to keep.
-- **Classic**: play as long as you can; the target grows every 4 sums.
+- **Classic**: play as long as you can; the target grows every 4 sums. Sums in a row go into a **pot**, the k-th worth k times its points (up to ×5): cash it in to keep it, or push your luck, because getting stuck loses the pot.
 - **60 seconds**: race the clock; every sum adds 2 seconds.
 
 Three **daily missions** give extra stars. In **Customize** you pick the theme (colors and music) of any world you have reached and dress Nine: one outfit per world, plus a cap, a scarf and a crown bought with stars.
 
 ### Controls
 
-Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **B** bank, **M** sound, **Esc** pause. Background music can be switched off on its own in the help sheet.
+Mouse, touch or keyboard: Tab + Enter plays a tile, **S** shuffle, **C** cash in (Classic), **B** bank, **M** sound, **H** or **?** how to play, **Esc** pause. Sound effects and music can be switched off separately in Settings (the gear on the home screen, or the pause menu).
 
 ### Languages
 
-English, Spanish, Portuguese, French, German and Turkish. The game picks the player's language automatically; it can be changed in the help sheet.
+English, Spanish, Portuguese, French, German and Turkish. The game picks the player's language automatically; it can be changed in Settings.
 
 ## Running it
 
@@ -36,6 +36,7 @@ Open `index.html` in a browser. No install, no build, no server: progress is sav
 - `index.html?lang=de`: opens the game in a given language (en, es, pt, fr, de, tr).
 - `node tools/balance.js`: simulates players to check the difficulty curve.
 - `node tools/journey.js`: re-picks the journey boards so each level has the intended difficulty.
+- `node tools/build.js poki`: the Poki package in `dist/poki/` and `dist/plus9-poki.zip`; `node tools/build.js web`: the plain copy published on GitHub Pages.
 
 ## Project layout
 
@@ -44,14 +45,15 @@ index.html      screens and dialogs
 app.js          game engine, screens and modes
 rules.js        game rules shared by the game, the simulated player and the tools
 bot.js          simulated players (daily par, journey star goals)
-meta.js         journey stars, missions, themes
+meta.js         journey stars, missions, themes, Nine's wardrobe
 platform.js     web-portal adapter (Poki, later CrazyGames)
 i18n.js         translations
 sound.js        synthesised sound effects, music and vibration
 mascot.js       Nine the mascot and confetti
 styles.css      look and layout (portrait and 16:9 landscape)
 fonts/          bundled fonts and their licences
-tools/          balance and journey simulators
+tools/          balance and journey simulators, portal build
+promo/          store thumbnail, screenshots and listing texts
 ```
 
 `CLAUDE.md` has the full technical notes: rules, saving, balance, portal requirements and conventions.

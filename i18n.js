@@ -127,7 +127,7 @@ const i18n = (() => {
             'help.back': "Back",
             'help.effects': "Effects",
             'help.effectsOn': "On",
-            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off",
+            'help.effectsOff': "Off", 'help.shapes': "Color shapes", 'help.shapesOn': "On", 'help.shapesOff': "Off", 'tour.title': "Tips", 'tour.journey': "Your journey: 80 levels in 8 worlds. Carry on from here.", 'tour.modes': "More ways to play: a new board every day, Classic with streaks up to ×5, and a 60-second race.", 'tour.missions': "Three missions a day give stars. Spend them on outfits for Nine in Customize.", 'tour.next': "Next", 'tour.skip': "Skip", 'tour.done': "Let’s play!",
         },
 
         es: {
@@ -247,7 +247,7 @@ const i18n = (() => {
             'help.back': "Volver",
             'help.effects': "Efectos",
             'help.effectsOn': "Sí",
-            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No",
+            'help.effectsOff': "No", 'help.shapes': "Formas de color", 'help.shapesOn': "Sí", 'help.shapesOff': "No", 'tour.title': "Consejos", 'tour.journey': "Tu viaje: 80 niveles en 8 mundos. Sigue desde aquí.", 'tour.modes': "Más formas de jugar: un tablero nuevo cada día, Clásico con rachas de hasta ×5 y una carrera de 60 segundos.", 'tour.missions': "Tres misiones al día dan estrellas. Gástalas en ropa para Nine en Personalizar.", 'tour.next': "Siguiente", 'tour.skip': "Saltar", 'tour.done': "¡A jugar!",
         },
 
         pt: {
@@ -367,7 +367,7 @@ const i18n = (() => {
             'help.back': "Voltar",
             'help.effects': "Efeitos",
             'help.effectsOn': "Ligados",
-            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas",
+            'help.effectsOff': "Desligados", 'help.shapes': "Formas de cor", 'help.shapesOn': "Ligadas", 'help.shapesOff': "Desligadas", 'tour.title': "Dicas", 'tour.journey': "Sua jornada: 80 níveis em 8 mundos. Continue daqui.", 'tour.modes': "Mais jeitos de jogar: um tabuleiro novo todo dia, Clássico com sequências de até ×5 e uma corrida de 60 segundos.", 'tour.missions': "Três missões por dia dão estrelas. Use-as em roupas para o Nine em Personalizar.", 'tour.next': "Próximo", 'tour.skip': "Pular", 'tour.done': "Vamos jogar!",
         },
 
         fr: {
@@ -487,7 +487,7 @@ const i18n = (() => {
             'help.back': "Retour",
             'help.effects': "Effets",
             'help.effectsOn': "Oui",
-            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non",
+            'help.effectsOff': "Non", 'help.shapes': "Formes de couleur", 'help.shapesOn': "Oui", 'help.shapesOff': "Non", 'tour.title': "Astuces", 'tour.journey': "Ton aventure : 80 niveaux dans 8 mondes. Reprends ici.", 'tour.modes': "D’autres façons de jouer : un plateau nouveau chaque jour, Classique avec des séries jusqu’à ×5 et une course de 60 secondes.", 'tour.missions': "Trois missions par jour rapportent des étoiles. Dépense-les en tenues pour Nine dans Personnaliser.", 'tour.next': "Suivant", 'tour.skip': "Passer", 'tour.done': "On joue !",
         },
 
         de: {
@@ -607,7 +607,7 @@ const i18n = (() => {
             'help.back': "Zurück",
             'help.effects': "Effekte",
             'help.effectsOn': "An",
-            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus",
+            'help.effectsOff': "Aus", 'help.shapes': "Farbformen", 'help.shapesOn': "An", 'help.shapesOff': "Aus", 'tour.title': "Tipps", 'tour.journey': "Deine Reise: 80 Level in 8 Welten. Hier geht es weiter.", 'tour.modes': "Mehr Spielarten: jeden Tag ein neues Brett, Klassisch mit Serien bis ×5 und ein 60-Sekunden-Rennen.", 'tour.missions': "Drei Missionen am Tag bringen Sterne. Gib sie unter Anpassen für Outfits für Nine aus.", 'tour.next': "Weiter", 'tour.skip': "Überspringen", 'tour.done': "Los geht’s!",
         },
 
         tr: {
@@ -727,7 +727,7 @@ const i18n = (() => {
             'help.back': "Geri",
             'help.effects': "Efektler",
             'help.effectsOn': "Açık",
-            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı",
+            'help.effectsOff': "Kapalı", 'help.shapes': "Renk şekilleri", 'help.shapesOn': "Açık", 'help.shapesOff': "Kapalı", 'tour.title': "İpuçları", 'tour.journey': "Yolculuğun: 8 dünyada 80 seviye. Buradan devam et.", 'tour.modes': "Daha fazla oyun yolu: her gün yeni bir tahta, ×5’e kadar serili Klasik ve 60 saniyelik bir yarış.", 'tour.missions': "Günde üç görev yıldız kazandırır. Onları Özelleştir’de Nine’ın kıyafetlerine harca.", 'tour.next': "İleri", 'tour.skip': "Geç", 'tour.done': "Hadi oynayalım!",
         },
     }
 

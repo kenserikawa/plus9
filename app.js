@@ -1369,7 +1369,10 @@ function showScreen(name) {
     screen = name
     for (const [key, el] of Object.entries(screens)) el.hidden = key !== name
     document.body.dataset.screen = name
-    if (name === 'home') renderHome()
+    if (name === 'home') {
+        renderHome()
+        maybeStartTour()
+    }
     if (name === 'map') renderMap()
     if (hadFocus) screens[name].querySelector('h1').focus({ preventScroll: true })
 }
@@ -1604,6 +1607,95 @@ function markOnboarded() {
     try { localStorage.setItem('plus9.onboarded', '1') } catch { /* storage unavailable */ }
 }
 
+// ---------- home tour ----------
+
+// The first time the home screen shows (after journey level 1, which a new player starts in),
+// Nine points at its parts one coach tip at a time. Skip, Esc or the last step end it for good.
+const TOUR = [
+    { targets: ['#go-journey'], text: 'tour.journey' },
+    { targets: ['.mode-card'], text: 'tour.modes' },
+    { targets: ['#home .missions', '#go-style'], text: 'tour.missions' },
+]
+const tourEl = $('tour')
+let tourStep = 0
+
+function tourSeen() {
+    try { return localStorage.getItem('plus9.tour') === '1' } catch { return true }
+}
+
+function markTourSeen() {
+    try { localStorage.setItem('plus9.tour', '1') } catch { /* storage unavailable */ }
+}
+
+function maybeStartTour() {
+    if (!onboarded() || tourSeen()) return
+    // after the screen has settled; never over a sheet or an ad
+    setTimeout(() => {
+        if (screen !== 'home' || tourEl.open || paused() || dialog.open || styleSheet.open || platform.adShowing) return
+        tourStep = 0
+        tourEl.showModal()
+        showTourStep()
+    }, 500)
+}
+
+function showTourStep() {
+    const step = TOUR[tourStep]
+    const last = tourStep === TOUR.length - 1
+    document.querySelectorAll('.tour-target').forEach(el => el.classList.remove('tour-target'))
+    step.targets.forEach(sel => document.querySelectorAll(sel).forEach(el => el.classList.add('tour-target')))
+    $('tour-text').textContent = tr(step.text)
+    $('tour-count').textContent = `${tourStep + 1}/${TOUR.length}`
+    $('tour-next').textContent = tr(last ? 'tour.done' : 'tour.next')
+    $('tour-skip').hidden = last
+    placeTour()
+    bump(tourEl, 'pop-in')
+    mascot.mood('happy', { ms: 1200 })
+    $('tour-next').focus()
+}
+
+// below the ringed parts when it fits, else above them, else beside them (short landscape
+// frames, where the right column fills the height); the arrow points at their middle
+function placeTour() {
+    const rects = [...document.querySelectorAll('.tour-target')].map(el => el.getBoundingClientRect())
+    if (!rects.length) return
+    const top = Math.min(...rects.map(r => r.top)), bottom = Math.max(...rects.map(r => r.bottom))
+    const left = Math.min(...rects.map(r => r.left)), right = Math.max(...rects.map(r => r.right))
+    const gap = 16, edge = 12
+    const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi)
+    tourEl.style.width = ''
+    let { width, height } = tourEl.getBoundingClientRect()
+    let side = bottom + gap + height <= innerHeight - edge ? 'below' : top - gap - height >= edge ? 'above' : null
+    let x, y
+    if (side) {
+        const mid = (left + right) / 2
+        x = clamp(mid - width / 2, edge, innerWidth - edge - width)
+        y = side === 'below' ? bottom + gap : top - gap - height
+        tourEl.style.setProperty('--arrow', `${clamp(mid - x, 28, width - 28)}px`)
+    } else {
+        const roomLeft = left - gap - edge, roomRight = innerWidth - right - gap - edge
+        side = roomLeft >= roomRight ? 'left' : 'right'
+        tourEl.style.width = `${Math.min(width, Math.max(roomLeft, roomRight))}px`
+        const box = tourEl.getBoundingClientRect() // narrower, so taller
+        width = box.width
+        height = box.height
+        const mid = (top + bottom) / 2
+        x = side === 'left' ? left - gap - width : right + gap
+        y = clamp(mid - height / 2, edge, innerHeight - edge - height)
+        tourEl.style.setProperty('--arrow', `${clamp(mid - y, 24, height - 24)}px`)
+    }
+    tourEl.style.left = `${x}px`
+    tourEl.style.top = `${y}px`
+    tourEl.dataset.side = side
+}
+
+function nextTourStep() {
+    sfx.ui()
+    if (tourStep < TOUR.length - 1) {
+        tourStep++
+        showTourStep()
+    } else tourEl.close()
+}
+
 // ---------- settings (doubles as the pause menu), how to play, and sound ----------
 
 // In a game, the settings sheet is the pause menu; "How to play" opened from it (or with H
@@ -1742,6 +1834,19 @@ document.querySelectorAll('.sound-btn').forEach(b => b.addEventListener('click',
 $('effects-btn').addEventListener('click', toggleEffects)
 $('music-btn').addEventListener('click', toggleMusic)
 $('shapes-btn').addEventListener('click', toggleShapes)
+$('tour-next').addEventListener('click', nextTourStep)
+$('tour-skip').addEventListener('click', () => tourEl.close())
+// a tap outside the bubble moves on too, as players expect from tips
+tourEl.addEventListener('click', ev => {
+    if (ev.target !== tourEl) return
+    const r = tourEl.getBoundingClientRect()
+    if (ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom) nextTourStep()
+})
+tourEl.addEventListener('close', () => {
+    document.querySelectorAll('.tour-target').forEach(el => el.classList.remove('tour-target'))
+    markTourSeen()
+})
+addEventListener('resize', () => { if (tourEl.open) placeTour() })
 
 $('help-close').addEventListener('click', () => help.close())
 $('settings-close').addEventListener('click', () => settingsSheet.close())
@@ -1766,7 +1871,7 @@ document.addEventListener('keydown', ev => {
     // an open sheet and the journey map still scroll with the arrow keys
     const scrollable = paused() || dialog.open || styleSheet.open || screen !== 'game'
     if (!scrollable && (ev.key.startsWith('Arrow') || (ev.key === ' ' && ev.target === document.body))) ev.preventDefault()
-    if (platform.adShowing) return
+    if (platform.adShowing || tourEl.open) return // the tour has its own buttons; Esc closes it
     const key = ev.key.toLowerCase()
     // open dialogs close themselves on ESC; this one is consumed, or the browser would close the
     // pause menu it just opened (Esc is a close request for the topmost dialog after keydown)

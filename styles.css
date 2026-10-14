@@ -504,6 +504,49 @@ body {
 /* suggested tile in the tutorial: a steady gold ring, no looping motion */
 .tile.hint { box-shadow: 0 0 0 6px var(--gold), -4px 6px 0 6px var(--ink); }
 
+/* home tour (app.js TOUR): a coach bubble from Nine beside the part it points at, which gets
+   the same gold ring. app.js places it (left/top) below the parts, or above when there is no room. */
+.tour {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: min(340px, calc(100vw - 32px));
+    max-width: none;
+    padding: 12px 14px 12px;
+    overflow: visible;
+    color: var(--ink);
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: -3px 4px 0 var(--ink);
+}
+.tour::backdrop { background: transparent; } /* the parts stay in view, ringed */
+/* the arrow: a square turned on the edge facing the parts (data-side: where the bubble is),
+   --arrow along that edge */
+.tour::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: calc(var(--arrow, 50%) - 9px);
+    width: 16px;
+    height: 16px;
+    background: var(--paper);
+    border: solid var(--ink);
+    border-width: 3px 0 0 3px;
+    transform: rotate(45deg);
+}
+.tour[data-side="above"]::before { top: auto; bottom: -10px; transform: rotate(225deg); }
+.tour[data-side="left"]::before { top: calc(var(--arrow) - 9px); left: auto; right: -10px; transform: rotate(135deg); }
+.tour[data-side="right"]::before { top: calc(var(--arrow) - 9px); left: -10px; transform: rotate(-45deg); }
+.tour-body { display: flex; align-items: center; gap: 12px; }
+.mascot-tour { width: 40px; height: 50px; }
+.mascot-tour.has-hat { margin-top: 16px; }
+.tour-text { margin: 0; font-weight: 700; line-height: 1.3; text-align: left; }
+.tour-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+.tour-count { margin-right: auto; font-weight: 700; color: var(--muted); }
+.tour .btn { font-size: 1.15rem; padding: 3px 18px; }
+.tour-target { outline: 5px solid var(--gold); outline-offset: 4px; }
+
 .toast {
     position: fixed;
     top: 12px;

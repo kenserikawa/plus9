@@ -295,6 +295,19 @@
         </div>
     </dialog>
 
+    <!-- home tour: Nine points at each part of the home screen, the first time it shows (app.js TOUR) -->
+    <dialog class="tour" id="tour" aria-label="Tips" data-i18n-aria="tour.title" aria-describedby="tour-text">
+        <div class="tour-body">
+            <span class="mascot mascot-tour" aria-hidden="true"></span>
+            <p class="tour-text" id="tour-text"></p>
+        </div>
+        <div class="tour-actions">
+            <span class="tour-count" id="tour-count" aria-hidden="true">1/3</span>
+            <button class="btn btn-quiet" id="tour-skip" type="button" data-i18n="tour.skip">Skip</button>
+            <button class="btn" id="tour-next" type="button">Next</button>
+        </div>
+    </dialog>
+
     <script src="platform.js"></script>
     <script src="i18n.js"></script>
     <script src="rules.js"></script>

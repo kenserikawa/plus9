@@ -22,7 +22,7 @@ const winGoal = n => (R.isBoss(n)
 function winRate(def, seed) {
     let wins = 0
     for (let k = 0; k < RUNS; k++) {
-        const run = B.simulateRun({ seed, lv: def.lv, sums: def.sums, initial: def.initial, specials: def.specials, setup: def.setup, player: 'normal', playerSeed: 7919 * k + 1 })
+        const run = B.simulateRun({ seed, lv: def.lv, sums: def.sums, initial: def.initial, specials: def.specials, mechanics: def.mechanics, setup: def.setup, player: 'normal', playerSeed: 7919 * k + 1 })
         if (run.completed) wins++
     }
     return wins / RUNS
